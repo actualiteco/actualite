@@ -7,12 +7,13 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
 type LoginDTO struct {
-	Email    string `json:"email" example:"test.user@email.com"`
-	Password string `json:"password" example:"somepass"`
+	Email    string `json:"email" example:"test.user@email.com" validate:"required"`
+	Password string `json:"password" example:"somepass" validate:"required"`
 }
 
 type LoginDTOResponse struct {
@@ -42,6 +43,11 @@ func (h *AuthHTTPHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Debug("error register decoding", zap.Error(err))
 
+		respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
+		return
+	}
+
+	if err := validator.New().Struct(req); err != nil {
 		respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
 		return
 	}

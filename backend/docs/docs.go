@@ -166,33 +166,58 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "x-order": "0",
+                    "example": "m4rkek@gmail.com"
+                },
+                "username": {
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "m4rkek"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "supersecretpass"
                 },
                 "role": {
-                    "type": "string"
+                    "type": "string",
+                    "x-order": "3",
+                    "example": "admin"
                 }
             }
         },
         "internal_features_auth_transport_http.RegisterDTOResponse": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string"
+                "id": {
+                    "type": "string",
+                    "x-order": "0",
+                    "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                },
+                "username": {
+                    "type": "string",
+                    "x-order": "1",
+                    "example": "m4rkek"
                 },
                 "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
+                    "type": "string",
+                    "x-order": "2",
+                    "example": "m4rkek@gmail.com"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "x-order": "3"
                 },
                 "role": {
-                    "type": "string"
+                    "type": "string",
+                    "x-order": "4",
+                    "example": "user"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "x-order": "5",
+                    "example": "2026-03-25T12:00:41.267Z"
                 }
             }
         }

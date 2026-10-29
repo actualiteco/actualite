@@ -17,7 +17,7 @@ type User struct {
 	Password  string
 	Role      string `validate:"oneof=admin user"`
 	AvatarURL string
-	Bio       string
+	Bio       string `validate:"omitempty,max=100"`
 	CreatedAt time.Time
 }
 
