@@ -16,6 +16,24 @@ definitions:
       message:
         type: string
     type: object
+  internal_features_auth_transport_http.LoginDTO:
+    properties:
+      email:
+        example: test.user@email.com
+        type: string
+      password:
+        example: somepass
+        type: string
+    type: object
+  internal_features_auth_transport_http.LoginDTOResponse:
+    properties:
+      token:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
   internal_features_auth_transport_http.RegisterDTO:
     properties:
       email:
@@ -44,6 +62,36 @@ info:
   title: actualiteco/actualite
   version: "1.0"
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя по email и паролю, возвращает JWT
+      parameters:
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.LoginDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешная авторизация
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.LoginDTOResponse'
+        "401":
+          description: Неверные учётные данные
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Авторизация по email и паролю
+      tags:
+      - Auth
   /register:
     post:
       consumes:

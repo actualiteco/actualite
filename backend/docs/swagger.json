@@ -7,6 +7,52 @@
     },
     "host": "127.0.0.1:8080",
     "paths": {
+        "/login": {
+            "post": {
+                "description": "Авторизует пользователя по email и паролю, возвращает JWT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Авторизация по email и паролю",
+                "parameters": [
+                    {
+                        "description": "тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.LoginDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешная авторизация",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.LoginDTOResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неверные учётные данные",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
         "/register": {
             "post": {
                 "description": "Создаёт нового пользователя и возвращает его данные",
@@ -77,6 +123,33 @@
                     ]
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.LoginDTO": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "test.user@email.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "somepass"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.LoginDTOResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

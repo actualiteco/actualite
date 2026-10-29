@@ -12,22 +12,24 @@ var AllowedRoles = []string{"admin", "user"}
 
 type User struct {
 	ID        string `validate:"required,uuid"`
-	Email     string `validate:"email"`
 	Username  string `validate:"omitempty,min=4,max=15,username_validation"`
+	Email     string `validate:"email"`
 	Password  string
 	Role      string `validate:"oneof=admin user"`
+	AvatarURL string
+	Bio       string
 	CreatedAt time.Time
 }
 
 func (u *User) Validate() error {
-	val := validator.New()
+	validator := validator.New()
 
-	err := val.RegisterValidation("username_validation", validateUsername)
+	err := validator.RegisterValidation("username_validation", validateUsername)
 	if err != nil {
 		return fmt.Errorf("validator err: %w", err)
 	}
 
-	if err := val.Struct(u); err != nil {
+	if err := validator.Struct(u); err != nil {
 		return fmt.Errorf("validator struct: %w", err)
 	}
 
