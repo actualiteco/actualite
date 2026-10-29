@@ -10,11 +10,17 @@ import (
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/logger"
-	postgres_pool "github.com/tryingmyb3st/PolyTweet/internal/core/repository/postgres"
-	"github.com/tryingmyb3st/PolyTweet/internal/core/transport/server"
+	"actualiteco/actualite/internal/core/logger"
+	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
+	"actualiteco/actualite/internal/core/transport/server"
+	auth_repository "actualiteco/actualite/internal/features/auth/repository/postgres"
+	auth_service "actualiteco/actualite/internal/features/auth/service"
+	auth_transport "actualiteco/actualite/internal/features/auth/transport/http"
 )
 
+// @title actualiteco/actualite
+// @version 1.0
+// @host 127.0.0.1:8080
 func main() {
 	if err := godotenv.Load(); err != nil {
 		fmt.Println("error with reading .env")
@@ -38,6 +44,14 @@ func main() {
 	defer pool.Close()
 
 	serv := server.NewHTTPServer(server.NewConfigMust(), log)
+	serv.RegisterSwagger()
+
+	log.Debug("initializing auth service")
+	authRepo := auth_repository.NewAuthRepository(pool)
+	authService := auth_service.NewAuthService(authRepo)
+	authHandler := auth_transport.NewAuthHandler(authService)
+
+	serv.RegisterRoutes(authHandler.Routes()...)
 
 	if err = serv.Run(ctx); err != nil {
 		log.Error("server error occured", zap.Error(err))

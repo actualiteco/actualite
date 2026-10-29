@@ -6,22 +6,23 @@ import (
 	"fmt"
 	"time"
 
+	"actualiteco/actualite/internal/core/domain"
+	hash_utils "actualiteco/actualite/internal/utils/hash"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/tryingmyb3st/PolyTweet/internal/core/domain"
-	hash_utils "github.com/tryingmyb3st/PolyTweet/internal/utils/hash"
 )
 
 func (s *AuthService) RegisterUser(ctx context.Context, user domain.User, password string) (*domain.User, error) {
 	user.ID = uuid.NewString()
 
 	if err := user.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid user data: %w", domain.INVALID_REQUEST)
+		return nil, fmt.Errorf("invalid user data: %w", domain.ErrInvalidRequest)
 	}
 
 	hash, err := hash_utils.HashPassword(password)
 	if err != nil {
-		return nil, fmt.Errorf("hash generating: %w", domain.INTERNAL_ERROR)
+		return nil, fmt.Errorf("hash generating: %w", domain.ErrInternal)
 	}
 
 	user.Password = hash
@@ -32,11 +33,11 @@ func (s *AuthService) RegisterUser(ctx context.Context, user domain.User, passwo
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
-				return nil, fmt.Errorf("email is already booked: %w", domain.EMAIL_ALREADY_USED)
+				return nil, fmt.Errorf("email is already booked: %w", domain.ErrEmailAlreadyUsed)
 			}
 		}
 
-		return nil, fmt.Errorf("saving to database: %w", domain.INTERNAL_ERROR)
+		return nil, fmt.Errorf("saving to database: %w", domain.ErrInternal)
 	}
 
 	return createdUser, nil

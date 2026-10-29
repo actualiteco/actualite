@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  run:
+    desc: "Запуск приложения actualiteco/actualite"
+    cmds:
+      - go run ./cmd/actualite/main.go
+    env:
+      LOGGER_LEVEL: '{{.LOGGER_LEVEL}}'
+
+  swagger:
+    desc: "Обновить OpenAPI спецификацию"
+    cmds:
+      - docker compose run --rm swagger init -g cmd/actualite/main.go -o docs --parseInternal --parseDependency

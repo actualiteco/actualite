@@ -1,0 +1,77 @@
+definitions:
+  actualiteco_actualite_internal_core_domain.CustomError:
+    properties:
+      code:
+        type: string
+      message:
+        example: invalid request
+        type: string
+    type: object
+  actualiteco_actualite_internal_core_domain.InternalError:
+    properties:
+      code:
+        enum:
+        - INTERNAL_ERROR
+        type: string
+      message:
+        type: string
+    type: object
+  internal_features_auth_transport_http.RegisterDTO:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+  internal_features_auth_transport_http.RegisterDTOResponse:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+host: 127.0.0.1:8080
+info:
+  contact: {}
+  title: actualiteco/actualite
+  version: "1.0"
+paths:
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя и возвращает его данные
+      parameters:
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь создан
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTOResponse'
+        "400":
+          description: Неверный запрос или email уже занят
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Регистрация пользователя
+      tags:
+      - Auth
+swagger: "2.0"

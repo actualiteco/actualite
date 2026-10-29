@@ -2,10 +2,11 @@ package auth_transport
 
 import (
 	"context"
+	"net/http"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/domain"
+	"actualiteco/actualite/internal/core/domain"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/transport/server"
+	"actualiteco/actualite/internal/core/transport/server"
 )
 
 type AuthHTTPHandler struct {
@@ -25,7 +26,7 @@ func NewAuthHandler(authServ AuthService) *AuthHTTPHandler {
 func (h *AuthHTTPHandler) Routes() []server.Route {
 	return []server.Route{
 		{
-			Method:  "POST",
+			Method:  http.MethodPost,
 			URL:     "/register",
 			Handler: h.RegisterUser,
 		},

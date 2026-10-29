@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/middleware"
+	"actualiteco/actualite/internal/core/middleware"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/logger"
+	"actualiteco/actualite/internal/core/logger"
+
 	"go.uber.org/zap"
 )
 
@@ -31,13 +32,7 @@ func (s *HTTPServer) RegisterRoutes(routes ...Route) {
 
 		pattern := fmt.Sprintf("%s %s", route.Method, route.URL)
 
-		middlewares := []middleware.Middleware{
-			middleware.PanicMiddleware(s.log),
-			middleware.LogMiddleware(s.log),
-			middleware.TraceMiddleware(),
-		}
-
-		middlewares = append(middlewares, route.AdditionalMiddleware...)
+		middlewares := route.AdditionalMiddleware
 
 		handlerWithMiddleware := middleware.ChainMiddleware(
 			route.Handler,
@@ -49,12 +44,18 @@ func (s *HTTPServer) RegisterRoutes(routes ...Route) {
 }
 
 func (s *HTTPServer) Run(ctx context.Context) error {
+	handler := middleware.ChainMiddleware(
+		s.mux,
+		middleware.PanicMiddleware(s.log),
+		middleware.LogMiddleware(s.log),
+		middleware.TraceMiddleware(),
+		middleware.CORSMiddleware(),
+	)
+
 	server := &http.Server{
 		Addr:    s.cfg.Addr,
-		Handler: s.mux,
+		Handler: handler,
 	}
-
-	s.mux.HandleFunc("GET /_info", HandleInfo)
 
 	ch := make(chan error, 1)
 
@@ -64,7 +65,7 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 		s.log.Info("starting http server", zap.String("addr", s.cfg.Addr))
 		err := server.ListenAndServe()
 
-		if !errors.Is(http.ErrServerClosed, err) {
+		if !errors.Is(err, http.ErrServerClosed) {
 			ch <- err
 		}
 	}()
@@ -88,8 +89,4 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func HandleInfo(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
 }

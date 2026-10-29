@@ -1,0 +1,119 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "actualiteco/actualite",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "127.0.0.1:8080",
+    "paths": {
+        "/register": {
+            "post": {
+                "description": "Создаёт нового пользователя и возвращает его данные",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Регистрация пользователя",
+                "parameters": [
+                    {
+                        "description": "тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.RegisterDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Пользователь создан",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.RegisterDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос или email уже занят",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "actualiteco_actualite_internal_core_domain.CustomError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "invalid request"
+                }
+            }
+        },
+        "actualiteco_actualite_internal_core_domain.InternalError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "enum": [
+                        "INTERNAL_ERROR"
+                    ]
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.RegisterDTO": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.RegisterDTOResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/domain"
-	auth_models "github.com/tryingmyb3st/PolyTweet/internal/features/auth/repository"
+	"actualiteco/actualite/internal/core/domain"
+	auth_models "actualiteco/actualite/internal/features/auth/repository"
 )
 
 func (r *AuthRepository) SaveNewUser(ctx context.Context, user domain.User) (*domain.User, error) {

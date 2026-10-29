@@ -1,6 +1,6 @@
 package auth_repository
 
-import postgres_pool "github.com/tryingmyb3st/PolyTweet/internal/core/repository/postgres"
+import postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
 
 type AuthRepository struct {
 	ConnPool postgres_pool.Pool

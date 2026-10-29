@@ -5,8 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/domain"
-	"github.com/tryingmyb3st/PolyTweet/internal/core/logger"
+	"actualiteco/actualite/internal/core/domain"
+	"actualiteco/actualite/internal/core/logger"
+
 	"go.uber.org/zap"
 )
 
@@ -52,7 +53,7 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 	h.w.WriteHeader(http.StatusInternalServerError)
 
 	response := map[string]domain.CustomError{
-		"error": domain.INTERNAL_ERROR,
+		"error": domain.ErrInternal,
 	}
 
 	if err := json.NewEncoder(h.w).Encode(response); err != nil {
@@ -62,21 +63,21 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 
 func (h *HTTPResponseHandler) MapError(err error) {
 	switch {
-	case errors.Is(err, domain.NOT_FOUND):
-		h.ErrorResponse(domain.INVALID_REQUEST, http.StatusNotFound)
+	case errors.Is(err, domain.ErrNotFound):
+		h.ErrorResponse(domain.ErrInvalidRequest, http.StatusNotFound)
 		return
-	case errors.Is(err, domain.INVALID_REQUEST):
-		h.ErrorResponse(domain.INVALID_REQUEST, http.StatusBadRequest)
+	case errors.Is(err, domain.ErrInvalidRequest):
+		h.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
 		return
-	case errors.Is(err, domain.UNAUTHORIZED):
-		h.ErrorResponse(domain.UNAUTHORIZED, http.StatusUnauthorized)
+	case errors.Is(err, domain.ErrUnauthorized):
+		h.ErrorResponse(domain.ErrUnauthorized, http.StatusUnauthorized)
 		return
-	case errors.Is(err, domain.EMAIL_ALREADY_USED):
-		h.ErrorResponse(domain.EMAIL_ALREADY_USED, http.StatusConflict)
-	case errors.Is(err, domain.FORBIDDEN):
-		h.ErrorResponse(domain.FORBIDDEN, http.StatusForbidden)
+	case errors.Is(err, domain.ErrEmailAlreadyUsed):
+		h.ErrorResponse(domain.ErrEmailAlreadyUsed, http.StatusConflict)
+	case errors.Is(err, domain.ErrForbidden):
+		h.ErrorResponse(domain.ErrForbidden, http.StatusForbidden)
 		return
 	default:
-		h.ErrorResponse(domain.INTERNAL_ERROR, http.StatusInternalServerError)
+		h.ErrorResponse(domain.ErrInternal, http.StatusInternalServerError)
 	}
 }

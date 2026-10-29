@@ -3,7 +3,7 @@ package auth_service
 import (
 	"context"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/domain"
+	"actualiteco/actualite/internal/core/domain"
 )
 
 type AuthService struct {

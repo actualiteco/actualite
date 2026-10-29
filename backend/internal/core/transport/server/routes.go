@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/middleware"
+	"actualiteco/actualite/internal/core/middleware"
 )
 
 type Route struct {

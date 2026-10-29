@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/domain"
-	"github.com/tryingmyb3st/PolyTweet/internal/core/logger"
-	"github.com/tryingmyb3st/PolyTweet/internal/core/transport/response"
+	"actualiteco/actualite/internal/core/domain"
+	"actualiteco/actualite/internal/core/logger"
+	"actualiteco/actualite/internal/core/transport/response"
 
 	"go.uber.org/zap"
 )
@@ -26,6 +26,17 @@ type RegisterDTOResponse struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+// RegisterUser godoc
+// @Summary Регистрация пользователя
+// @Description Создаёт нового пользователя и возвращает его данные
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body RegisterDTO true "тело запроса"
+// @Success 201 {object} RegisterDTOResponse "Пользователь создан"
+// @Failure 400 {object} domain.CustomError "Неверный запрос или email уже занят"
+// @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
+// @Router /register [post]
 func (h *AuthHTTPHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -36,7 +47,7 @@ func (h *AuthHTTPHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Debug("error reguster decoding", zap.Error(err))
 
-		respWriter.ErrorResponse(domain.INVALID_REQUEST, http.StatusBadRequest)
+		respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
 		return
 	}
 
