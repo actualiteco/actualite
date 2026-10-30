@@ -1,0 +1,17 @@
+version: '3'
+
+tasks:
+  up:
+    desc: "Запустить базу данных"
+    cmds:
+      - docker compose up -d db-postgres
+
+  down:
+    desc: "Остановить базу данных"
+    cmds:
+      - docker compose down db-postgres
+
+  clear:
+    desc: "Остановить базу данных и удалить тома"
+    cmds:
+      - docker compose down -v db-postgres

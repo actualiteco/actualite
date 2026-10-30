@@ -6,12 +6,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/domain"
-	"github.com/tryingmyb3st/PolyTweet/internal/core/logger"
-	"github.com/tryingmyb3st/PolyTweet/internal/core/transport/response"
-	"github.com/tryingmyb3st/PolyTweet/internal/utils/jwt_utils"
+	"actualiteco/actualite/internal/core/domain"
+	"actualiteco/actualite/internal/core/logger"
+	"actualiteco/actualite/internal/core/transport/response"
+	"actualiteco/actualite/internal/utils/jwt_utils"
+
 	"go.uber.org/zap"
 )
+
+var skipLogPrefixes = []string{"/swagger/", "/swagger"}
 
 type Middleware func(http.Handler) http.Handler
 
@@ -27,9 +30,28 @@ func ChainMiddleware(h http.Handler, middlewares ...Middleware) http.Handler {
 	return h
 }
 
+func shouldSkipLogging(r *http.Request) bool {
+	if r.Method == http.MethodOptions {
+		return true
+	}
+
+	path := r.URL.Path
+
+	for _, p := range skipLogPrefixes {
+		if strings.HasPrefix(path, p) {
+			return true
+		}
+	}
+	return false
+}
+
 func LogMiddleware(log *logger.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if shouldSkipLogging(r) {
+				next.ServeHTTP(w, r)
+				return
+			}
 
 			log := log.With(zap.String("URL", r.URL.String()))
 
@@ -60,6 +82,11 @@ func PanicMiddleware(log *logger.Logger) Middleware {
 func TraceMiddleware() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if shouldSkipLogging(r) {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			log := r.Context().Value("log").(*logger.Logger)
 
 			before := time.Now()
@@ -85,7 +112,7 @@ func AuthMiddleware() Middleware {
 			if token == "" || !strings.HasPrefix(token, "Bearer") {
 				log.Debug("unathourized user", zap.String("Authorization", r.Header.Get("Authorization")))
 
-				respWriter.ErrorResponse(domain.INVALID_REQUEST, http.StatusUnauthorized)
+				respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusUnauthorized)
 				return
 			}
 
@@ -95,7 +122,7 @@ func AuthMiddleware() Middleware {
 			if err != nil {
 				log.Debug("invalid token", zap.Any("claims", claims))
 
-				respWriter.ErrorResponse(domain.INVALID_REQUEST, http.StatusBadRequest)
+				respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
 				return
 			}
 			log.Debug("user claims", zap.String("id", claims.UserId), zap.String("role", claims.Role))
@@ -103,7 +130,7 @@ func AuthMiddleware() Middleware {
 			if claims.ExpiresAt.Before(time.Now()) {
 				log.Debug("token expired", zap.Time("expiresAt", claims.ExpiresAt.Time))
 
-				respWriter.ErrorResponse(domain.INVALID_REQUEST, http.StatusBadRequest)
+				respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
 				return
 			}
 
@@ -111,6 +138,31 @@ func AuthMiddleware() Middleware {
 			ctx = context.WithValue(ctx, "role", claims.Role)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func CORSMiddleware() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			allowedOrigins := map[string]struct{}{
+				"http://localhost:8080": {},
+			}
+
+			origin := r.Header.Get("Origin")
+
+			if _, ok := allowedOrigins[origin]; ok {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			}
+
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+
+			next.ServeHTTP(w, r)
 		})
 	}
 }

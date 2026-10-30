@@ -1,0 +1,29 @@
+version: '3'
+
+dotenv: ['.env']
+
+includes:
+  db: ./taskfiles/Database.yaml
+  migrate: ./taskfiles/Migrate.yaml
+  lint: ./taskfiles/Lint.yaml
+  app: ./taskfiles/App.yaml
+
+vars:
+  GO_VERSION: '1.27.0'
+  GOLANGCI_LINT_VERSION: 'v2.12.2'
+
+  BIN_DIR: '{{.ROOT_DIR}}/bin'
+  GOLANGCI_LINT: '{{.BIN_DIR}}/golangci-lint'
+  
+  LOGGER_LEVEL: DEBUG
+
+  PROJECT_ROOT:
+    sh: |
+      if [ "$(go env GOOS)" = "windows" ]; then
+        powershell -c "(Get-Location).Path -replace '\\\\', '/'"
+      else
+        pwd
+      fi
+
+env:
+  PROJECT_ROOT: '{{.PROJECT_ROOT}}'

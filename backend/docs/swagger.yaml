@@ -1,0 +1,148 @@
+definitions:
+  actualiteco_actualite_internal_core_domain.CustomError:
+    properties:
+      code:
+        type: string
+      message:
+        example: invalid request
+        type: string
+    type: object
+  actualiteco_actualite_internal_core_domain.InternalError:
+    properties:
+      code:
+        enum:
+        - INTERNAL_ERROR
+        type: string
+      message:
+        type: string
+    type: object
+  internal_features_auth_transport_http.LoginDTO:
+    properties:
+      email:
+        example: test.user@email.com
+        type: string
+      password:
+        example: somepass
+        type: string
+    type: object
+  internal_features_auth_transport_http.LoginDTOResponse:
+    properties:
+      token:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_features_auth_transport_http.RegisterDTO:
+    properties:
+      email:
+        example: m4rkek@gmail.com
+        type: string
+        x-order: "0"
+      password:
+        example: supersecretpass
+        type: string
+        x-order: "2"
+      role:
+        example: admin
+        type: string
+        x-order: "3"
+      username:
+        example: m4rkek
+        type: string
+        x-order: "1"
+    type: object
+  internal_features_auth_transport_http.RegisterDTOResponse:
+    properties:
+      createdAt:
+        example: "2026-03-25T12:00:41.267Z"
+        type: string
+        x-order: "5"
+      email:
+        example: m4rkek@gmail.com
+        type: string
+        x-order: "2"
+      id:
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        type: string
+        x-order: "0"
+      password:
+        type: string
+        x-order: "3"
+      role:
+        example: user
+        type: string
+        x-order: "4"
+      username:
+        example: m4rkek
+        type: string
+        x-order: "1"
+    type: object
+host: 127.0.0.1:8080
+info:
+  contact: {}
+  title: actualiteco/actualite
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя по email и паролю, возвращает JWT
+      parameters:
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.LoginDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешная авторизация
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.LoginDTOResponse'
+        "401":
+          description: Неверные учётные данные
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Авторизация по email и паролю
+      tags:
+      - Auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя и возвращает его данные
+      parameters:
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь создан
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTOResponse'
+        "400":
+          description: Неверный запрос или email уже занят
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Регистрация пользователя
+      tags:
+      - Auth
+swagger: "2.0"

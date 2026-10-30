@@ -3,7 +3,7 @@ package auth_service
 import (
 	"context"
 
-	"github.com/tryingmyb3st/PolyTweet/internal/core/domain"
+	"actualiteco/actualite/internal/core/domain"
 )
 
 type AuthService struct {
@@ -12,6 +12,7 @@ type AuthService struct {
 
 type AuthRepository interface {
 	SaveNewUser(ctx context.Context, user domain.User) (*domain.User, error)
+	GetUser(ctx context.Context, email string) (*domain.User, error)
 }
 
 func NewAuthService(repo AuthRepository) *AuthService {

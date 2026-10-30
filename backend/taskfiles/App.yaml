@@ -1,0 +1,30 @@
+version: '3'
+
+tasks:
+  run:
+    desc: "Запуск приложения actualiteco/actualite"
+    cmds:
+      - go run ./cmd/actualite/main.go
+    env:
+      LOGGER_LEVEL: '{{.LOGGER_LEVEL}}'
+
+  build:
+    desc: "Принудительно пересобрать приложение в docker-образ и запустить, после чего накатить все миграции"
+    cmds:
+      - docker compose up -d --build actualite db-postgres
+      - docker compose run --rm db-migrations -path ./migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_DB}?sslmode=disable up
+
+  build-up:
+    desc: "Собрать приложение в docker-образ и запустить. Если образ уже есть - просто запустить"
+    cmds:
+      - docker compose up -d actualite db-postgres
+
+  build-down:
+    desc: "Завершить работу приложения (actualite, PostgreSQL)"
+    cmds:
+      - docker compose down actualite db-postgres
+
+  swagger:
+    desc: "Обновить OpenAPI спецификацию"
+    cmds:
+      - docker compose run --rm swagger init -g cmd/actualite/main.go -o docs --parseInternal --parseDependency
