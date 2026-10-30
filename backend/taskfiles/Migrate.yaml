@@ -2,9 +2,9 @@ version: '3'
 
 tasks:
   up:
-    desc: "Накатить одну миграцию"
+    desc: "Накатить все миграции"
     cmds:
-      - docker compose run --rm db-migrations -path ./migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_DB}?sslmode=disable up 1
+      - docker compose run --rm db-migrations -path ./migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_DB}?sslmode=disable up
 
   down:
     desc: "Откатиться на одну миграцию назад"
