@@ -15,6 +15,9 @@ import (
 	"actualiteco/actualite/internal/core/transport/server"
 	auth_service "actualiteco/actualite/internal/features/auth/service"
 	auth_transport "actualiteco/actualite/internal/features/auth/transport/http"
+	post_repository "actualiteco/actualite/internal/features/post/repository/postgres"
+	post_service "actualiteco/actualite/internal/features/post/service"
+	post_transport "actualiteco/actualite/internal/features/post/transport/http"
 	users_repository "actualiteco/actualite/internal/features/profile/repository/postgres"
 	profile_service "actualiteco/actualite/internal/features/profile/service"
 	profile_transport "actualiteco/actualite/internal/features/profile/transport/http"
@@ -23,6 +26,10 @@ import (
 // @title actualiteco/actualite
 // @version 1.0
 // @host 127.0.0.1:8080
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Введите "Bearer" и JWT-токен через пробел.
 func main() {
 	if err := godotenv.Load(); err != nil {
 		fmt.Println("error with reading .env")
@@ -57,7 +64,12 @@ func main() {
 	profileService := profile_service.NewProfileService(usersRepo)
 	profileHandler := profile_transport.NewProfileHTTPHandler(profileService)
 
-	serv.RegisterRoutes(authHandler, profileHandler)
+	log.Debug("initializing post service")
+	postRepository := post_repository.New(pool)
+	postService := post_service.New(postRepository)
+	postHandler := post_transport.NewPostsHandler(postService)
+
+	serv.RegisterRoutes(authHandler, profileHandler, postHandler)
 
 	if err = serv.Run(ctx); err != nil {
 		log.Error("server error occured", zap.Error(err))

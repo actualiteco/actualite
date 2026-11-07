@@ -1,10 +1,10 @@
 package profile_transport
 
 import (
-	"actualiteco/actualite/internal/core/domain"
+	_ "actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
+	httprequest "actualiteco/actualite/internal/core/transport/request"
 	"actualiteco/actualite/internal/core/transport/response"
-	"encoding/json"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -16,7 +16,6 @@ import (
 // @Tags Profile
 // @Accept json
 // @Produce json
-// @Param Authorization header string true "Bearer <jwt токен>"
 // @Param request body UpdateProfileRequest true "Информация профиля"
 // @Success 200 {object} ProfileResponse "Успешный запрос"
 // @Failure 400 {object} domain.CustomError "Неверный запрос"
@@ -24,6 +23,7 @@ import (
 // @Failure 409 {object} domain.CustomError "Пользователь с таким юзернеймом уже существует"
 // @Failure 500 {object}  domain.InternalError "Внутренняя ошибка сервера"
 // @Router /profile [patch]
+// @Security BearerAuth
 func (h *ProfileHTTPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logger.FromContext(ctx)
@@ -32,18 +32,18 @@ func (h *ProfileHTTPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	userID, err := getUserUUIDFromContext(ctx)
 	if err != nil {
 		log.Error("get userID from context", zap.Error(err))
-		respWriter.ErrorResponse(domain.ErrInternal, http.StatusInternalServerError)
+		respWriter.MapError(err)
 		return
 	}
 
 	var req UpdateProfileRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Debug("failed to decode request", zap.Error(err))
-		respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
+	if err := httprequest.DecodeAndValidate(r, &req); err != nil {
+		log.Debug("decode and validate update profile request")
+		respWriter.MapError(err)
 		return
 	}
 
-	user, err := h.service.Update(ctx, userID, req.DisplayName, req.Username, req.Status)
+	user, err := h.profileService.Update(ctx, userID, req.DisplayName, req.Username, req.Status)
 	if err != nil {
 		log.Error("failed to update profile", zap.Error(err))
 		respWriter.MapError(err)

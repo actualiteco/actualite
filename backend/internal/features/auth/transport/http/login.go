@@ -1,13 +1,12 @@
 package auth_transport
 
 import (
-	"actualiteco/actualite/internal/core/domain"
+	_ "actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
+	httprequest "actualiteco/actualite/internal/core/transport/request"
 	"actualiteco/actualite/internal/core/transport/response"
-	"encoding/json"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
@@ -41,15 +40,9 @@ func (h *AuthHTTPHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	respWriter := response.NewResponseHandler(log, w)
 
 	var req LoginDTO
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Debug("error register decoding", zap.Error(err))
-
-		respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
-		return
-	}
-
-	if err := validator.New().Struct(req); err != nil {
-		respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
+	if err := httprequest.DecodeAndValidate(r, &req); err != nil {
+		log.Debug("decode and validate login request", zap.Error(err))
+		respWriter.MapError(err)
 		return
 	}
 
@@ -57,7 +50,6 @@ func (h *AuthHTTPHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error("get user", zap.Error(err))
-
 		respWriter.MapError(err)
 		return
 	}

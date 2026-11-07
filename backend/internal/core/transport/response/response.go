@@ -3,6 +3,7 @@ package response
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"actualiteco/actualite/internal/core/domain"
@@ -35,53 +36,57 @@ func (h *HTTPResponseHandler) JSONResponse(resp any, statusCode int) {
 	}
 }
 
-func (h *HTTPResponseHandler) ErrorResponse(err domain.CustomError, statusCode int) {
-	h.w.Header().Set("Content-Type", "application/json")
-	h.w.WriteHeader(statusCode)
-
-	resp := map[string]domain.CustomError{
-		"error": err,
-	}
-
-	if err := json.NewEncoder(h.w).Encode(resp); err != nil {
-		h.log.Error("write error response", zap.Error(err))
-	}
+func (h *HTTPResponseHandler) errorResponse(err domain.CustomError, statusCode int) {
+	h.JSONResponse(map[string]domain.CustomError{"error": err}, statusCode)
 }
 
 func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
-	h.w.Header().Set("Content-Type", "application/json")
-	h.w.WriteHeader(http.StatusInternalServerError)
+	err := fmt.Errorf("unexpected panic: %v", p)
 
-	response := map[string]domain.CustomError{
-		"error": domain.ErrInternal,
-	}
+	h.log.Error(msg, zap.Error(err))
 
-	if err := json.NewEncoder(h.w).Encode(response); err != nil {
-		h.log.Error("write panic response", zap.Error(err))
-	}
+	h.errorResponse(domain.ErrInternal, http.StatusInternalServerError)
 }
 
 func (h *HTTPResponseHandler) MapError(err error) {
+	var (
+		statusCode int
+		logFunc    func(string, ...zap.Field)
+		customErr  domain.CustomError
+	)
+
 	switch {
 	case errors.Is(err, domain.ErrNotFound):
-		h.ErrorResponse(domain.ErrInvalidRequest, http.StatusNotFound)
-		return
+		statusCode = http.StatusNotFound
+		logFunc = h.log.Info
+		customErr = domain.ErrNotFound
 	case errors.Is(err, domain.ErrInvalidRequest):
-		h.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
-		return
+		statusCode = http.StatusBadRequest
+		logFunc = h.log.Error
+		customErr = domain.ErrInvalidRequest
 	case errors.Is(err, domain.ErrUnauthorized):
-		h.ErrorResponse(domain.ErrUnauthorized, http.StatusUnauthorized)
-		return
+		statusCode = http.StatusUnauthorized
+		logFunc = h.log.Warn
+		customErr = domain.ErrUnauthorized
 	case errors.Is(err, domain.ErrEmailAlreadyUsed):
-		h.ErrorResponse(domain.ErrEmailAlreadyUsed, http.StatusConflict)
-		return
+		statusCode = http.StatusConflict
+		logFunc = h.log.Warn
+		customErr = domain.ErrEmailAlreadyUsed
 	case errors.Is(err, domain.ErrForbidden):
-		h.ErrorResponse(domain.ErrForbidden, http.StatusForbidden)
-		return
+		statusCode = http.StatusForbidden
+		logFunc = h.log.Warn
+		customErr = domain.ErrForbidden
 	case errors.Is(err, domain.ErrConflict):
-		h.ErrorResponse(domain.ErrConflict, http.StatusConflict)
-		return
+		statusCode = http.StatusConflict
+		logFunc = h.log.Warn
+		customErr = domain.ErrConflict
 	default:
-		h.ErrorResponse(domain.ErrInternal, http.StatusInternalServerError)
+		statusCode = http.StatusInternalServerError
+		logFunc = h.log.Error
+		customErr = domain.ErrInternal
 	}
+
+	logFunc(err.Error(), zap.Error(err))
+
+	h.errorResponse(customErr, statusCode)
 }

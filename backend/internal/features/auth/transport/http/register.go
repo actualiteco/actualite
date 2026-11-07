@@ -1,12 +1,12 @@
 package auth_transport
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
 	"actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
+	httprequest "actualiteco/actualite/internal/core/transport/request"
 	"actualiteco/actualite/internal/core/transport/response"
 
 	"github.com/go-playground/validator/v10"
@@ -51,17 +51,9 @@ func (h *AuthHTTPHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	respWriter := response.NewResponseHandler(log, w)
 
 	var req RegisterDTO
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Debug("error register decoding", zap.Error(err))
-
-		respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
-		return
-	}
-
-	if err := req.Validate(); err != nil {
-		log.Debug("error register validation", zap.Error(err))
-
-		respWriter.ErrorResponse(domain.ErrInvalidRequest, http.StatusBadRequest)
+	if err := httprequest.DecodeAndValidate(r, &req); err != nil {
+		log.Debug("decode and validate register request")
+		respWriter.MapError(err)
 		return
 	}
 

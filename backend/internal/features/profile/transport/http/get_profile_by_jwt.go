@@ -19,12 +19,12 @@ import (
 // @Tags Profile
 // @Accept json
 // @Produce json
-// @Param Authorization header string true "Bearer <jwt токен>"
 // @Success 200 {object} ProfileResponse
 // @Failure 400 {object} domain.CustomError "Неверный запрос"
 // @Failure 403 {object} domain.CustomError "Пользователь неавторизован"
 // @Failure 500 {object}  domain.InternalError "Внутренняя ошибка сервера"
 // @Router /profile/me [get]
+// @Security BearerAuth
 func (h *ProfileHTTPHandler) GetUserProfileByJWT(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logger.FromContext(ctx)
@@ -33,11 +33,11 @@ func (h *ProfileHTTPHandler) GetUserProfileByJWT(w http.ResponseWriter, r *http.
 	userID, err := getUserUUIDFromContext(ctx)
 	if err != nil {
 		log.Error("get userID from context", zap.Error(err))
-		respWriter.ErrorResponse(domain.ErrInternal, http.StatusInternalServerError)
+		respWriter.MapError(err)
 		return
 	}
 
-	user, err := h.service.GetProfile(ctx, userID)
+	user, err := h.profileService.GetProfile(ctx, userID)
 	if err != nil {
 		log.Error("failed to get user profile", zap.Error(err))
 		respWriter.MapError(err)

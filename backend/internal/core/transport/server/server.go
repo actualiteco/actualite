@@ -86,7 +86,7 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 			return fmt.Errorf("error from server: %w", err)
 		}
 	case <-ctx.Done():
-		s.log.Warn("shutdown htttp server...")
+		s.log.Warn("shutdown http server...")
 
 		shutdownCtx, cancel := context.WithTimeout(ctx, s.cfg.ShutdownTimeout)
 		defer cancel()

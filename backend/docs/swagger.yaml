@@ -90,6 +90,106 @@ definitions:
         type: string
         x-order: "1"
     type: object
+  internal_features_post_transport_http.CreatePostDTO:
+    properties:
+      content:
+        example: Hello, world!
+        maxLength: 280
+        minLength: 1
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      parent_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    required:
+    - content
+    type: object
+  internal_features_post_transport_http.PostDTOResponse:
+    properties:
+      content:
+        example: Hello, world!
+        type: string
+      created_at:
+        example: "2026-03-25T12:00:41.267Z"
+        type: string
+      id:
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      likes_count:
+        example: 10
+        type: integer
+      parent_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      user_id:
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        type: string
+    type: object
+  internal_features_post_transport_http.PostWithAuthorDTOResponse:
+    properties:
+      avatar_url:
+        example: https://example.com/avatar.jpg
+        type: string
+      content:
+        example: Hello, world!
+        type: string
+      created_at:
+        example: "2026-03-25T12:00:41.267Z"
+        type: string
+      deleted_at:
+        example: "2026-03-25T12:00:41.267Z"
+        type: string
+      display_name:
+        example: test
+        type: string
+      id:
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      likes_count:
+        example: 10
+        type: integer
+      parent_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      user_id:
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        type: string
+      username:
+        example: testuser
+        type: string
+    type: object
+  internal_features_post_transport_http.PostsWithPaginationDTOResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/internal_features_post_transport_http.paginationDTO'
+      posts:
+        items:
+          $ref: '#/definitions/internal_features_post_transport_http.PostWithAuthorDTOResponse'
+        type: array
+    type: object
+  internal_features_post_transport_http.paginationDTO:
+    properties:
+      page:
+        example: 1
+        type: integer
+      page_size:
+        example: 20
+        type: integer
+      total:
+        example: 20
+        type: integer
+      total_pages:
+        example: 100
+        type: integer
+    type: object
   internal_features_profile_transport_http.ProfileResponse:
     properties:
       avatar_url:
@@ -172,17 +272,150 @@ paths:
       summary: Авторизация по email и паролю
       tags:
       - Auth
+  /posts/{postID}:
+    get:
+      consumes:
+      - application/json
+      description: Ищет пост по ID и возвращает информацию о посте + краткую информацию
+        об авторе (username, display_name, avatar_url)
+      parameters:
+      - description: Post ID (UUID)
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        format: uuid
+        in: path
+        name: postID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пост найден
+          schema:
+            $ref: '#/definitions/internal_features_post_transport_http.PostWithAuthorDTOResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Не удалось аутентифицировать пользователя
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Пост не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Поиск поста по ID
+      tags:
+      - Posts
+  /posts/{postID}/replies:
+    get:
+      consumes:
+      - application/json
+      description: Ищет комментарии на пост по его ID с поддержкой пагинации через
+        параметры page и page_size
+      parameters:
+      - description: Post ID (UUID)
+        example: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d
+        format: uuid
+        in: path
+        name: postID
+        required: true
+        type: string
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: Размер страницы
+        in: query
+        maximum: 30
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Посты найдены
+          schema:
+            $ref: '#/definitions/internal_features_post_transport_http.PostsWithPaginationDTOResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: У поста нет комментариев
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Поиск комментариев на пост
+      tags:
+      - Posts
+  /posts/create:
+    post:
+      consumes:
+      - application/json
+      description: Создает пост длиной <= 280 символов
+      parameters:
+      - description: parent_id, image_url - необязательные параметры
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_post_transport_http.CreatePostDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пост создан
+          schema:
+            $ref: '#/definitions/internal_features_post_transport_http.PostDTOResponse'
+        "400":
+          description: Неверный запрос (content > 280 символов; userID неправильного
+            формата)
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Не удалось найти пост с данным parent_id
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Создание поста
+      tags:
+      - Posts
   /profile:
     patch:
       consumes:
       - application/json
       description: Обновить профиль пользователя (display_name, username, status)
       parameters:
-      - description: Bearer <jwt токен>
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: Информация профиля
         in: body
         name: request
@@ -212,6 +445,8 @@ paths:
           description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
       summary: Обновить профиль пользователя
       tags:
       - Profile
@@ -226,11 +461,6 @@ paths:
         name: userID
         required: true
         type: string
-      - description: Bearer <jwt токен>
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -250,20 +480,71 @@ paths:
           description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
       summary: Получить профиль пользователя
       tags:
       - Profile
+  /profile/{userID}/posts:
+    get:
+      consumes:
+      - application/json
+      description: Ищет посты пользователя по ID с поддержкой пагинации через параметры
+        page и page_size
+      parameters:
+      - description: User ID (UUID)
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        format: uuid
+        in: path
+        name: userID
+        required: true
+        type: string
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: Размер страницы
+        in: query
+        maximum: 30
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Посты найдены
+          schema:
+            $ref: '#/definitions/internal_features_post_transport_http.PostsWithPaginationDTOResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: У пользователя нет постов
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Поиск постов пользователя
+      tags:
+      - Posts
   /profile/me:
     get:
       consumes:
       - application/json
       description: Получить профиль пользователя с постами по JWT
-      parameters:
-      - description: Bearer <jwt токен>
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -283,6 +564,8 @@ paths:
           description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
       summary: Получить профиль пользователя по JWT
       tags:
       - Profile
@@ -316,4 +599,10 @@ paths:
       summary: Регистрация пользователя
       tags:
       - Auth
+securityDefinitions:
+  BearerAuth:
+    description: Введите "Bearer" и JWT-токен через пробел.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

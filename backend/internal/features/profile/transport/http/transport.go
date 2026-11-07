@@ -10,7 +10,7 @@ import (
 )
 
 type ProfileHTTPHandler struct {
-	service profileService
+	profileService profileService
 }
 
 type profileService interface {
@@ -18,9 +18,9 @@ type profileService interface {
 	Update(ctx context.Context, id uuid.UUID, displayName, username, status *string) (domain.User, error)
 }
 
-func NewProfileHTTPHandler(serv profileService) *ProfileHTTPHandler {
+func NewProfileHTTPHandler(profileService profileService) *ProfileHTTPHandler {
 	return &ProfileHTTPHandler{
-		service: serv,
+		profileService: profileService,
 	}
 }
 
