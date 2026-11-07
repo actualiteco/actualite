@@ -90,6 +90,12 @@ definitions:
         type: string
         x-order: "1"
     type: object
+  internal_features_profile_transport_http.FollowResponse:
+    properties:
+      message:
+        example: success
+        type: string
+    type: object
   internal_features_profile_transport_http.ProfileResponse:
     properties:
       avatar_url:
@@ -107,6 +113,12 @@ definitions:
       email_verified:
         example: false
         type: boolean
+      followers_count:
+        example: 10
+        type: integer
+      following_count:
+        example: 5
+        type: integer
       id:
         example: 8794e589-0ddb-43ce-9f92-16faafcf4ee4
         type: string
@@ -251,6 +263,88 @@ paths:
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
       summary: Получить профиль пользователя
+      tags:
+      - Profile
+  /profile/{userID}/follow:
+    post:
+      consumes:
+      - application/json
+      description: Подписаться авторизованным пользователем на другого пользователя
+        по userID
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Bearer <jwt токен>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный запрос
+          schema:
+            $ref: '#/definitions/internal_features_profile_transport_http.FollowResponse'
+        "400":
+          description: Неверный запрос (в т.ч. подписка на себя или повторная подписка)
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Пользователь неавторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Подписаться на пользователя
+      tags:
+      - Profile
+  /profile/{userID}/unfollow:
+    post:
+      consumes:
+      - application/json
+      description: Отписаться авторизованным пользователем от другого пользователя
+        по userID
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Bearer <jwt токен>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный запрос
+          schema:
+            $ref: '#/definitions/internal_features_profile_transport_http.FollowResponse'
+        "400":
+          description: Неверный запрос (в т.ч. отписка от себя или отсутствие подписки)
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Пользователь неавторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Отписаться от пользователя
       tags:
       - Profile
   /profile/me:

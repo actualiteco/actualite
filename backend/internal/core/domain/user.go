@@ -22,6 +22,8 @@ type User struct {
 	AvatarURL              string
 	Status                 string `validate:"omitempty,max=100"`
 	EmailVerified          bool
+	FollowersCount         int
+	FollowingCount         int
 	PasswordResetToken     string
 	PasswordResetExpiresAt time.Time
 }
