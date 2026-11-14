@@ -790,6 +790,39 @@ paths:
       summary: Получить профиль пользователя по JWT
       tags:
       - Profile
+  /profile/username-availability:
+    get:
+      consumes:
+      - application/json
+      description: Проверить, занят ли username
+      parameters:
+      - description: Username
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Username свободен
+          schema:
+            $ref: '#/definitions/internal_features_profile_transport_http.FollowResponse'
+        "400":
+          description: Неверный запрос (username не валиден или не указан)
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Username занят
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Проверка доступности username
+      tags:
+      - Profile
   /register:
     post:
       consumes:

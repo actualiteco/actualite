@@ -37,6 +37,9 @@ func (s *PostsService) GetPostsByAuthorID(ctx context.Context, userID, authorID 
 
 		return nil
 	})
+	if err != nil {
+		return []domain.PostWithAuthor{}, domain.Pagination{}, err
+	}
 
 	return posts, pagination, nil
 }

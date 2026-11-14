@@ -18,6 +18,7 @@ type profileService interface {
 	Update(ctx context.Context, id uuid.UUID, displayName, username, status *string) (domain.User, error)
 	Follow(ctx context.Context, followerID, followingID uuid.UUID) error
 	Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error
+	IsUsernameTaken(ctx context.Context, username string) (bool, error)
 }
 
 func NewProfileHTTPHandler(profileService profileService) *ProfileHTTPHandler {
@@ -57,6 +58,11 @@ func (h *ProfileHTTPHandler) Routes() []server.Route {
 			URL:                  "/profile/{userID}/unfollow",
 			Handler:              h.Unfollow,
 			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware()},
+		},
+		{
+			Method:  http.MethodGet,
+			URL:     "/profile/username-availability",
+			Handler: h.CheckUsernameAvailability,
 		},
 	}
 }

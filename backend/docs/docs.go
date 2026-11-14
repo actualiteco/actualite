@@ -569,6 +569,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/profile/username-availability": {
+            "get": {
+                "description": "Проверить, занят ли username",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Проверка доступности username",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Username свободен",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_profile_transport_http.FollowResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос (username не валиден или не указан)",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Username занят",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
         "/profile/{userID}": {
             "get": {
                 "security": [

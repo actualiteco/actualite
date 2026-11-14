@@ -26,6 +26,10 @@ type FollowResponse struct {
 	Message string `json:"message" example:"success"`
 }
 
+type CheckUsernameAvailabilityResponse struct {
+	Available bool `json:"available" example:"true"`
+}
+
 func toResponse(user domain.User) ProfileResponse {
 	return ProfileResponse{
 		ID:             user.ID,

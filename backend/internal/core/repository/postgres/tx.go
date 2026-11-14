@@ -31,7 +31,6 @@ func (tm *TxManager) Do(ctx context.Context, fn func(ctx context.Context) error)
 	return tm.do(ctx, fn, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 }
 
-// DoWrite runs mutations atomically, serializing concurrent updates through row locks.
 func (tm *TxManager) DoWrite(ctx context.Context, fn func(context.Context) error) error {
 	return tm.do(ctx, fn, pgx.TxOptions{IsoLevel: pgx.ReadCommitted, AccessMode: pgx.ReadWrite})
 }

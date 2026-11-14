@@ -15,6 +15,7 @@ type usersRepo interface {
 	UpdateProfile(ctx context.Context, id uuid.UUID, displayName, username, status *string) error
 	Follow(ctx context.Context, followerID, followingID uuid.UUID) error
 	Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error
+	IsUsernameTaken(ctx context.Context, username string) (bool, error)
 }
 
 func NewProfileService(repo usersRepo) *ProfileService {
