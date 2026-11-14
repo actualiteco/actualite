@@ -72,6 +72,10 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusConflict
 		logFunc = h.log.Warn
 		customErr = domain.ErrEmailAlreadyUsed
+	case errors.Is(err, domain.ErrUsernameAlreadyUsed):
+		statusCode = http.StatusConflict
+		logFunc = h.log.Warn
+		customErr = domain.ErrUsernameAlreadyUsed
 	case errors.Is(err, domain.ErrForbidden):
 		statusCode = http.StatusForbidden
 		logFunc = h.log.Warn

@@ -265,7 +265,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Like a post as the authenticated user, including their own posts.",
+                "description": "Поставить лайк на пост авторизованному пользователю",
                 "consumes": [
                     "application/json"
                 ],
@@ -275,7 +275,7 @@ const docTemplate = `{
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Like a post",
+                "summary": "Поставить лайк",
                 "parameters": [
                     {
                         "type": "string",
@@ -287,31 +287,31 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success",
+                        "description": "Лайк успешно поставлен",
                         "schema": {
                             "$ref": "#/definitions/internal_features_post_transport_http.LikeResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid post ID or like state",
+                        "description": "Невалидный post ID или состояние лайка",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Пользователь не авторизован",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "404": {
-                        "description": "Post not found",
+                        "description": "Пост не найден",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Внутренняя ошибка сервера",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
                         }
@@ -406,7 +406,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Unlike a post as the authenticated user, including their own posts.",
+                "description": "Убрать лайк с поста авторизованному пользователю",
                 "consumes": [
                     "application/json"
                 ],
@@ -416,7 +416,7 @@ const docTemplate = `{
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Unlike a post",
+                "summary": "Убрать лайк",
                 "parameters": [
                     {
                         "type": "string",
@@ -428,31 +428,31 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success",
+                        "description": "Лайк успешно снят",
                         "schema": {
                             "$ref": "#/definitions/internal_features_post_transport_http.LikeResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid post ID or like state",
+                        "description": "Невалидный post ID или состояние лайка",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Пользователь не авторизован",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "404": {
-                        "description": "Post not found",
+                        "description": "Пост не найден",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Внутренняя ошибка сервера",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
                         }
@@ -852,7 +852,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос или email уже занят",
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Email или username уже заняты",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }

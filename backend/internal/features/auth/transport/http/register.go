@@ -41,7 +41,8 @@ type RegisterDTOResponse struct {
 // @Produce json
 // @Param request body RegisterDTO true "тело запроса"
 // @Success 201 {object} RegisterDTOResponse "Пользователь создан"
-// @Failure 400 {object} domain.CustomError "Неверный запрос или email уже занят"
+// @Failure 400 {object} domain.CustomError "Неверный запрос"
+// @Failure 409 {object} domain.CustomError "Email или username уже заняты"
 // @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
 // @Router /register [post]
 func (h *AuthHTTPHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {

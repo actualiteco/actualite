@@ -1,13 +1,14 @@
 package domain
 
 var (
-	ErrInvalidRequest   = NewCustomError("INVALID_REQUEST", "invalid request")
-	ErrInternal         = NewCustomError("INTERNAL_ERROR", "internal server error")
-	ErrUnauthorized     = NewCustomError("UNAUTHORIZED", "invalid authorization")
-	ErrEmailAlreadyUsed = NewCustomError("EMAIL_ALREADY_USED", "email is already in use")
-	ErrForbidden        = NewCustomError("FORBIDDEN", "forbidden")
-	ErrNotFound         = NewCustomError("NOT_FOUND", "not found")
-	ErrConflict         = NewCustomError("CONFLICT", "conflict")
+	ErrInvalidRequest      = NewCustomError("INVALID_REQUEST", "invalid request")
+	ErrInternal            = NewCustomError("INTERNAL_ERROR", "internal server error")
+	ErrUnauthorized        = NewCustomError("UNAUTHORIZED", "invalid authorization")
+	ErrEmailAlreadyUsed    = NewCustomError("EMAIL_ALREADY_USED", "email is already in use")
+	ErrForbidden           = NewCustomError("FORBIDDEN", "forbidden")
+	ErrNotFound            = NewCustomError("NOT_FOUND", "not found")
+	ErrConflict            = NewCustomError("CONFLICT", "conflict")
+	ErrUsernameAlreadyUsed = NewCustomError("USERNAME_ALREADY_USED", "username is already in use")
 )
 
 type CustomError struct {

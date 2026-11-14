@@ -5,8 +5,9 @@ import (
 	"actualiteco/actualite/internal/core/logger"
 	"actualiteco/actualite/internal/core/transport/response"
 	httputils "actualiteco/actualite/internal/utils/http"
-	"go.uber.org/zap"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 type LikeResponse struct {
@@ -14,17 +15,17 @@ type LikeResponse struct {
 }
 
 // Like godoc
-// @Summary Like a post
-// @Description Like a post as the authenticated user, including their own posts.
+// @Summary Поставить лайк
+// @Description Поставить лайк на пост авторизованному пользователю
 // @Tags Posts
 // @Accept json
 // @Produce json
 // @Param postID path string true "Post ID"
-// @Success 200 {object} LikeResponse "Success"
-// @Failure 400 {object} domain.CustomError "Invalid post ID or like state"
-// @Failure 401 {object} domain.CustomError "Unauthorized"
-// @Failure 404 {object} domain.CustomError "Post not found"
-// @Failure 500 {object} domain.InternalError "Internal server error"
+// @Success 200 {object} LikeResponse "Лайк успешно поставлен"
+// @Failure 400 {object} domain.CustomError "Невалидный post ID или состояние лайка"
+// @Failure 401 {object} domain.CustomError "Пользователь не авторизован"
+// @Failure 404 {object} domain.CustomError "Пост не найден"
+// @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
 // @Router /posts/{postID}/like [post]
 // @Security BearerAuth
 func (h *PostsHTTPHandler) Like(w http.ResponseWriter, r *http.Request) {
@@ -50,17 +51,17 @@ func (h *PostsHTTPHandler) Like(w http.ResponseWriter, r *http.Request) {
 }
 
 // Unlike godoc
-// @Summary Unlike a post
-// @Description Unlike a post as the authenticated user, including their own posts.
+// @Summary Убрать лайк
+// @Description Убрать лайк с поста авторизованному пользователю
 // @Tags Posts
 // @Accept json
 // @Produce json
 // @Param postID path string true "Post ID"
-// @Success 200 {object} LikeResponse "Success"
-// @Failure 400 {object} domain.CustomError "Invalid post ID or like state"
-// @Failure 401 {object} domain.CustomError "Unauthorized"
-// @Failure 404 {object} domain.CustomError "Post not found"
-// @Failure 500 {object} domain.InternalError "Internal server error"
+// @Success 200 {object} LikeResponse "Лайк успешно снят"
+// @Failure 400 {object} domain.CustomError "Невалидный post ID или состояние лайка"
+// @Failure 401 {object} domain.CustomError "Пользователь не авторизован"
+// @Failure 404 {object} domain.CustomError "Пост не найден"
+// @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
 // @Router /posts/{postID}/unlike [post]
 // @Security BearerAuth
 func (h *PostsHTTPHandler) Unlike(w http.ResponseWriter, r *http.Request) {
