@@ -6,6 +6,8 @@ import (
 	"unicode/utf8"
 )
 
+const MaxAvatarSize = 2 << 20
+
 type User struct {
 	ID                     string `validate:"required,uuid"`
 	Email                  string `validate:"email"`

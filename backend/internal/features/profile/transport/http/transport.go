@@ -21,6 +21,7 @@ type profileService interface {
 	Follow(ctx context.Context, followerID, followingID uuid.UUID) error
 	Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error
 	IsUsernameTaken(ctx context.Context, username string) (bool, error)
+	UploadAvatar(ctx context.Context, id uuid.UUID, data []byte) (string, error)
 }
 
 type tokenService interface {
@@ -52,6 +53,12 @@ func (h *ProfileHTTPHandler) Routes() []server.Route {
 			Method:               http.MethodPatch,
 			URL:                  "/profile",
 			Handler:              h.Update,
+			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware(h.tokenService)},
+		},
+		{
+			Method:               http.MethodPost,
+			URL:                  "/profile/avatar",
+			Handler:              h.UploadAvatar,
 			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware(h.tokenService)},
 		},
 		{

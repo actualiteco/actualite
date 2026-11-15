@@ -12,6 +12,7 @@ import (
 
 	"actualiteco/actualite/internal/core/logger"
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
+	"actualiteco/actualite/internal/core/storage"
 	tokenservice "actualiteco/actualite/internal/core/token/service"
 	"actualiteco/actualite/internal/core/transport/server"
 	sessionsrepo "actualiteco/actualite/internal/features/auth/repository/postgres"
@@ -73,8 +74,11 @@ func main() {
 	authService := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService)
 	authHandler := auth_transport.NewAuthHandler(authService)
 
+	log.Debug("initializing file storage")
+	storageClient := storage.NewSeaweedFSClient(storage.NewConfigMust())
+
 	log.Debug("initializing profile service")
-	profileService := profile_service.NewProfileService(usersRepo)
+	profileService := profile_service.NewProfileService(usersRepo, storageClient)
 	profileHandler := profile_transport.NewProfileHTTPHandler(profileService, tokenService)
 
 	log.Debug("initializing post service")
