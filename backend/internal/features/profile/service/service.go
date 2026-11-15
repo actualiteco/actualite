@@ -3,11 +3,17 @@ package profile_service
 import (
 	"actualiteco/actualite/internal/core/domain"
 	"context"
+	"io"
 	"uuid"
 )
 
 type ProfileService struct {
-	repo usersRepo
+	repo    usersRepo
+	storage fileStorage
+}
+
+type fileStorage interface {
+	Upload(ctx context.Context, filename string, file io.Reader) (string, error)
 }
 
 type usersRepo interface {
@@ -15,10 +21,12 @@ type usersRepo interface {
 	UpdateProfile(ctx context.Context, id uuid.UUID, displayName, username, status *string) error
 	Follow(ctx context.Context, followerID, followingID uuid.UUID) error
 	Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error
+	UpdateAvatar(ctx context.Context, id uuid.UUID, avatarURL string) error
 }
 
-func NewProfileService(repo usersRepo) *ProfileService {
+func NewProfileService(repo usersRepo, storage fileStorage) *ProfileService {
 	return &ProfileService{
-		repo: repo,
+		repo:    repo,
+		storage: storage,
 	}
 }

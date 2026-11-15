@@ -18,6 +18,7 @@ type profileService interface {
 	Update(ctx context.Context, id uuid.UUID, displayName, username, status *string) (domain.User, error)
 	Follow(ctx context.Context, followerID, followingID uuid.UUID) error
 	Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error
+	UploadAvatar(ctx context.Context, id uuid.UUID, data []byte) (string, error)
 }
 
 func NewProfileHTTPHandler(profileService profileService) *ProfileHTTPHandler {
@@ -44,6 +45,12 @@ func (h *ProfileHTTPHandler) Routes() []server.Route {
 			Method:               http.MethodPatch,
 			URL:                  "/profile",
 			Handler:              h.Update,
+			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware()},
+		},
+		{
+			Method:               http.MethodPost,
+			URL:                  "/profile/avatar",
+			Handler:              h.UploadAvatar,
 			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware()},
 		},
 		{
