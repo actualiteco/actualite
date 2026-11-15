@@ -15,7 +15,7 @@ type AuthHTTPHandler struct {
 
 type AuthService interface {
 	RegisterUser(ctx context.Context, user domain.User, password string) (domain.User, error)
-	LoginUser(ctx context.Context, email, password string) (*string, domain.User, error)
+	Login(ctx context.Context, email, password, userAgent, ipAddress string) (string, string, int64, error)
 }
 
 func NewAuthHandler(authServ AuthService) *AuthHTTPHandler {

@@ -22,7 +22,7 @@ func (s *AuthService) RegisterUser(ctx context.Context, user domain.User, passwo
 	user.Password = hash
 	user.CreatedAt = time.Now()
 
-	createdUser, err := s.authRepo.SaveNewUser(ctx, user)
+	createdUser, err := s.usersRepo.SaveNewUser(ctx, user)
 	if err != nil {
 		return domain.User{}, fmt.Errorf("saving to database: %w", err)
 	}

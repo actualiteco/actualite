@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/login": {
             "post": {
-                "description": "Авторизует пользователя по email и паролю, возвращает JWT",
+                "description": "Авторизует пользователя по email и паролю, возвращает access и refresh токены с временем жизни access token",
                 "consumes": [
                     "application/json"
                 ],
@@ -972,17 +972,17 @@ const docTemplate = `{
         "internal_features_auth_transport_http.LoginDTOResponse": {
             "type": "object",
             "properties": {
-                "token": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTM2NjUxNzcsImlhdCI6MTc5MzYyMTk3NywiVXNlcklkIjoiODc5NGU1ODktMGRkYi00M2NlLTlmOTItMTZmYWFmY2Y0ZWU0IiwiUm9sZSI6InVzZXIifQ.iv_JT1Fke-QaK2nx2FEF_pkDroyJP-_xK81egOAV7h4"
+                "access_token": {
+                    "type": "string"
                 },
-                "user_id": {
-                    "type": "string",
-                    "example": "8794e589-0ddb-43ce-9f92-16faafcf4ee4"
+                "expires_in": {
+                    "type": "integer"
                 },
-                "username": {
-                    "type": "string",
-                    "example": "username"
+                "refresh_token": {
+                    "type": "string"
+                },
+                "token_type": {
+                    "type": "string"
                 }
             }
         },

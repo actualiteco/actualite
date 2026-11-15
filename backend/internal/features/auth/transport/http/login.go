@@ -16,14 +16,15 @@ type LoginDTO struct {
 }
 
 type LoginDTOResponse struct {
-	Token    string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTM2NjUxNzcsImlhdCI6MTc5MzYyMTk3NywiVXNlcklkIjoiODc5NGU1ODktMGRkYi00M2NlLTlmOTItMTZmYWFmY2Y0ZWU0IiwiUm9sZSI6InVzZXIifQ.iv_JT1Fke-QaK2nx2FEF_pkDroyJP-_xK81egOAV7h4"`
-	UserID   string `json:"user_id" example:"8794e589-0ddb-43ce-9f92-16faafcf4ee4"`
-	Username string `json:"username" example:"username"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int64  `json:"expires_in"`
 }
 
 // LoginUser godoc
 // @Summary Авторизация по email и паролю
-// @Description Авторизует пользователя по email и паролю, возвращает JWT
+// @Description Авторизует пользователя по email и паролю, возвращает access и refresh токены с временем жизни access token
 // @Tags Auth
 // @Accept json
 // @Produce json
@@ -46,18 +47,24 @@ func (h *AuthHTTPHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwt, user, err := h.AuthService.LoginUser(ctx, req.Email, req.Password)
-
+	ip, err := httprequest.GetIP(r)
 	if err != nil {
-		log.Error("get user", zap.Error(err))
+		respWriter.MapError(err)
+		return
+	}
+
+	accessToken, refreshToken, expirationTime, err := h.AuthService.Login(ctx, req.Email, req.Password, r.UserAgent(), ip)
+	if err != nil {
+		log.Error("login user", zap.Error(err))
 		respWriter.MapError(err)
 		return
 	}
 
 	resp := LoginDTOResponse{
-		Token:    *jwt,
-		Username: user.Username,
-		UserID:   user.ID,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    expirationTime,
 	}
 
 	respWriter.JSONResponse(resp, http.StatusOK)

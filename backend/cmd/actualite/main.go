@@ -13,6 +13,7 @@ import (
 	"actualiteco/actualite/internal/core/logger"
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
 	"actualiteco/actualite/internal/core/transport/server"
+	sessionsrepo "actualiteco/actualite/internal/features/auth/repository/postgres"
 	auth_service "actualiteco/actualite/internal/features/auth/service"
 	auth_transport "actualiteco/actualite/internal/features/auth/transport/http"
 	post_repository "actualiteco/actualite/internal/features/post/repository/postgres"
@@ -21,6 +22,7 @@ import (
 	users_repository "actualiteco/actualite/internal/features/profile/repository/postgres"
 	profile_service "actualiteco/actualite/internal/features/profile/service"
 	profile_transport "actualiteco/actualite/internal/features/profile/transport/http"
+	tokenservice "actualiteco/actualite/internal/features/token/service"
 )
 
 // @title actualiteco/actualite
@@ -55,12 +57,20 @@ func main() {
 	log.Debug("initializing tx manager")
 	txManager := postgres_pool.NewTxManager(pool)
 
+	log.Debug("initializing token service")
+	tokenCfg, err := tokenservice.NewConfig()
+	if err != nil {
+		log.Fatal("creating token config", zap.Error(err))
+	}
+	tokenService := tokenservice.New(tokenCfg)
+
 	serv := server.NewHTTPServer(server.NewConfigMust(), log)
 	serv.RegisterSwagger()
 
 	log.Debug("initializing auth service")
 	usersRepo := users_repository.NewAuthRepository(pool)
-	authService := auth_service.NewAuthService(usersRepo)
+	sessionsRepo := sessionsrepo.New(pool)
+	authService := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService)
 	authHandler := auth_transport.NewAuthHandler(authService)
 
 	log.Debug("initializing profile service")

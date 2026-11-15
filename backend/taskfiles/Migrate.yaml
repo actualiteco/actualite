@@ -11,6 +11,14 @@ tasks:
     cmds:
       - docker compose run --rm db-migrations -path ./migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_DB}?sslmode=disable down 1
 
+  force:
+    desc: "Установить версию миграции принудительно"
+    requires:
+      vars:
+        - V
+    cmds:
+      - docker compose run --rm db-migrations -path ./migrations -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_DB}?sslmode=disable force {{.V}}
+
   create:
     desc: "Создать миграцию"
     requires:
