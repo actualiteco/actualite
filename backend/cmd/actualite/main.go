@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"actualiteco/actualite/internal/core/logger"
+	"actualiteco/actualite/internal/core/middleware"
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
 	"actualiteco/actualite/internal/core/storage"
 	tokenservice "actualiteco/actualite/internal/core/token/service"
@@ -65,7 +66,8 @@ func main() {
 	}
 	tokenService := tokenservice.New(tokenCfg)
 
-	serv := server.NewHTTPServer(server.NewConfigMust(), log)
+	authMiddleware := middleware.AuthMiddleware(tokenService)
+	serv := server.NewHTTPServer(server.NewConfigMust(), log, authMiddleware)
 	serv.RegisterSwagger()
 
 	log.Debug("initializing auth service")
@@ -79,12 +81,12 @@ func main() {
 
 	log.Debug("initializing profile service")
 	profileService := profile_service.NewProfileService(usersRepo, storageClient)
-	profileHandler := profile_transport.NewProfileHTTPHandler(profileService, tokenService)
+	profileHandler := profile_transport.NewProfileHTTPHandler(profileService)
 
 	log.Debug("initializing post service")
 	postRepository := post_repository.New(pool)
 	postService := post_service.New(postRepository, txManager)
-	postHandler := post_transport.NewPostsHandler(postService, tokenService)
+	postHandler := post_transport.NewPostsHandler(postService)
 
 	serv.RegisterRoutes(authHandler, profileHandler, postHandler)
 

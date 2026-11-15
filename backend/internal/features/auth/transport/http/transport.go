@@ -27,14 +27,16 @@ func NewAuthHandler(authServ AuthService) *AuthHTTPHandler {
 func (h *AuthHTTPHandler) Routes() []server.Route {
 	return []server.Route{
 		{
-			Method:  http.MethodPost,
-			URL:     "/register",
-			Handler: h.RegisterUser,
+			Method:       http.MethodPost,
+			URL:          "/register",
+			Handler:      h.RegisterUser,
+			AuthRequired: false,
 		},
 		{
-			Method:  http.MethodPost,
-			URL:     "/login",
-			Handler: h.LoginUser,
+			Method:       http.MethodPost,
+			URL:          "/login",
+			Handler:      h.LoginUser,
+			AuthRequired: false,
 		},
 	}
 }

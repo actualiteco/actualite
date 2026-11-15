@@ -11,4 +11,5 @@ type Route struct {
 	URL                  string
 	Handler              http.HandlerFunc
 	AdditionalMiddleware []middleware.Middleware
+	AuthRequired         bool
 }

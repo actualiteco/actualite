@@ -14,29 +14,35 @@ import (
 )
 
 type HTTPServer struct {
-	mux *http.ServeMux
-	cfg Config
-	log *logger.Logger
+	mux            *http.ServeMux
+	cfg            Config
+	log            *logger.Logger
+	authMiddleware middleware.Middleware
 }
 
 type RouteProvider interface {
 	Routes() []Route
 }
 
-func NewHTTPServer(config Config, logger *logger.Logger) *HTTPServer {
+func NewHTTPServer(config Config, logger *logger.Logger, authMiddleware middleware.Middleware) *HTTPServer {
 	return &HTTPServer{
-		mux: http.NewServeMux(),
-		cfg: config,
-		log: logger,
+		mux:            http.NewServeMux(),
+		cfg:            config,
+		log:            logger,
+		authMiddleware: authMiddleware,
 	}
 }
 
 func (s *HTTPServer) registerRoutes(routes ...Route) {
 	for _, route := range routes {
-
 		pattern := fmt.Sprintf("%s %s", route.Method, route.URL)
 
-		middlewares := route.AdditionalMiddleware
+		middlewares := make([]middleware.Middleware, 0)
+		if route.AuthRequired {
+			middlewares = append(middlewares, s.authMiddleware)
+		}
+
+		middlewares = append(middlewares, route.AdditionalMiddleware...)
 
 		handlerWithMiddleware := middleware.ChainMiddleware(
 			route.Handler,
