@@ -16,6 +16,7 @@ type AuthHTTPHandler struct {
 type AuthService interface {
 	RegisterUser(ctx context.Context, user domain.User, password string) (domain.User, error)
 	Login(ctx context.Context, email, password, userAgent, ipAddress string) (string, string, int64, error)
+	Refresh(ctx context.Context, oldRefreshToken string) (string, string, int64, error)
 }
 
 func NewAuthHandler(authServ AuthService) *AuthHTTPHandler {
@@ -36,6 +37,12 @@ func (h *AuthHTTPHandler) Routes() []server.Route {
 			Method:       http.MethodPost,
 			URL:          "/login",
 			Handler:      h.LoginUser,
+			AuthRequired: false,
+		},
+		{
+			Method:       http.MethodPost,
+			URL:          "/auth/refresh",
+			Handler:      h.Refresh,
 			AuthRequired: false,
 		},
 	}

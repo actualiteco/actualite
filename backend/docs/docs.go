@@ -15,6 +15,64 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/refresh": {
+            "post": {
+                "description": "Обновляет refresh-токен, возвращает access и refresh токены с временем жизни access token в секундах (10 минут). Использовуется, когда прежний AccessToken протух",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Обновление refresh-токена",
+                "parameters": [
+                    {
+                        "description": "Тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.RefreshDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешная авторизация",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.TokensDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Невалидный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Refresh-токен протух или не валиден",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Сессия или пользователь-обладатель сессии не найден",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Авторизует пользователя по email и паролю, возвращает access и refresh токены с временем жизни access token в секундах (10 минут)",
@@ -43,7 +101,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Успешная авторизация",
                         "schema": {
-                            "$ref": "#/definitions/internal_features_auth_transport_http.LoginDTOResponse"
+                            "$ref": "#/definitions/internal_features_auth_transport_http.TokensDTOResponse"
                         }
                     },
                     "400": {
@@ -1024,20 +1082,12 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_features_auth_transport_http.LoginDTOResponse": {
+        "internal_features_auth_transport_http.RefreshDTO": {
             "type": "object",
             "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "expires_in": {
-                    "type": "integer"
-                },
                 "refresh_token": {
-                    "type": "string"
-                },
-                "token_type": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "old_refresh_token"
                 }
             }
         },
@@ -1100,6 +1150,27 @@ const docTemplate = `{
                     "type": "string",
                     "x-order": "4",
                     "example": "2026-03-25T12:00:41.267Z"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.TokensDTOResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string",
+                    "example": "new_access_token"
+                },
+                "expires_in": {
+                    "type": "integer",
+                    "example": 600
+                },
+                "refresh_token": {
+                    "type": "string",
+                    "example": "new_refresh_token"
+                },
+                "token_type": {
+                    "type": "string",
+                    "example": "Bearer"
                 }
             }
         },

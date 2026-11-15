@@ -4,8 +4,11 @@ import (
 	"actualiteco/actualite/internal/core/domain"
 	auth_models "actualiteco/actualite/internal/features/profile/repository"
 	"context"
+	"errors"
 	"fmt"
 	"uuid"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (r *UsersRepository) GetUserByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
@@ -27,6 +30,9 @@ func (r *UsersRepository) GetUserByID(ctx context.Context, id uuid.UUID) (domain
 		&model.Username, &model.DisplayName, &model.Status, &model.AvatarURL, &model.EmailVerified,
 		&model.FollowersCount, &model.FollowingCount)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, fmt.Errorf("user not found: %w", domain.ErrNotFound)
+		}
 		return domain.User{}, fmt.Errorf("scan returning user: %w", err)
 	}
 

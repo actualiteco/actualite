@@ -10,18 +10,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type LoginDTO struct {
-	Email    string `json:"email" example:"test.user@email.com" validate:"required"`
-	Password string `json:"password" example:"hashpassword" validate:"required,min=8,max=64,ascii"`
-}
-
-type LoginDTOResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	TokenType    string `json:"token_type"`
-	ExpiresIn    int64  `json:"expires_in"`
-}
-
 // LoginUser godoc
 // @Summary Авторизация по email и паролю
 // @Description Авторизует пользователя по email и паролю, возвращает access и refresh токены с временем жизни access token в секундах (10 минут)
@@ -29,7 +17,7 @@ type LoginDTOResponse struct {
 // @Accept json
 // @Produce json
 // @Param request body LoginDTO true "Тело запроса"
-// @Success 200 {object} LoginDTOResponse "Успешная авторизация"
+// @Success 200 {object} TokensDTOResponse "Успешная авторизация"
 // @Failure 400 {object} domain.CustomError "Невалидный запрос"
 // @Failure 401 {object} domain.CustomError "Неверные учётные данные"
 // @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
@@ -60,12 +48,5 @@ func (h *AuthHTTPHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := LoginDTOResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		TokenType:    "Bearer",
-		ExpiresIn:    expirationTime,
-	}
-
-	respWriter.JSONResponse(resp, http.StatusOK)
+	respWriter.JSONResponse(toTokensDTOResponse(accessToken, refreshToken, expirationTime), http.StatusOK)
 }

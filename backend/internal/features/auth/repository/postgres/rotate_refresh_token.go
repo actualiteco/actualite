@@ -29,7 +29,7 @@ func (r *SessionsRepository) RotateRefreshToken(ctx context.Context, sessionID u
 	}
 
 	if result.RowsAffected() == 0 {
-		return fmt.Errorf("refresh token is invalid or expired: %w", domain.ErrConflict)
+		return fmt.Errorf("refresh token is invalid or expired: %w", domain.ErrUnauthorized)
 	}
 
 	return nil

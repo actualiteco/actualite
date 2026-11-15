@@ -30,15 +30,10 @@ definitions:
     - email
     - password
     type: object
-  internal_features_auth_transport_http.LoginDTOResponse:
+  internal_features_auth_transport_http.RefreshDTO:
     properties:
-      access_token:
-        type: string
-      expires_in:
-        type: integer
       refresh_token:
-        type: string
-      token_type:
+        example: old_refresh_token
         type: string
     type: object
   internal_features_auth_transport_http.RegisterDTO:
@@ -88,6 +83,21 @@ definitions:
         example: m4rkek
         type: string
         x-order: "1"
+    type: object
+  internal_features_auth_transport_http.TokensDTOResponse:
+    properties:
+      access_token:
+        example: new_access_token
+        type: string
+      expires_in:
+        example: 600
+        type: integer
+      refresh_token:
+        example: new_refresh_token
+        type: string
+      token_type:
+        example: Bearer
+        type: string
     type: object
   internal_features_post_transport_http.CreatePostDTO:
     properties:
@@ -263,6 +273,46 @@ info:
   title: actualiteco/actualite
   version: "1.0"
 paths:
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Обновляет refresh-токен, возвращает access и refresh токены с временем
+        жизни access token в секундах (10 минут). Использовуется, когда прежний AccessToken
+        протух
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.RefreshDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешная авторизация
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.TokensDTOResponse'
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Refresh-токен протух или не валиден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Сессия или пользователь-обладатель сессии не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Обновление refresh-токена
+      tags:
+      - Auth
   /login:
     post:
       consumes:
@@ -282,7 +332,7 @@ paths:
         "200":
           description: Успешная авторизация
           schema:
-            $ref: '#/definitions/internal_features_auth_transport_http.LoginDTOResponse'
+            $ref: '#/definitions/internal_features_auth_transport_http.TokensDTOResponse'
         "400":
           description: Невалидный запрос
           schema:
