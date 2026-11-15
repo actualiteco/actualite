@@ -515,6 +515,61 @@
                 }
             }
         },
+        "/profile/avatar": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Загрузить аватар пользователя (jpg или png, до 2 МБ) в хранилище и обновить профиль",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Загрузить аватар",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Файл аватара (jpg/png, до 2 МБ)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_profile_transport_http.UploadAvatarResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос (неподходящий формат или размер файла)",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Пользователь неавторизован",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
         "/profile/me": {
             "get": {
                 "security": [
@@ -1207,6 +1262,15 @@
                 "username": {
                     "type": "string",
                     "example": "username"
+                }
+            }
+        },
+        "internal_features_profile_transport_http.UploadAvatarResponse": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string",
+                    "example": "http://localhost:8333/3,01637037d6"
                 }
             }
         }

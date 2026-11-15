@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  up:
+    desc: "Запустить файловое хранилище SeaweedFS"
+    cmds:
+      - docker compose up -d seaweedfs
+
+  down:
+    desc: "Остановить файловое хранилище SeaweedFS"
+    cmds:
+      - docker compose down seaweedfs
+
+  clear:
+    desc: "Остановить файловое хранилище и удалить загруженные файлы"
+    cmds:
+      - docker compose down -v seaweedfs
+      - rm -rf ./db/seaweedfs

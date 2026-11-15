@@ -6,12 +6,16 @@ services:
       - "8080:8080"
     environment:
       - POSTGRES_HOST=db-postgres:5432
+      - SEAWEEDFS_MASTER_URL=http://seaweedfs:9333
+      - SEAWEEDFS_VOLUME_SERVER=seaweedfs:8080
     volumes:
       - ./out/logs:/out/logs
       - ./docs:/docs
     depends_on:
       db-postgres:
         condition: service_healthy
+      seaweedfs:
+        condition: service_started
 
   db-postgres:
     image: postgres:18.1-bookworm
@@ -29,6 +33,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: always
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs-storage
+    command: "server -dir=/data"
+    ports:
+      - "9333:9333"
+      - "8333:8080"
+    volumes:
+      - ./db/seaweedfs/data:/data
     restart: always
 
   db-migrations:
