@@ -252,6 +252,12 @@ definitions:
         example: username
         type: string
     type: object
+  internal_features_profile_transport_http.UploadAvatarResponse:
+    properties:
+      avatar_url:
+        example: http://localhost:8333/3,01637037d6
+        type: string
+    type: object
 host: 127.0.0.1:8080
 info:
   contact: {}
@@ -759,6 +765,42 @@ paths:
       security:
       - BearerAuth: []
       summary: Отписаться от пользователя
+      tags:
+      - Profile
+  /profile/avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загрузить аватар пользователя (jpg или png, до 2 МБ) в хранилище
+        и обновить профиль
+      parameters:
+      - description: Файл аватара (jpg/png, до 2 МБ)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный запрос
+          schema:
+            $ref: '#/definitions/internal_features_profile_transport_http.UploadAvatarResponse'
+        "400":
+          description: Неверный запрос (неподходящий формат или размер файла)
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Пользователь неавторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Загрузить аватар
       tags:
       - Profile
   /profile/me:
