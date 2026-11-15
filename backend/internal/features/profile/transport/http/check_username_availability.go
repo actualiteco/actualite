@@ -33,7 +33,7 @@ func (h *ProfileHTTPHandler) CheckUsernameAvailability(w http.ResponseWriter, r 
 		return
 	}
 
-	isTaken, err := h.service.IsUsernameTaken(ctx, *username)
+	isTaken, err := h.profileService.IsUsernameTaken(ctx, *username)
 	if err != nil {
 		respWriter.MapError(err)
 		return

@@ -43,7 +43,7 @@ func (h *ProfileHTTPHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.Update(ctx, userID, req.DisplayName, req.Username, req.Status)
+	user, err := h.profileService.Update(ctx, userID, req.DisplayName, req.Username, req.Status)
 	if err != nil {
 		log.Error("failed to update profile", zap.Error(err))
 		respWriter.MapError(err)

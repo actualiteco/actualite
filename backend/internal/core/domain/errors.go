@@ -9,6 +9,7 @@ var (
 	ErrNotFound            = NewCustomError("NOT_FOUND", "not found")
 	ErrConflict            = NewCustomError("CONFLICT", "conflict")
 	ErrUsernameAlreadyUsed = NewCustomError("USERNAME_ALREADY_USED", "username is already in use")
+	ErrTokenExpired        = NewCustomError("TOKEN_EXPIRED", "token expired")
 )
 
 type CustomError struct {

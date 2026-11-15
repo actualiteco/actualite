@@ -37,7 +37,7 @@ func (h *ProfileHTTPHandler) GetUserProfileByJWT(w http.ResponseWriter, r *http.
 		return
 	}
 
-	user, err := h.service.GetProfile(ctx, userID)
+	user, err := h.profileService.GetProfile(ctx, userID)
 	if err != nil {
 		log.Error("failed to get user profile", zap.Error(err))
 		respWriter.MapError(err)

@@ -12,6 +12,7 @@ import (
 
 	"actualiteco/actualite/internal/core/logger"
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
+	tokenservice "actualiteco/actualite/internal/core/token/service"
 	"actualiteco/actualite/internal/core/transport/server"
 	sessionsrepo "actualiteco/actualite/internal/features/auth/repository/postgres"
 	auth_service "actualiteco/actualite/internal/features/auth/service"
@@ -22,7 +23,6 @@ import (
 	users_repository "actualiteco/actualite/internal/features/profile/repository/postgres"
 	profile_service "actualiteco/actualite/internal/features/profile/service"
 	profile_transport "actualiteco/actualite/internal/features/profile/transport/http"
-	tokenservice "actualiteco/actualite/internal/features/token/service"
 )
 
 // @title actualiteco/actualite
@@ -75,12 +75,12 @@ func main() {
 
 	log.Debug("initializing profile service")
 	profileService := profile_service.NewProfileService(usersRepo)
-	profileHandler := profile_transport.NewProfileHTTPHandler(profileService)
+	profileHandler := profile_transport.NewProfileHTTPHandler(profileService, tokenService)
 
 	log.Debug("initializing post service")
 	postRepository := post_repository.New(pool)
 	postService := post_service.New(postRepository, txManager)
-	postHandler := post_transport.NewPostsHandler(postService)
+	postHandler := post_transport.NewPostsHandler(postService, tokenService)
 
 	serv.RegisterRoutes(authHandler, profileHandler, postHandler)
 

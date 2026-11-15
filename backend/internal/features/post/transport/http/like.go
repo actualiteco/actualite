@@ -42,7 +42,7 @@ func (h *PostsHTTPHandler) Like(w http.ResponseWriter, r *http.Request) {
 		respWriter.MapError(err)
 		return
 	}
-	if err := h.PostsService.Like(ctx, userID, postID); err != nil {
+	if err := h.postsService.Like(ctx, userID, postID); err != nil {
 		log.Error("like post", zap.Error(err))
 		respWriter.MapError(err)
 		return
@@ -78,7 +78,7 @@ func (h *PostsHTTPHandler) Unlike(w http.ResponseWriter, r *http.Request) {
 		respWriter.MapError(err)
 		return
 	}
-	if err := h.PostsService.Unlike(ctx, userID, postID); err != nil {
+	if err := h.postsService.Unlike(ctx, userID, postID); err != nil {
 		log.Error("unlike post", zap.Error(err))
 		respWriter.MapError(err)
 		return

@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/login": {
             "post": {
-                "description": "Авторизует пользователя по email и паролю, возвращает access и refresh токены с временем жизни access token",
+                "description": "Авторизует пользователя по email и паролю, возвращает access и refresh токены с временем жизни access token в секундах (10 минут)",
                 "consumes": [
                     "application/json"
                 ],
@@ -30,7 +30,7 @@ const docTemplate = `{
                 "summary": "Авторизация по email и паролю",
                 "parameters": [
                     {
-                        "description": "тело запроса",
+                        "description": "Тело запроса",
                         "name": "request",
                         "in": "body",
                         "required": true,

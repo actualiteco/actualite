@@ -1,0 +1,108 @@
+package tokenservice
+
+import (
+	"actualiteco/actualite/internal/core/domain"
+	tokenclaims "actualiteco/actualite/internal/core/token/service/claims"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
+	"fmt"
+	"time"
+
+	"uuid"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+type TokenService struct {
+	config config
+}
+
+func New(cfg config) *TokenService {
+	return &TokenService{
+		config: cfg,
+	}
+}
+
+func (s *TokenService) GenerateJWT(userID, sessionID uuid.UUID, role string) (string, error) {
+	expirationTime := time.Now().Add(s.config.AccessTTL).UTC()
+
+	claims := tokenclaims.CustomClaims{
+		SessionID: sessionID.String(),
+		Role:      role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   userID.String(),
+			Issuer:    "actualiteco",
+			Audience:  []string{"actualiteco-api"},
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			ID:        uuid.New().String(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString(s.config.Secret)
+	if err != nil {
+		return "", fmt.Errorf("signing JWT: %w", err)
+	}
+
+	return tokenString, nil
+}
+
+func (s *TokenService) GenerateRefreshToken() (string, error) {
+	bytes := make([]byte, 32)
+
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+
+	return base64.RawURLEncoding.EncodeToString(bytes), nil
+}
+
+func (s *TokenService) HashRefreshToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
+
+	return hex.EncodeToString(hash[:])
+}
+
+func (s *TokenService) VerifyJWT(tokenString string) (*tokenclaims.CustomClaims, error) {
+	claims := tokenclaims.CustomClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(t *jwt.Token) (any, error) {
+		return s.config.Secret, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error parsing claims: %w", err)
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("token invalid: %w", err)
+	}
+
+	tokenClaims := token.Claims.(*tokenclaims.CustomClaims)
+
+	if _, err := uuid.Parse(claims.Subject); err != nil {
+		return nil, fmt.Errorf("invalid userID=%s in token", tokenClaims.Subject)
+	}
+
+	if _, err := uuid.Parse(claims.SessionID); err != nil {
+		return nil, fmt.Errorf("invalid sessionID=%s in token", tokenClaims.SessionID)
+	}
+
+	if !claims.IsActive() {
+		return nil, fmt.Errorf("token expired: %w", domain.ErrTokenExpired)
+	}
+
+	return tokenClaims, nil
+}
+
+func (s *TokenService) GetRefreshTokenExpiration() time.Time {
+	return time.Now().Add(s.config.RefreshTTL).UTC()
+}
+
+func (s *TokenService) GetAccessTokenTTL() time.Duration {
+	return s.config.AccessTTL
+}

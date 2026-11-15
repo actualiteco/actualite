@@ -24,11 +24,11 @@ type LoginDTOResponse struct {
 
 // LoginUser godoc
 // @Summary Авторизация по email и паролю
-// @Description Авторизует пользователя по email и паролю, возвращает access и refresh токены с временем жизни access token
+// @Description Авторизует пользователя по email и паролю, возвращает access и refresh токены с временем жизни access token в секундах (10 минут)
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param request body LoginDTO true "тело запроса"
+// @Param request body LoginDTO true "Тело запроса"
 // @Success 200 {object} LoginDTOResponse "Успешная авторизация"
 // @Failure 400 {object} domain.CustomError "Невалидный запрос"
 // @Failure 401 {object} domain.CustomError "Неверные учётные данные"

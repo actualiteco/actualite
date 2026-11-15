@@ -43,7 +43,7 @@ func (h *PostsHTTPHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 
 	log.Debug("getting post with id", zap.String("postID", postID.String()))
 
-	postWithAuthor, err := h.PostsService.GetPostByID(ctx, postID)
+	postWithAuthor, err := h.postsService.GetPostByID(ctx, postID)
 	if err != nil {
 		err = fmt.Errorf("get post by id: %w", err)
 		respWriter.MapError(err)

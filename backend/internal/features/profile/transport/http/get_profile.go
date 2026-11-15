@@ -35,7 +35,7 @@ func (h *ProfileHTTPHandler) GetUserProfile(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	user, err := h.service.GetProfile(ctx, userID)
+	user, err := h.profileService.GetProfile(ctx, userID)
 	if err != nil {
 		log.Error("failed to get user profile", zap.Error(err))
 		respWriter.MapError(err)

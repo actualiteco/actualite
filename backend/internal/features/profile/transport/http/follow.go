@@ -43,7 +43,7 @@ func (h *ProfileHTTPHandler) Follow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Follow(ctx, followerID, followingID); err != nil {
+	if err := h.profileService.Follow(ctx, followerID, followingID); err != nil {
 		log.Error("failed to follow user", zap.Error(err))
 		respWriter.MapError(err)
 		return
@@ -84,7 +84,7 @@ func (h *ProfileHTTPHandler) Unfollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Unfollow(ctx, followerID, followingID); err != nil {
+	if err := h.profileService.Unfollow(ctx, followerID, followingID); err != nil {
 		log.Error("failed to unfollow user", zap.Error(err))
 		respWriter.MapError(err)
 		return

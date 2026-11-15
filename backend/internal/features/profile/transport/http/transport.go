@@ -3,6 +3,7 @@ package profile_transport
 import (
 	"actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/middleware"
+	tokenclaims "actualiteco/actualite/internal/core/token/service/claims"
 	"actualiteco/actualite/internal/core/transport/server"
 	"context"
 	"net/http"
@@ -10,7 +11,8 @@ import (
 )
 
 type ProfileHTTPHandler struct {
-	service profileService
+	profileService profileService
+	tokenService   tokenService
 }
 
 type profileService interface {
@@ -21,9 +23,14 @@ type profileService interface {
 	IsUsernameTaken(ctx context.Context, username string) (bool, error)
 }
 
-func NewProfileHTTPHandler(profileService profileService) *ProfileHTTPHandler {
+type tokenService interface {
+	VerifyJWT(tokenString string) (*tokenclaims.CustomClaims, error)
+}
+
+func NewProfileHTTPHandler(profileService profileService, tokenService tokenService) *ProfileHTTPHandler {
 	return &ProfileHTTPHandler{
-		service: profileService,
+		profileService: profileService,
+		tokenService:   tokenService,
 	}
 }
 
@@ -33,31 +40,31 @@ func (h *ProfileHTTPHandler) Routes() []server.Route {
 			Method:               http.MethodGet,
 			URL:                  "/profile/me",
 			Handler:              h.GetUserProfileByJWT,
-			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware()},
+			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware(h.tokenService)},
 		},
 		{
 			Method:               http.MethodGet,
 			URL:                  "/profile/{userID}",
 			Handler:              h.GetUserProfile,
-			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware()},
+			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware(h.tokenService)},
 		},
 		{
 			Method:               http.MethodPatch,
 			URL:                  "/profile",
 			Handler:              h.Update,
-			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware()},
+			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware(h.tokenService)},
 		},
 		{
 			Method:               http.MethodPost,
 			URL:                  "/profile/{userID}/follow",
 			Handler:              h.Follow,
-			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware()},
+			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware(h.tokenService)},
 		},
 		{
 			Method:               http.MethodPost,
 			URL:                  "/profile/{userID}/unfollow",
 			Handler:              h.Unfollow,
-			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware()},
+			AdditionalMiddleware: []middleware.Middleware{middleware.AuthMiddleware(h.tokenService)},
 		},
 		{
 			Method:  http.MethodGet,

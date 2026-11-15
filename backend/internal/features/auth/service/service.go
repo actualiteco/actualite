@@ -31,7 +31,9 @@ type sessionsRepository interface {
 type tokenService interface {
 	GenerateRefreshToken() (string, error)
 	HashRefreshToken(token string) string
-	GenerateJWT(userID string, sessionID uuid.UUID, role string) (string, error)
+	GenerateJWT(userID, sessionID uuid.UUID, role string) (string, error)
+	GetRefreshTokenExpiration() time.Time
+	GetAccessTokenTTL() time.Duration
 }
 
 func NewAuthService(usersRepo usersRepository, sessionsRepo sessionsRepository, tokenSvc tokenService) *AuthService {

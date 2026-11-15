@@ -18,12 +18,12 @@ type Session struct {
 	IPAddress string
 }
 
-func NewSession(userID uuid.UUID, refreshTokenHash string, expiresAt time.Time, userAgent, ipAddress string) Session {
+func NewSession(userID uuid.UUID, refreshTokenHash string, refreshTokenExpiration time.Time, userAgent, ipAddress string) Session {
 	return Session{
 		ID:               uuid.New(),
 		UserID:           userID,
 		RefreshTokenHash: refreshTokenHash,
-		ExpiresAt:        expiresAt,
+		ExpiresAt:        refreshTokenExpiration,
 		UserAgent:        userAgent,
 		IPAddress:        ipAddress,
 	}

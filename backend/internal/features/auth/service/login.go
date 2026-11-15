@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -37,19 +36,19 @@ func (s *AuthService) Login(ctx context.Context, email, password, userAgent, ipA
 	}
 
 	refreshTokenHash := s.tokenService.HashRefreshToken(refreshToken)
-	expirationTime := time.Now().Add(time.Minute * 10).UTC()
+	refreshTokenExpiration := s.tokenService.GetRefreshTokenExpiration()
 
-	session := domain.NewSession(userID, refreshTokenHash, expirationTime, userAgent, ipAddress)
+	session := domain.NewSession(userID, refreshTokenHash, refreshTokenExpiration, userAgent, ipAddress)
 
 	session, err = s.sessionsRepo.Create(ctx, session)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("save session: %w", err)
 	}
 
-	accessToken, err := s.tokenService.GenerateJWT(userID.String(), session.ID, user.Role)
+	accessToken, err := s.tokenService.GenerateJWT(userID, session.ID, user.Role)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("generate access token: %w", err)
 	}
 
-	return accessToken, refreshToken, expirationTime.Unix(), nil
+	return accessToken, refreshToken, int64(s.tokenService.GetAccessTokenTTL().Seconds()), nil
 }
