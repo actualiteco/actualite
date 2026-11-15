@@ -17,6 +17,7 @@ import {
   InternalFeaturesProfileTransportHttpFollowResponse,
   InternalFeaturesProfileTransportHttpProfileResponse,
   InternalFeaturesProfileTransportHttpUpdateProfileRequest,
+  InternalFeaturesProfileTransportHttpUploadAvatarResponse,
 } from "./data-contracts";
 import { ContentType, HttpClient, RequestParams } from "./http-client";
 
@@ -46,6 +47,38 @@ export class Profile<
       body: request,
       secure: true,
       type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Загрузить аватар пользователя (jpg или png, до 2 МБ) в хранилище и обновить профиль
+   *
+   * @tags Profile
+   * @name AvatarCreate
+   * @summary Загрузить аватар
+   * @request POST:/profile/avatar
+   * @secure
+   */
+  avatarCreate = (
+    data: {
+      /**
+       * Файл аватара (jpg/png, до 2 МБ)
+       * @format binary
+       */
+      file: File;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<
+      InternalFeaturesProfileTransportHttpUploadAvatarResponse,
+      | ActualitecoActualiteInternalCoreDomainCustomError
+      | ActualitecoActualiteInternalCoreDomainInternalError
+    >({
+      path: `/profile/avatar`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.FormData,
       format: "json",
       ...params,
     });

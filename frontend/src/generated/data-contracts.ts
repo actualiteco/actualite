@@ -184,3 +184,8 @@ export interface InternalFeaturesProfileTransportHttpUpdateProfileRequest {
   /** @example "username" */
   username?: string;
 }
+
+export interface InternalFeaturesProfileTransportHttpUploadAvatarResponse {
+  /** @example "http://localhost:8333/3,01637037d6" */
+  avatar_url?: string;
+}
