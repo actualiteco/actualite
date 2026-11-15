@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import TextField from '@components/shared/TextField/TextField';
 import Button from '@components/shared/Button/Button';
 import { useAuthStore } from '@stores/useAuthStore';
-import { parseApiError } from '@utils/error.utils';
+import { ApiErrorCode, parseApiError } from '@utils/error.utils';
 import { isFilled, signupSchema } from './validation';
 import styles from './AuthForms.module.scss';
 
@@ -12,8 +12,6 @@ interface SignupFormValues {
     email: string;
     password: string;
 }
-
-const TAKEN_HINT = /taken|exist|already|used|занят|существ|использ/;
 
 const SignupForm = () => {
     const register = useAuthStore((state) => state.register);
@@ -27,17 +25,18 @@ const SignupForm = () => {
                 await register(values.email.trim(), values.username, values.password);
                 toast.success('Добро пожаловать в actualite!');
             } catch (error) {
-                const { status, message } = parseApiError(error);
-                const text = message.toLowerCase();
+                const { status, code } = parseApiError(error);
 
                 if (status === 429) {
                     toast.error('Слишком много попыток. Попробуйте позже');
-                } else if (/username|никнейм|имя пользователя/.test(text) && TAKEN_HINT.test(text)) {
-                    formik.setFieldError('username', 'Никнейм занят');
-                } else if (/email|почт/.test(text) && TAKEN_HINT.test(text)) {
+                } else if (code === ApiErrorCode.EmailAlreadyUsed) {
+                    // F_Auth_6
                     formik.setFieldError('email', 'Email уже используется');
+                } else if (code === ApiErrorCode.Conflict) {
+                    // NF_Data_3
+                    formik.setFieldError('username', 'Никнейм занят');
                 } else {
-                    toast.error(message || 'Не удалось зарегистрироваться. Попробуйте ещё раз');
+                    toast.error('Не удалось зарегистрироваться. Попробуйте ещё раз');
                 }
             }
         },
