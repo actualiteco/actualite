@@ -57,7 +57,7 @@ func AuthMiddleware(tokenService tokenService) Middleware {
 			claims, err := tokenService.VerifyJWT(parts[1])
 			if err != nil {
 				log.Debug("invalid token", zap.Any("claims", claims), zap.Error(err))
-				respWriter.MapError(domain.ErrUnauthorized)
+				respWriter.MapError(err)
 				return
 			}
 

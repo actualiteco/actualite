@@ -15,7 +15,7 @@ func (s *AuthService) Refresh(ctx context.Context, oldRefreshToken string) (stri
 	}
 
 	if !session.IsActive() {
-		return "", "", 0, fmt.Errorf("session is inactive, should login again: %w", domain.ErrUnauthorized)
+		return "", "", 0, fmt.Errorf("session is inactive, should login again: %w", domain.ErrSessionRevokedOrExpired)
 	}
 
 	newRefreshToken, err := s.tokenService.GenerateRefreshToken()

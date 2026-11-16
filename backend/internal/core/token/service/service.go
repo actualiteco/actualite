@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"time"
 
@@ -75,25 +76,24 @@ func (s *TokenService) VerifyJWT(tokenString string) (*tokenclaims.CustomClaims,
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error parsing claims: %w", err)
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, fmt.Errorf("token expired: %w", domain.ErrTokenExpired)
+		}
+		return nil, fmt.Errorf("error parsing claims: %v: %w", err, domain.ErrUnauthorized)
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("token invalid: %w", err)
+		return nil, fmt.Errorf("token invalid: %v: %w", err, domain.ErrUnauthorized)
 	}
 
 	tokenClaims := token.Claims.(*tokenclaims.CustomClaims)
 
 	if _, err := uuid.Parse(claims.Subject); err != nil {
-		return nil, fmt.Errorf("invalid userID=%s in token", tokenClaims.Subject)
+		return nil, fmt.Errorf("invalid userID=%s in token: %w", tokenClaims.Subject, domain.ErrUnauthorized)
 	}
 
 	if _, err := uuid.Parse(claims.SessionID); err != nil {
-		return nil, fmt.Errorf("invalid sessionID=%s in token", tokenClaims.SessionID)
-	}
-
-	if !claims.IsActive() {
-		return nil, fmt.Errorf("token expired: %w", domain.ErrTokenExpired)
+		return nil, fmt.Errorf("invalid sessionID=%s in token: %w", tokenClaims.SessionID, domain.ErrUnauthorized)
 	}
 
 	return tokenClaims, nil

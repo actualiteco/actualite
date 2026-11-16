@@ -44,7 +44,7 @@ func (h *AuthHTTPHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respWriter.JSONResponse("", http.StatusNoContent)
+	respWriter.NoContent()
 }
 
 func getUserUUIDFromContext(ctx context.Context) (uuid.UUID, error) {
