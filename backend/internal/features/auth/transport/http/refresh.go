@@ -9,7 +9,7 @@ import (
 )
 
 type RefreshDTO struct {
-	RefreshToken string `json:"refresh_token" example:"old_refresh_token"`
+	RefreshToken string `json:"refresh_token" example:"old_refresh_token" validate:"required"`
 }
 
 // Refresh godoc

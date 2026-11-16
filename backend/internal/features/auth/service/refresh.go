@@ -26,13 +26,13 @@ func (s *AuthService) Refresh(ctx context.Context, oldRefreshToken string) (stri
 	newRefreshTokenHash := s.tokenService.HashRefreshToken(newRefreshToken)
 	expirationTime := s.tokenService.GetRefreshTokenExpiration()
 
-	if err := s.sessionsRepo.RotateRefreshToken(ctx, session.ID, oldRefreshTokenHash, newRefreshTokenHash, expirationTime); err != nil {
-		return "", "", 0, fmt.Errorf("rotate refresh token: %w", err)
-	}
-
 	user, err := s.usersRepo.GetUserByID(ctx, session.UserID)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("get user by id: %w", err)
+	}
+
+	if err := s.sessionsRepo.RotateRefreshToken(ctx, session.ID, oldRefreshTokenHash, newRefreshTokenHash, expirationTime); err != nil {
+		return "", "", 0, fmt.Errorf("rotate refresh token: %w", err)
 	}
 
 	accessToken, err := s.tokenService.GenerateJWT(session.UserID, session.ID, user.Role)
