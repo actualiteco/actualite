@@ -25,7 +25,7 @@ type sessionsRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (domain.Session, error)
 	GetByRefreshHash(ctx context.Context, hash string) (domain.Session, error)
 	RotateRefreshToken(ctx context.Context, sessionID uuid.UUID, oldHash string, newHash string, expiresAt time.Time) error
-	Revoke(ctx context.Context, id uuid.UUID) error
+	Revoke(ctx context.Context, userID, sessionID uuid.UUID) error
 }
 
 type tokenService interface {

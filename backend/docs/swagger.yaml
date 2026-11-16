@@ -273,47 +273,7 @@ info:
   title: actualiteco/actualite
   version: "1.0"
 paths:
-  /auth/refresh:
-    post:
-      consumes:
-      - application/json
-      description: Обновляет refresh-токен, возвращает access и refresh токены с временем
-        жизни access token в секундах (10 минут). Использовуется, когда прежний AccessToken
-        протух
-      parameters:
-      - description: Тело запроса
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_features_auth_transport_http.RefreshDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Успешная авторизация
-          schema:
-            $ref: '#/definitions/internal_features_auth_transport_http.TokensDTOResponse'
-        "400":
-          description: Невалидный запрос
-          schema:
-            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
-        "401":
-          description: Refresh-токен протух или не валиден
-          schema:
-            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
-        "404":
-          description: Сессия или пользователь-обладатель сессии не найден
-          schema:
-            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
-      summary: Обновление refresh-токена
-      tags:
-      - Auth
-  /login:
+  /auth/login:
     post:
       consumes:
       - application/json
@@ -346,6 +306,107 @@ paths:
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
       summary: Авторизация по email и паролю
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Инвалидирует refresh-токен. Пока привязанный к нему access-токен
+        не протух, по нему еще можно будет делать запросы (будет исправлено позже
+        после интеграции Redis), но при это обновлять refresh-токен уже нельзя. Операция
+        идемпотентна, можно несколько раз отозвать один и тот же refresh-токен без
+        ошибки
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Access-токен протух или не валиден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Инвалидация refresh-токена
+      tags:
+      - Auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Обновляет refresh-токен, возвращает access и refresh токены с временем
+        жизни access token в секундах (10 минут). Используется, когда прежний AccessToken
+        протух
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.RefreshDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление токена
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.TokensDTOResponse'
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Refresh-токен протух или не валиден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Сессия или пользователь-обладатель сессии не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Обновление refresh-токена
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя и возвращает его данные
+      parameters:
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь создан
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTOResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Email или username уже заняты
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Регистрация пользователя
       tags:
       - Auth
   /posts:
@@ -915,40 +976,6 @@ paths:
       summary: Проверка доступности username
       tags:
       - Profile
-  /register:
-    post:
-      consumes:
-      - application/json
-      description: Создаёт нового пользователя и возвращает его данные
-      parameters:
-      - description: тело запроса
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTO'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Пользователь создан
-          schema:
-            $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTOResponse'
-        "400":
-          description: Неверный запрос
-          schema:
-            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
-        "409":
-          description: Email или username уже заняты
-          schema:
-            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
-      summary: Регистрация пользователя
-      tags:
-      - Auth
 securityDefinitions:
   BearerAuth:
     description: Введите "Bearer" и JWT-токен через пробел.

@@ -14,12 +14,12 @@ type RefreshDTO struct {
 
 // Refresh godoc
 // @Summary Обновление refresh-токена
-// @Description Обновляет refresh-токен, возвращает access и refresh токены с временем жизни access token в секундах (10 минут). Использовуется, когда прежний AccessToken протух
+// @Description Обновляет refresh-токен, возвращает access и refresh токены с временем жизни access token в секундах (10 минут). Используется, когда прежний AccessToken протух
 // @Tags Auth
 // @Accept json
 // @Produce json
 // @Param request body RefreshDTO true "Тело запроса"
-// @Success 200 {object} TokensDTOResponse "Успешная авторизация"
+// @Success 200 {object} TokensDTOResponse "Успешное обновление токена"
 // @Failure 400 {object} domain.CustomError "Невалидный запрос"
 // @Failure 401 {object} domain.CustomError "Refresh-токен протух или не валиден"
 // @Failure 404 {object} domain.CustomError "Сессия или пользователь-обладатель сессии не найден"

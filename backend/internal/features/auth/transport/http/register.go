@@ -28,7 +28,7 @@ func (r RegisterDTO) Validate() error {
 // @Failure 400 {object} domain.CustomError "Неверный запрос"
 // @Failure 409 {object} domain.CustomError "Email или username уже заняты"
 // @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
-// @Router /register [post]
+// @Router /auth/register [post]
 func (h *AuthHTTPHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

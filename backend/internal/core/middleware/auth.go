@@ -32,6 +32,14 @@ func GetUserIDFromCtx(ctx context.Context) string {
 	return userIDValue
 }
 
+func GetSessionIDFromCtx(ctx context.Context) string {
+	sessionIDValue, ok := ctx.Value(sessionIDKey).(string)
+	if !ok {
+		panic("no sessionID in context")
+	}
+	return sessionIDValue
+}
+
 func AuthMiddleware(tokenService tokenService) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

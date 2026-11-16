@@ -21,7 +21,7 @@ import (
 // @Failure 400 {object} domain.CustomError "Невалидный запрос"
 // @Failure 401 {object} domain.CustomError "Неверные учётные данные"
 // @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
-// @Router /login [post]
+// @Router /auth/login [post]
 func (h *AuthHTTPHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

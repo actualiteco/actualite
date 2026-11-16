@@ -20,6 +20,7 @@ import (
 // @Success 200 {object} ProfileResponse
 // @Failure 400 {object} domain.CustomError "Неверный запрос"
 // @Failure 403 {object} domain.CustomError "Пользователь неавторизован"
+// @Faulure 404 {object} domain.CustomError "Пользователь с заданным User ID не найден"
 // @Failure 500 {object}  domain.InternalError "Внутренняя ошибка сервера"
 // @Router /profile/{userID} [get]
 // @Security BearerAuth
