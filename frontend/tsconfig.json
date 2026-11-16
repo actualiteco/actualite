@@ -2,43 +2,20 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "paths": {
-            "@components/*": [
-                "./src/components/*"
-            ],
-            "@assets/*": [
-                "./src/assets/*"
-            ],
-            "@models/*": [
-                "./src/models/*"
-            ],
-            "@services/*": [
-                "./src/services/*"
-            ],
-            "@api/*": [
-                "./src/app/api/*"
-            ],
-            "@pages/*": [
-                "./src/pages/*"
-            ],
-            "@stores/*": [
-                "./src/stores/*"
-            ],
-            "@utils/*": [
-                "./src/utils/*"
-            ],
-            "@generated/*": [
-                "./src/generated/*"
-            ],
-            "@router/*": [
-                "./src/app/router/*"
-            ]
+            "@components/*": ["./src/components/*"],
+            "@assets/*": ["./src/assets/*"],
+            "@models/*": ["./src/models/*"],
+            "@services/*": ["./src/services/*"],
+            "@api/*": ["./src/app/api/*"],
+            "@pages/*": ["./src/pages/*"],
+            "@stores/*": ["./src/stores/*"],
+            "@hooks/*": ["./src/hooks/*"],
+            "@utils/*": ["./src/utils/*"],
+            "@generated/*": ["./src/generated/*"],
+            "@router/*": ["./src/app/router/*"]
         },
         "target": "ES2020",
-        "lib": [
-            "DOM",
-            "DOM.Iterable",
-            "ES2020"
-        ],
+        "lib": ["DOM", "DOM.Iterable", "ES2020"],
         "module": "ESNext",
         "moduleResolution": "bundler",
         "jsx": "react-jsx",
@@ -50,11 +27,7 @@
         "noImplicitAny": true,
         "strictNullChecks": true
     },
-    "include": [
-        "src",
-        "config",
-        "webpack.config.ts"
-    ],
+    "include": ["src", "config", "webpack.config.ts"],
     "ts-node": {
         "compilerOptions": {
             "module": "CommonJS",

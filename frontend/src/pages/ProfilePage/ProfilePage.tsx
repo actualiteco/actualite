@@ -4,6 +4,7 @@ import AppLayout from '@components/layout/AppLayout/AppLayout';
 import ProfileHeader from '@components/profile/ProfileHeader/ProfileHeader';
 import ProfileSkeleton from '@components/profile/ProfileSkeleton/ProfileSkeleton';
 import ProfileError from '@components/profile/ProfileError/ProfileError';
+import UserPosts from '@components/profile/UserPosts/UserPosts';
 import { useAuthStore } from '@stores/useAuthStore';
 import { useProfileStore } from '@stores/useProfileStore';
 
@@ -30,7 +31,12 @@ const ProfilePage = () => {
             return <ProfileError error={error} onRetry={() => fetchProfile(targetId)} />;
         }
         if (status === 'success' && profile) {
-            return <ProfileHeader profile={profile} isOwn={isOwn} />;
+            return (
+                <>
+                    <ProfileHeader profile={profile} isOwn={isOwn} />
+                    <UserPosts userId={profile.id} isOwn={isOwn} />
+                </>
+            );
         }
         return <ProfileSkeleton />;
     };
