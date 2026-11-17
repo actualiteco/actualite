@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AppLayout from '@components/layout/AppLayout/AppLayout';
 import ProfileHeader from '@components/profile/ProfileHeader/ProfileHeader';
@@ -6,8 +6,7 @@ import ProfileSkeleton from '@components/profile/ProfileSkeleton/ProfileSkeleton
 import ProfileError from '@components/profile/ProfileError/ProfileError';
 import UserPosts from '@components/profile/UserPosts/UserPosts';
 import FollowButton from '@components/profile/FollowButton/FollowButton';
-import EditProfileModal from '@components/profile/EditProfileModal/EditProfileModal';
-import Button from '@components/shared/Button/Button';
+import OwnProfileActions from '@components/profile/OwnProfileActions/OwnProfileActions';
 import { useAuthStore } from '@stores/useAuthStore';
 import { useProfileStore } from '@stores/useProfileStore';
 
@@ -20,8 +19,6 @@ const ProfilePage = () => {
     const error = useProfileStore((state) => state.error);
     const fetchProfile = useProfileStore((state) => state.fetchProfile);
     const reset = useProfileStore((state) => state.reset);
-
-    const [isEditOpen, setIsEditOpen] = useState(false);
 
     const isOwn = !id || id === userId;
     const targetId = isOwn ? undefined : id;
@@ -41,23 +38,8 @@ const ProfilePage = () => {
                     <ProfileHeader
                         profile={profile}
                         isOwn={isOwn}
-                        actions={
-                            isOwn ? (
-                                <Button variant="outlined" onClick={() => setIsEditOpen(true)}>
-                                    Редактировать профиль
-                                </Button>
-                            ) : (
-                                <FollowButton />
-                            )
-                        }
+                        actions={isOwn ? <OwnProfileActions profile={profile} /> : <FollowButton />}
                     />
-                    {isOwn && (
-                        <EditProfileModal
-                            open={isEditOpen}
-                            profile={profile}
-                            onClose={() => setIsEditOpen(false)}
-                        />
-                    )}
                     <UserPosts userId={profile.id} isOwn={isOwn} />
                 </>
             );

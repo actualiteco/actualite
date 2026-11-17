@@ -8,19 +8,19 @@ interface AvatarProps {
 }
 
 const Avatar: FC<AvatarProps> = ({ name, src, size = 72 }) => {
-    const [failed, setFailed] = useState(false);
+    const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
     const style = { width: size, height: size, fontSize: Math.round(size * 0.4) };
     const letter = Array.from(name.trim())[0]?.toUpperCase() ?? '?';
 
-    if (src && !failed) {
+    if (src && src !== failedSrc) {
         return (
             <img
                 className={styles.avatar}
                 style={style}
                 src={src}
                 alt={name}
-                onError={() => setFailed(true)}
+                onError={() => setFailedSrc(src)}
             />
         );
     }

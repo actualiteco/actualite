@@ -17,6 +17,7 @@ interface ProfileState {
     fetchProfile: (id?: string) => Promise<void>;
     setProfile: (profile: Profile) => void;
     updateProfile: (changes: ProfileChanges) => Promise<void>;
+    uploadAvatar: (file: Blob) => Promise<void>;
     toggleFollow: () => Promise<void>;
     reset: () => void;
 }
@@ -76,6 +77,11 @@ export const useProfileStore = create<ProfileState>()((set, get) => ({
         const updated = await ProfileService.update(changes);
         set({ profile: updated, status: 'success', error: null });
         useAuthStore.setState({ username: updated.username });
+    },
+
+    async uploadAvatar(file: Blob) {
+        const avatarUrl = await ProfileService.uploadAvatar(file);
+        set((state) => (state.profile ? { profile: { ...state.profile, avatarUrl } } : {}));
     },
 
     async toggleFollow() {
