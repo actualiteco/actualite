@@ -1,8 +1,11 @@
-import React, { FC } from 'react';
+import { ChangeEvent, FC, FocusEvent, ReactNode, useId } from 'react';
 import styles from './TextField.module.scss';
 
 interface TextFieldProps {
     label?: string;
+    hint?: ReactNode;
+    prefix?: string;
+    reserveError?: boolean;
     error?: string;
     touched?: boolean;
     textarea?: boolean;
@@ -11,8 +14,8 @@ interface TextFieldProps {
     type?: string;
     placeholder?: string;
     value?: string | number;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-    onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    onBlur?: (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     disabled?: boolean;
     required?: boolean;
     autoFocus?: boolean;
@@ -26,6 +29,9 @@ interface TextFieldProps {
 
 const TextField: FC<TextFieldProps> = ({
     label,
+    hint,
+    prefix,
+    reserveError = false,
     error,
     touched,
     textarea = false,
@@ -33,19 +39,57 @@ const TextField: FC<TextFieldProps> = ({
     className = '',
     ...props
 }) => {
+    const id = useId();
     const hasError = Boolean(touched && error);
-    const inputClassName = `${styles.input} ${textarea ? styles.textarea : ''} ${hasError ? styles.error : ''}`;
-    const ariaProps = { 'aria-invalid': hasError ? true : undefined };
+
+    const controlClassName = [
+        styles.control,
+        hasError ? styles.error : '',
+        prefix ? styles.hasPrefix : '',
+        props.disabled ? styles.disabled : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
+
+    const fieldProps = {
+        id,
+        className: `${styles.input} ${textarea ? styles.textarea : ''}`,
+        'aria-invalid': hasError ? true : undefined,
+        ...(props as any),
+    };
 
     return (
         <div className={`${styles.container} ${className}`}>
-            {label && <label className={styles.label}>{label}</label>}
-            {textarea ? (
-                <textarea className={inputClassName} rows={rows} {...ariaProps} {...(props as any)} />
-            ) : (
-                <input className={inputClassName} {...ariaProps} {...(props as any)} />
+            {(label || hint) && (
+                <div className={styles.labelRow}>
+                    {label ? (
+                        <label className={styles.label} htmlFor={id}>
+                            {label}
+                        </label>
+                    ) : (
+                        <span />
+                    )}
+                    {hint && <span className={styles.hint}>{hint}</span>}
+                </div>
             )}
-            {hasError && <span className={styles.errorMessage}>{error}</span>}
+
+            <div className={controlClassName}>
+                {prefix && (
+                    <span className={styles.prefix} aria-hidden="true">
+                        {prefix}
+                    </span>
+                )}
+                {textarea ? <textarea rows={rows} {...fieldProps} /> : <input {...fieldProps} />}
+            </div>
+
+            {(hasError || reserveError) && (
+                <span
+                    className={`${styles.errorMessage} ${reserveError ? styles.reserve : ''}`}
+                    role={hasError ? 'alert' : undefined}
+                >
+                    {hasError ? error : ''}
+                </span>
+            )}
         </div>
     );
 };

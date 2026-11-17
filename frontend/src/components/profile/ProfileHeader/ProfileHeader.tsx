@@ -16,7 +16,9 @@ const ProfileHeader: FC<ProfileHeaderProps> = ({ profile, isOwn, actions }) => {
 
     return (
         <section className={styles.header}>
-            <Avatar name={name} src={profile.avatarUrl} />
+            <div className={styles.avatarFrame}>
+                <Avatar name={name} src={profile.avatarUrl} size={104} />
+            </div>
 
             <div className={styles.info}>
                 <h2 className={styles.name}>{name}</h2>

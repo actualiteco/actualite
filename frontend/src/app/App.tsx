@@ -3,6 +3,7 @@ import { ToastContainer } from 'react-toastify';
 import AppRouter from '@router/AppRouter';
 import ThemeToggle from '@components/shared/ThemeToggle/ThemeToggle';
 import { useThemeStore } from '@stores/useThemeStore';
+import './styles/fonts';
 import './styles/global.scss';
 
 const App = () => {

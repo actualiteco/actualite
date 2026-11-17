@@ -14,9 +14,9 @@
     position: relative;
     background: var(--modal-bg);
     border-radius: 0;
-    padding: 32px;
+    padding: 36px 32px 32px;
     width: calc(100% - 24px);
-    max-width: 420px;
+    max-width: 440px;
     max-height: 90vh;
     overflow-y: auto;
     border: 1px solid var(--modal-border);
@@ -24,26 +24,31 @@
     box-shadow: var(--shadow-lg);
 
     @media (max-width: 480px) {
-        padding: 24px 16px;
+        padding: 28px 18px 22px;
     }
 }
 
 .close {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 14px;
+    right: 14px;
     width: 32px;
     height: 32px;
     border-radius: 0;
     background: transparent;
     color: var(--text-secondary);
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
+    transition:
+            background-color 160ms ease,
+            color 160ms ease,
+            border-color 160ms ease;
 
     &:hover {
         background: var(--bg-hover);
         color: var(--text-primary);
+        border-color: var(--border-color);
     }
 }
 
@@ -64,5 +69,12 @@
     to {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .overlay,
+    .modal {
+        animation: none;
     }
 }

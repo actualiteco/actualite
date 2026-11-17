@@ -19,8 +19,8 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
             <div className={styles.body}>
                 <div className={styles.meta}>
                     <span className={styles.name}>{name}</span>
-                    <span>@{post.author.username}</span>
-                    <span>{formatRelativeTime(post.createdAt)}</span>
+                    <span className={styles.username}>@{post.author.username}</span>
+                    <span className={styles.time}>{formatRelativeTime(post.createdAt)}</span>
                 </div>
 
                 <p className={styles.content}>{post.content}</p>

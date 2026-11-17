@@ -47,7 +47,7 @@ const AvatarUploader = () => {
 
     return (
         <>
-            <Button variant="outlined" fullWidth onClick={() => inputRef.current?.click()}>
+            <Button variant="text" fullWidth onClick={() => inputRef.current?.click()}>
                 Сменить фото
             </Button>
             <input

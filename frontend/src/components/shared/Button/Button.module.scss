@@ -1,25 +1,30 @@
 .button {
     font-family: var(--font-sans);
-    font-weight: 400;
+    font-weight: 500;
     font-size: 11px;
     line-height: 1;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
-    padding: 12px 18px;
-    min-height: 38px;
+    letter-spacing: 0.08em;
+    padding: 12px 20px;
+    min-height: 40px;
     border-radius: 0;
     cursor: pointer;
     transition:
-        background-color 160ms ease,
-        color 160ms ease,
-        border-color 160ms ease,
-        opacity 160ms ease;
+            background-color 160ms ease,
+            color 160ms ease,
+            border-color 160ms ease,
+            opacity 160ms ease,
+            transform 160ms ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     border: 1px solid transparent;
     white-space: nowrap;
+
+    &:active:not(:disabled) {
+        transform: translateY(1px);
+    }
 
     &:disabled {
         opacity: 0.4;
@@ -51,6 +56,20 @@
     }
 }
 
+.text {
+    padding-left: 8px;
+    padding-right: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-decoration-thickness: 0.5px;
+    text-underline-offset: 5px;
+
+    &:hover:not(:disabled) {
+        color: var(--text-primary);
+    }
+}
+
 .fullWidth {
     width: 100%;
 }
@@ -58,5 +77,9 @@
 @media (prefers-reduced-motion: reduce) {
     .button {
         transition: none;
+
+        &:active:not(:disabled) {
+            transform: none;
+        }
     }
 }

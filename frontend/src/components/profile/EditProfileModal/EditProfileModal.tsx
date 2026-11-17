@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, ReactNode, useState } from 'react';
+import { ChangeEvent, FC, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
@@ -63,20 +63,7 @@ const buildSchema = (initial: FormValues) =>
         ),
     });
 
-interface CountedProps {
-    value: string;
-    max: number;
-    children: ReactNode;
-}
-
-const Counted: FC<CountedProps> = ({ value, max, children }) => (
-    <div className={styles.field}>
-        {children}
-        <span className={styles.counter}>
-            {charCount(value)}/{max}
-        </span>
-    </div>
-);
+const counter = (value: string, max: number) => `${charCount(value)}/${max}`;
 
 const EditProfileForm: FC<Omit<EditProfileModalProps, 'open'>> = ({ profile, onClose }) => {
     const updateProfile = useProfileStore((state) => state.updateProfile);
@@ -132,13 +119,17 @@ const EditProfileForm: FC<Omit<EditProfileModalProps, 'open'>> = ({ profile, onC
 
     return (
         <form onSubmit={formik.handleSubmit} className={styles.form} noValidate>
-            <h2 className={styles.title}>Редактировать профиль</h2>
+            <header className={styles.header}>
+                <h2 className={styles.title}>Редактировать профиль</h2>
+            </header>
 
-            <Counted value={formik.values.displayName} max={DISPLAY_NAME_MAX}>
+            <div className={styles.fields}>
                 <TextField
                     label="Имя"
+                    hint={counter(formik.values.displayName, DISPLAY_NAME_MAX)}
                     name="displayName"
                     autoComplete="off"
+                    reserveError
                     value={formik.values.displayName}
                     onChange={handleChange('displayName', (value) =>
                         truncateChars(value, DISPLAY_NAME_MAX),
@@ -147,42 +138,43 @@ const EditProfileForm: FC<Omit<EditProfileModalProps, 'open'>> = ({ profile, onC
                     error={formik.errors.displayName}
                     touched={shown('displayName')}
                 />
-            </Counted>
 
-            <Counted value={formik.values.username} max={USERNAME_MAX}>
                 <TextField
                     label="Никнейм"
+                    hint={counter(formik.values.username, USERNAME_MAX)}
+                    prefix="@"
                     name="username"
                     autoComplete="off"
+                    reserveError
                     value={formik.values.username}
                     onChange={handleChange('username', sanitizeUsername)}
                     onBlur={formik.handleBlur}
                     error={formik.errors.username}
                     touched={shown('username')}
                 />
-            </Counted>
 
-            <Counted value={formik.values.status} max={STATUS_MAX}>
                 <TextField
                     label="Статус"
+                    hint={counter(formik.values.status, STATUS_MAX)}
                     name="status"
                     autoComplete="off"
+                    reserveError
                     value={formik.values.status}
                     onChange={handleChange('status', (value) => truncateChars(value, STATUS_MAX))}
                     onBlur={formik.handleBlur}
                     error={formik.errors.status}
                     touched={shown('status')}
                 />
-            </Counted>
+            </div>
 
-            <div className={styles.actions}>
-                <Button variant="outlined" onClick={onClose}>
+            <footer className={styles.actions}>
+                <Button variant="text" onClick={onClose}>
                     Отмена
                 </Button>
                 <Button type="submit" isLoading={formik.isSubmitting} disabled={disabled}>
                     Сохранить
                 </Button>
-            </div>
+            </footer>
         </form>
     );
 };
