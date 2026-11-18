@@ -26,7 +26,7 @@ func (s *AuthService) Refresh(ctx context.Context, oldRefreshToken string) (stri
 	newRefreshTokenHash := s.tokenService.HashRefreshToken(newRefreshToken)
 	expirationTime := s.tokenService.GetRefreshTokenExpiration()
 
-	user, err := s.usersRepo.GetUserByID(ctx, session.UserID)
+	user, err := s.usersRepo.GetUserByID(ctx, session.UserID, session.UserID)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("get user by id: %w", err)
 	}

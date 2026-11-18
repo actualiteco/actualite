@@ -80,7 +80,7 @@ func main() {
 	storageClient := storage.NewSeaweedFSClient(storage.NewConfigMust())
 
 	log.Debug("initializing profile service")
-	profileService := profile_service.NewProfileService(usersRepo, storageClient)
+	profileService := profile_service.NewProfileService(usersRepo, storageClient, txManager)
 	profileHandler := profile_transport.NewProfileHTTPHandler(profileService)
 
 	log.Debug("initializing post service")

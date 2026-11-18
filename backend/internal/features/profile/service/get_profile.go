@@ -10,11 +10,11 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (s *ProfileService) GetProfile(ctx context.Context, id uuid.UUID) (domain.User, error) {
-	user, err := s.repo.GetUserByID(ctx, id)
+func (s *ProfileService) GetUserProfile(ctx context.Context, id, targetID uuid.UUID) (domain.User, error) {
+	user, err := s.repo.GetUserByID(ctx, id, targetID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.User{}, fmt.Errorf("no user with id=%s: %w", id.String(), domain.ErrNotFound)
+			return domain.User{}, fmt.Errorf("no user with id=%s: %w", targetID.String(), domain.ErrNotFound)
 		}
 
 		return domain.User{}, fmt.Errorf("get user by id: %w", err)

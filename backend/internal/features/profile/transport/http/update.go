@@ -50,5 +50,5 @@ func (h *ProfileHTTPHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respWriter.JSONResponse(toResponse(user), http.StatusOK)
+	respWriter.JSONResponse(toMyProfileResponse(user), http.StatusOK)
 }

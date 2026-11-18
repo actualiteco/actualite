@@ -13,7 +13,8 @@ type ProfileHTTPHandler struct {
 }
 
 type profileService interface {
-	GetProfile(ctx context.Context, id uuid.UUID) (domain.User, error)
+	GetOwnProfile(ctx context.Context, id uuid.UUID) (domain.User, error)
+	GetUserProfile(ctx context.Context, id, targetID uuid.UUID) (domain.User, error)
 	Update(ctx context.Context, id uuid.UUID, displayName, username, status *string) (domain.User, error)
 	Follow(ctx context.Context, followerID, followingID uuid.UUID) error
 	Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error

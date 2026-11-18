@@ -30,21 +30,21 @@ func (h *ProfileHTTPHandler) GetUserProfileByJWT(w http.ResponseWriter, r *http.
 	log := logger.FromContext(ctx)
 	respWriter := response.NewResponseHandler(log, w)
 
-	userID, err := getUserUUIDFromContext(ctx)
+	id, err := getUserUUIDFromContext(ctx)
 	if err != nil {
 		log.Error("get userID from context", zap.Error(err))
 		respWriter.MapError(err)
 		return
 	}
 
-	user, err := h.profileService.GetProfile(ctx, userID)
+	user, err := h.profileService.GetOwnProfile(ctx, id)
 	if err != nil {
 		log.Error("failed to get user profile", zap.Error(err))
 		respWriter.MapError(err)
 		return
 	}
 
-	respWriter.JSONResponse(toResponse(user), http.StatusOK)
+	respWriter.JSONResponse(toMyProfileResponse(user), http.StatusOK)
 }
 
 func getUserUUIDFromContext(ctx context.Context) (uuid.UUID, error) {

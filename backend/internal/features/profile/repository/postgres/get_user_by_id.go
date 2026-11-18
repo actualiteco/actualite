@@ -11,24 +11,29 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *UsersRepository) GetUserByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
+func (r *UsersRepository) GetUserByID(ctx context.Context, id, targetID uuid.UUID) (domain.User, error) {
 	ctxTimeout, cancel := context.WithTimeout(ctx, r.ConnPool.OpTimeout())
 	defer cancel()
 
 	query := `
-	SELECT id, email, password, role, created_at, username, display_name, status, avatar_url, email_verified,
+	SELECT id, role, username, display_name, status, avatar_url,
 		(SELECT COUNT(*) FROM follows WHERE following_id = users.id) AS followers_count,
-		(SELECT COUNT(*) FROM follows WHERE follower_id = users.id) AS following_count
+		(SELECT COUNT(*) FROM follows WHERE follower_id = users.id) AS following_count,
+		EXISTS (
+           SELECT 1
+           FROM follows f
+           WHERE f.follower_id = $1
+             AND f.following_id = users.id
+       ) AS is_following
 	FROM users
-	WHERE id=$1
+	WHERE id=$2
 	`
 
-	row := r.ConnPool.QueryRow(ctxTimeout, query, id)
+	row := r.ConnPool.QueryRow(ctxTimeout, query, id, targetID)
 
 	var model auth_models.UserModel
-	err := row.Scan(&model.ID, &model.Email, &model.Password, &model.Role, &model.CreatedAt,
-		&model.Username, &model.DisplayName, &model.Status, &model.AvatarURL, &model.EmailVerified,
-		&model.FollowersCount, &model.FollowingCount)
+	err := row.Scan(&model.ID, &model.Role, &model.Username, &model.DisplayName, &model.Status, &model.AvatarURL,
+		&model.FollowersCount, &model.FollowingCount, &model.IsFollowing)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.User{}, fmt.Errorf("user not found: %w", domain.ErrNotFound)

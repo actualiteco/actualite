@@ -12,7 +12,7 @@ type UploadAvatarResponse struct {
 	AvatarURL string `json:"avatar_url" example:"http://localhost:8333/3,01637037d6"`
 }
 
-type ProfileResponse struct {
+type MyProfileResponse struct {
 	ID             string `json:"id" example:"8794e589-0ddb-43ce-9f92-16faafcf4ee4"`
 	Email          string `json:"email" example:"test.user@email.com"`
 	Role           string `json:"role" example:"user"`
@@ -26,6 +26,18 @@ type ProfileResponse struct {
 	FollowingCount int    `json:"following_count" example:"5"`
 }
 
+type ProfileResponse struct {
+	ID             string `json:"id" example:"8794e589-0ddb-43ce-9f92-16faafcf4ee4"`
+	Role           string `json:"role" example:"user"`
+	DisplayName    string `json:"display_name" example:"mark"`
+	Username       string `json:"username" example:"username"`
+	AvatarURL      string `json:"avatar_url" example:"http://localhost:8080/avatar_url"`
+	Status         string `json:"status" example:"something smart"`
+	FollowersCount int    `json:"followers_count" example:"10"`
+	FollowingCount int    `json:"following_count" example:"5"`
+	IsFollowing    bool   `json:"is_following" example:"true"`
+}
+
 type FollowResponse struct {
 	Message string `json:"message" example:"success"`
 }
@@ -34,8 +46,8 @@ type CheckUsernameAvailabilityResponse struct {
 	Available bool `json:"available" example:"true"`
 }
 
-func toResponse(user domain.User) ProfileResponse {
-	return ProfileResponse{
+func toMyProfileResponse(user domain.User) MyProfileResponse {
+	return MyProfileResponse{
 		ID:             user.ID,
 		Email:          user.Email,
 		Role:           user.Role,
@@ -47,5 +59,19 @@ func toResponse(user domain.User) ProfileResponse {
 		EmailVerified:  user.EmailVerified,
 		FollowersCount: user.FollowersCount,
 		FollowingCount: user.FollowingCount,
+	}
+}
+
+func toProfileResponse(user domain.User) ProfileResponse {
+	return ProfileResponse{
+		ID:             user.ID,
+		Role:           user.Role,
+		Username:       user.Username,
+		DisplayName:    user.DisplayName,
+		AvatarURL:      user.AvatarURL,
+		Status:         user.Status,
+		FollowersCount: user.FollowersCount,
+		FollowingCount: user.FollowingCount,
+		IsFollowing:    user.IsFollowing,
 	}
 }

@@ -23,6 +23,7 @@ type User struct {
 	FollowingCount         int
 	PasswordResetToken     string
 	PasswordResetExpiresAt time.Time
+	IsFollowing            bool
 }
 
 func (u User) Validate() error {

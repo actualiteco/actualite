@@ -17,7 +17,7 @@ type AuthService struct {
 type usersRepository interface {
 	SaveNewUser(ctx context.Context, user domain.User) (domain.User, error)
 	GetUser(ctx context.Context, email string) (domain.User, error)
-	GetUserByID(ctx context.Context, id uuid.UUID) (domain.User, error)
+	GetUserByID(ctx context.Context, id, userID uuid.UUID) (domain.User, error)
 }
 
 type sessionsRepository interface {
