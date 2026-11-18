@@ -38,6 +38,11 @@ export function buildLoaders(options: BuildOptions): webpack.RuleSetRule[] {
         ],
     };
 
+    const plainCssLoader = {
+        test: /\.css$/i,
+        use: [options.isDev ? 'style-loader' : MiniCssExtractPlugin.loader, 'css-loader'],
+    };
+
     const typescriptLoader = {
         test: /\.tsx?$/,
         use: 'ts-loader',
@@ -49,5 +54,5 @@ export function buildLoaders(options: BuildOptions): webpack.RuleSetRule[] {
         type: 'asset/resource',
     };
 
-    return [typescriptLoader, cssLoader, svgLoader, fileLoader, fontLoader];
+    return [typescriptLoader, cssLoader, plainCssLoader, svgLoader, fileLoader, fontLoader];
 }

@@ -2,7 +2,7 @@ import React, { FC, ButtonHTMLAttributes } from 'react';
 import styles from './Button.module.scss';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'contained' | 'outlined';
+    variant?: 'contained' | 'outlined' | 'text';
     fullWidth?: boolean;
     isLoading?: boolean;
 }

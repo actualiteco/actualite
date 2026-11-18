@@ -26,9 +26,9 @@ body::before {
     filter: blur(75px);
     transform: scale(1.7);
     background:
-        radial-gradient(circle 94px at 159px 159px, #547aff 99%, transparent 100%),
-        radial-gradient(circle 118px at 159px 159px, #ff005c 99%, transparent 100%),
-        radial-gradient(circle 159px at 159px 159px, #ffb800 99%, transparent 100%);
+            radial-gradient(circle 94px at 159px 159px, #547aff 99%, transparent 100%),
+            radial-gradient(circle 118px at 159px 159px, #ff005c 99%, transparent 100%),
+            radial-gradient(circle 159px at 159px 159px, #ffb800 99%, transparent 100%);
 }
 
 body::after {
@@ -54,14 +54,20 @@ a:focus-visible {
     outline-offset: 3px;
 }
 
+::selection {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+}
+
 body {
     font-family: var(--font-sans);
     background: var(--bg-primary);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
     transition:
-        background-color 0.3s ease,
-        color 0.3s ease;
+            background-color 0.3s ease,
+            color 0.3s ease;
 }
 
 button,

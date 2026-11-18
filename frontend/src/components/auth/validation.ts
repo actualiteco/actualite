@@ -1,11 +1,11 @@
 import * as Yup from 'yup';
+import { usernameField } from '@utils/validators.utils';
 
-export const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+export { USERNAME_REGEX, USERNAME_MIN, USERNAME_MAX } from '@utils/validators.utils';
+
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export const PRINTABLE_ASCII_REGEX = /^[\x20-\x7E]+$/;
 
-export const USERNAME_MIN = 4;
-export const USERNAME_MAX = 15;
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 64;
 
@@ -20,11 +20,7 @@ export const signinSchema = Yup.object().shape({
 });
 
 export const signupSchema = Yup.object().shape({
-    username: Yup.string()
-        .required('Введите никнейм')
-        .min(USERNAME_MIN, `Никнейм: от ${USERNAME_MIN} до ${USERNAME_MAX} символов`)
-        .max(USERNAME_MAX, `Никнейм: от ${USERNAME_MIN} до ${USERNAME_MAX} символов`)
-        .matches(USERNAME_REGEX, 'Никнейм может содержать только a-z, A-Z, 0-9 и _'),
+    username: usernameField(),
     email: emailField,
     password: Yup.string()
         .required('Введите пароль')
