@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	postIDPathValueKey = "postID"
-	userIDPathValueKey = "userID"
+	postIDPathValueKey    = "postID"
+	userIDPathValueKey    = "userID"
+	pageQueryValueKey     = "page"
+	pageSizeQueryValueKey = "page_size"
 )
 
 type PostsHTTPHandler struct {
@@ -82,6 +84,12 @@ func (h *PostsHTTPHandler) Routes() []server.Route {
 			Method:       http.MethodDelete,
 			URL:          "/posts/{postID}",
 			Handler:      h.DeletePost,
+			AuthRequired: true,
+		},
+		{
+			Method:       http.MethodGet,
+			URL:          "/posts/me",
+			Handler:      h.GetPostsByJWT,
 			AuthRequired: true,
 		},
 	}

@@ -31,13 +31,7 @@ func (h *PostsHTTPHandler) GetPostsByUserID(w http.ResponseWriter, r *http.Reque
 	log := logger.FromContext(ctx)
 	respWriter := response.NewResponseHandler(log, w)
 
-	page, err := httputils.GetUintQueryParam(r, "page")
-	if err != nil {
-		respWriter.MapError(err)
-		return
-	}
-
-	pageSize, err := httputils.GetUintQueryParam(r, "page_size")
+	page, pageSize, err := getPaginationParamsFromQuery(r)
 	if err != nil {
 		respWriter.MapError(err)
 		return
