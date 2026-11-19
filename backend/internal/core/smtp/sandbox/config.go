@@ -1,4 +1,4 @@
-package smtpclient
+package smtpsandboxclient
 
 import (
 	"fmt"
@@ -26,8 +26,8 @@ func NewConfigMust() config {
 
 func newConfig() (config, error) {
 	var cfg config
-	if err := envconfig.Process("SMTP", &cfg); err != nil {
-		return config{}, fmt.Errorf("load smtp config: %w", err)
+	if err := envconfig.Process("SMTP_SANDBOX", &cfg); err != nil {
+		return config{}, fmt.Errorf("load smtp sandbox config: %w", err)
 	}
 
 	return cfg, nil

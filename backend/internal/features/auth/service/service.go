@@ -42,7 +42,7 @@ type tokenService interface {
 }
 
 type mailer interface {
-	SendResetPasswordToken(ctx context.Context, to, token string) error
+	SendLinkToResetPassword(ctx context.Context, to, link string) error
 	GetSendEmailTimeout() time.Duration
 }
 

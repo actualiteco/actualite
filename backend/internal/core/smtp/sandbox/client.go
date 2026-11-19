@@ -1,4 +1,4 @@
-package smtpclient
+package smtpsandboxclient
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/wneessen/go-mail"
 )
 
-const resetPasswordTokenSubject = "Actualite. Reset Password Token"
+const resetPasswordTokenSubject = "Actualite. Reset Password Link"
 
 type SMTPClient struct {
 	cfg    config
@@ -28,8 +28,8 @@ func New(cfg config) (*SMTPClient, error) {
 	}, nil
 }
 
-func (c *SMTPClient) SendResetPasswordToken(ctx context.Context, to, token string) error {
-	return c.send(ctx, to, resetPasswordTokenSubject, token)
+func (c *SMTPClient) SendLinkToResetPassword(ctx context.Context, to, link string) error {
+	return c.send(ctx, to, resetPasswordTokenSubject, link)
 }
 
 func (c *SMTPClient) GetSendEmailTimeout() time.Duration {

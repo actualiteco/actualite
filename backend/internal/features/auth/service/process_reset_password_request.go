@@ -6,10 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"uuid"
 
 	"go.uber.org/zap"
 )
+
+const baseURL = "http://localhost:3000"
 
 func (s *AuthService) ProcessResetPasswordRequest(ctx context.Context, email string) error {
 	user, err := s.usersRepo.GetUser(ctx, email)
@@ -41,6 +44,8 @@ func (s *AuthService) ProcessResetPasswordRequest(ctx context.Context, email str
 				zap.String("userID", userID.String()),
 				zap.Error(err),
 			)
+		} else {
+			log.Debug("mail was successfully sent", zap.String("to", email))
 		}
 	}()
 
@@ -55,13 +60,33 @@ func (s *AuthService) generateAndSendResetPasswordToken(ctx context.Context, use
 
 	tokenHash := s.tokenService.HashPasswordResetToken(token)
 	expirationTime := s.tokenService.GetPasswordResetTokenExpiration()
+
+	link, err := createLinkToResetPassword(token)
+	if err != nil {
+		return fmt.Errorf("create link to reset password: %w", err)
+	}
+
+	if err = s.mailer.SendLinkToResetPassword(ctx, email, link); err != nil {
+		return fmt.Errorf("send reset password token email: %w", err)
+	}
+
 	if err := s.usersRepo.SavePasswordResetToken(ctx, userID, email, tokenHash, expirationTime); err != nil {
 		return fmt.Errorf("save password reset token: %w", err)
 	}
 
-	if err = s.mailer.SendResetPasswordToken(ctx, email, token); err != nil {
-		return fmt.Errorf("send reset password token email: %w", err)
+	return nil
+}
+
+func createLinkToResetPassword(token string) (string, error) {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return "", fmt.Errorf("parse app base URL: %w", err)
 	}
 
-	return nil
+	u.Path = "/reset"
+	q := u.Query()
+	q.Set("token", token)
+	u.RawQuery = q.Encode()
+
+	return u.String(), nil
 }

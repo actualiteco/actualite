@@ -13,7 +13,7 @@ import (
 	"actualiteco/actualite/internal/core/logger"
 	"actualiteco/actualite/internal/core/middleware"
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
-	smtpclient "actualiteco/actualite/internal/core/smtp"
+	smtpsandboxclient "actualiteco/actualite/internal/core/smtp/sandbox"
 	"actualiteco/actualite/internal/core/storage"
 	tokenservice "actualiteco/actualite/internal/core/token/service"
 	"actualiteco/actualite/internal/core/transport/server"
@@ -72,7 +72,7 @@ func main() {
 	serv.RegisterSwagger()
 
 	log.Debug("initializing smtp client")
-	smtpClient, err := smtpclient.New(smtpclient.NewConfigMust())
+	smtpClient, err := smtpsandboxclient.New(smtpsandboxclient.NewConfigMust())
 	if err != nil {
 		log.Fatal("creating smtp client", zap.Error(err))
 	}
