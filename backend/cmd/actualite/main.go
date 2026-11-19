@@ -80,7 +80,7 @@ func main() {
 	log.Debug("initializing auth service")
 	usersRepo := users_repository.NewAuthRepository(pool)
 	sessionsRepo := sessionsrepo.New(pool)
-	authService := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService, smtpClient)
+	authService := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService, smtpClient, txManager)
 	authHandler := auth_transport.NewAuthHandler(authService)
 
 	log.Debug("initializing file storage")

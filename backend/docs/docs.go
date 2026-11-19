@@ -104,6 +104,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/password-reset/confirm": {
+            "post": {
+                "description": "Принимает токен для смены пароля и новый пароль, если все успешно - возвращается 204",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Подтверждение смены пароля",
+                "parameters": [
+                    {
+                        "description": "Тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.ConfirmPasswordResetDTORequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Пароль успешно подтвержден"
+                    },
+                    "400": {
+                        "description": "Невалидный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Не удалось подтвердить смену пароля",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/password-reset/request": {
             "post": {
                 "description": "Создает password_reset_token с временем жизни, указанным в .env, а также асинхронно присылает письмо с ссылкой на страницу фронтенда для смены пароля (если почта есть и верифицирована. если нет - статус-код ответа также 202, но письмо не будет отправлено)",
@@ -1354,6 +1403,25 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.ConfirmPasswordResetDTORequest": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "token"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "minLength": 8,
+                    "example": "new_password"
+                },
+                "token": {
+                    "type": "string",
+                    "example": "reset-token"
                 }
             }
         },

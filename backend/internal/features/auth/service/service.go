@@ -13,6 +13,7 @@ type AuthService struct {
 	sessionsRepo sessionsRepository
 	tokenService tokenService
 	mailer       mailer
+	txManager    txManager
 }
 
 type usersRepository interface {
@@ -20,6 +21,8 @@ type usersRepository interface {
 	GetUser(ctx context.Context, email string) (domain.User, error)
 	GetUserByID(ctx context.Context, id, userID uuid.UUID) (domain.User, error)
 	SavePasswordResetToken(ctx context.Context, userID uuid.UUID, email, tokenHash string, expirationTime time.Time) error
+	GetUserByPasswordResetToken(ctx context.Context, tokenHash string) (domain.User, error)
+	ResetPassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
 }
 
 type sessionsRepository interface {
@@ -39,6 +42,8 @@ type tokenService interface {
 	GetPasswordResetTokenExpiration() time.Time
 	GeneratePasswordResetToken() (string, error)
 	HashPasswordResetToken(token string) string
+	HashPassword(password string) (string, error)
+	CheckPasswordHash(password, hash string) bool
 }
 
 type mailer interface {
@@ -46,11 +51,16 @@ type mailer interface {
 	GetSendEmailTimeout() time.Duration
 }
 
-func NewAuthService(usersRepo usersRepository, sessionsRepo sessionsRepository, tokenSvc tokenService, mailer mailer) *AuthService {
+type txManager interface {
+	DoWrite(ctx context.Context, fn func(context.Context) error) error
+}
+
+func NewAuthService(usersRepo usersRepository, sessionsRepo sessionsRepository, tokenSvc tokenService, mailer mailer, tx txManager) *AuthService {
 	return &AuthService{
 		usersRepo:    usersRepo,
 		sessionsRepo: sessionsRepo,
 		tokenService: tokenSvc,
 		mailer:       mailer,
+		txManager:    tx,
 	}
 }

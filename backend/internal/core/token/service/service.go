@@ -14,6 +14,7 @@ import (
 	"uuid"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type TokenService struct {
@@ -77,7 +78,7 @@ func (s *TokenService) VerifyJWT(tokenString string) (*tokenclaims.CustomClaims,
 
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return nil, fmt.Errorf("token expired: %w", domain.ErrTokenExpired)
+			return nil, fmt.Errorf("token expired: %w", domain.ErrAccessTokenExpired)
 		}
 		return nil, fmt.Errorf("error parsing claims: %v: %w", err, domain.ErrUnauthorized)
 	}
@@ -117,4 +118,14 @@ func (s *TokenService) GeneratePasswordResetToken() (string, error) {
 
 func (s *TokenService) HashPasswordResetToken(token string) string {
 	return s.HashRefreshToken(token)
+}
+
+func (s *TokenService) HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func (s *TokenService) CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }

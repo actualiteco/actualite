@@ -20,6 +20,7 @@ type AuthService interface {
 	Refresh(ctx context.Context, oldRefreshToken string) (string, string, int64, error)
 	Logout(ctx context.Context, userID, sessionID uuid.UUID) error
 	ProcessResetPasswordRequest(ctx context.Context, mail string) error
+	ResetPassword(ctx context.Context, token string, newPassword string) error
 }
 
 func NewAuthHandler(authServ AuthService) *AuthHTTPHandler {
@@ -58,6 +59,11 @@ func (h *AuthHTTPHandler) Routes() []server.Route {
 			Method:  http.MethodPost,
 			URL:     "/auth/password-reset/request",
 			Handler: h.ProcessResetPasswordRequest,
+		},
+		{
+			Method:  http.MethodPost,
+			URL:     "/auth/password-reset/confirm",
+			Handler: h.ConfirmPasswordReset,
 		},
 	}
 }

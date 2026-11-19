@@ -33,6 +33,11 @@ type ResetPasswordDTORequest struct {
 	Email string `json:"email" example:"test.user@email.com" validate:"required,email"`
 }
 
+type ConfirmPasswordResetDTORequest struct {
+	Token       string `json:"token" example:"reset-token" validate:"required"`
+	NewPassword string `json:"new_password" example:"new_password" validate:"required,min=8,max=64,ascii"`
+}
+
 func toTokensDTOResponse(accessToken, refreshToken string, expiresIn int64) TokensDTOResponse {
 	return TokensDTOResponse{
 		AccessToken:  accessToken,
