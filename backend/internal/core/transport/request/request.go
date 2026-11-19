@@ -45,7 +45,9 @@ func GetFileBytes(r *http.Request, key string, maxSize int64) ([]byte, error) {
 
 		return nil, fmt.Errorf("get file from form: %w: %w", err, domain.ErrInvalidRequest)
 	}
-	defer file.Close()
+	defer func() {
+		err = errors.Join(err, file.Close())
+	}()
 
 	return readFileLimited(file, maxSize)
 }

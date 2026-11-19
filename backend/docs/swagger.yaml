@@ -1034,7 +1034,7 @@ paths:
           schema:
             $ref: '#/definitions/internal_features_profile_transport_http.UploadAvatarResponse'
         "400":
-          description: Неверный запрос (неподходящий формат)
+          description: Неверный запрос (например, пустой файл)
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "401":
@@ -1043,6 +1043,10 @@ paths:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "413":
           description: Размер файла превышает допустимый
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "415":
+          description: Неподходящий формат файла
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "500":

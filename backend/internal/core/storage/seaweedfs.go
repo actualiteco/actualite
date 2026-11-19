@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -55,7 +56,9 @@ func (s *SeaweedFSClient) assignFileID(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("request assign: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err = errors.Join(err, resp.Body.Close())
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("assign failed with status: %d", resp.StatusCode)
@@ -102,7 +105,9 @@ func (s *SeaweedFSClient) uploadToVolume(ctx context.Context, fid, filename stri
 	if err != nil {
 		return fmt.Errorf("upload request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err = errors.Join(err, resp.Body.Close())
+	}()
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("upload failed with status: %d", resp.StatusCode)

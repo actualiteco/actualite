@@ -907,7 +907,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос (неподходящий формат)",
+                        "description": "Неверный запрос (например, пустой файл)",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
@@ -920,6 +920,12 @@ const docTemplate = `{
                     },
                     "413": {
                         "description": "Размер файла превышает допустимый",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "415": {
+                        "description": "Неподходящий формат файла",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
