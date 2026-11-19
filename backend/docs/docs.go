@@ -104,6 +104,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/password-reset/request": {
+            "post": {
+                "description": "Создает password_reset_token с временем жизни, указанным в .env, а также асинхронно присылает письмо с ссылкой на страницу фронтенда для смены пароля (если почта есть и верифицирована. если нет - статус-код ответа также 202, но письмо не будет отправлено)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Обработка запроса на смену пароля",
+                "parameters": [
+                    {
+                        "description": "Тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.ResetPasswordDTORequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Письмо с ссылкой для смены пароля отправлено на почту, если почта верифицирована"
+                    },
+                    "400": {
+                        "description": "Невалидный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/refresh": {
             "post": {
                 "description": "Обновляет refresh-токен, возвращает access и refresh токены с временем жизни access token в секундах (10 минут). Используется, когда прежний AccessToken протух",
@@ -1404,6 +1447,18 @@ const docTemplate = `{
                     "type": "string",
                     "x-order": "4",
                     "example": "2026-03-25T12:00:41.267Z"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.ResetPasswordDTORequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "test.user@email.com"
                 }
             }
         },

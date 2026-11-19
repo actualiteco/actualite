@@ -8,9 +8,10 @@ import (
 )
 
 type config struct {
-	Secret     []byte        `envconfig:"SECRET" required:"true"`
-	AccessTTL  time.Duration `envconfig:"ACCESS_TTL" required:"true"`
-	RefreshTTL time.Duration `envconfig:"REFRESH_TTL" required:"true"`
+	Secret           []byte        `envconfig:"SECRET" required:"true"`
+	AccessTTL        time.Duration `envconfig:"ACCESS_TTL" required:"true"`
+	RefreshTTL       time.Duration `envconfig:"REFRESH_TTL" required:"true"`
+	PasswordResetTTL time.Duration `envconfig:"PASSWORD_RESET_TTL" required:"true"`
 }
 
 func NewConfig() (config, error) {

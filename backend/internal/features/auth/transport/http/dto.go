@@ -29,6 +29,10 @@ type RegisterDTOResponse struct {
 	CreatedAt time.Time `json:"createdAt" example:"2026-03-25T12:00:41.267Z" extensions:"x-order=4"`
 }
 
+type ResetPasswordDTORequest struct {
+	Email string `json:"email" example:"test.user@email.com" validate:"required,email"`
+}
+
 func toTokensDTOResponse(accessToken, refreshToken string, expiresIn int64) TokensDTOResponse {
 	return TokensDTOResponse{
 		AccessToken:  accessToken,

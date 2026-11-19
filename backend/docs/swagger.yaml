@@ -86,6 +86,14 @@ definitions:
         type: string
         x-order: "1"
     type: object
+  internal_features_auth_transport_http.ResetPasswordDTORequest:
+    properties:
+      email:
+        example: test.user@email.com
+        type: string
+    required:
+    - email
+    type: object
   internal_features_auth_transport_http.TokensDTOResponse:
     properties:
       access_token:
@@ -334,6 +342,38 @@ paths:
       security:
       - BearerAuth: []
       summary: Инвалидация refresh-токена
+      tags:
+      - Auth
+  /auth/password-reset/request:
+    post:
+      consumes:
+      - application/json
+      description: Создает password_reset_token с временем жизни, указанным в .env,
+        а также асинхронно присылает письмо с ссылкой на страницу фронтенда для смены
+        пароля (если почта есть и верифицирована. если нет - статус-код ответа также
+        202, но письмо не будет отправлено)
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.ResetPasswordDTORequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Письмо с ссылкой для смены пароля отправлено на почту, если
+            почта верифицирована
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Обработка запроса на смену пароля
       tags:
       - Auth
   /auth/refresh:

@@ -12,12 +12,14 @@ type AuthService struct {
 	usersRepo    usersRepository
 	sessionsRepo sessionsRepository
 	tokenService tokenService
+	mailer       mailer
 }
 
 type usersRepository interface {
 	SaveNewUser(ctx context.Context, user domain.User) (domain.User, error)
 	GetUser(ctx context.Context, email string) (domain.User, error)
 	GetUserByID(ctx context.Context, id, userID uuid.UUID) (domain.User, error)
+	SavePasswordResetToken(ctx context.Context, userID uuid.UUID, email, tokenHash string, expirationTime time.Time) error
 }
 
 type sessionsRepository interface {
@@ -34,12 +36,21 @@ type tokenService interface {
 	GenerateJWT(userID, sessionID uuid.UUID, role string) (string, error)
 	GetRefreshTokenExpiration() time.Time
 	GetAccessTokenTTL() time.Duration
+	GetPasswordResetTokenExpiration() time.Time
+	GeneratePasswordResetToken() (string, error)
+	HashPasswordResetToken(token string) string
 }
 
-func NewAuthService(usersRepo usersRepository, sessionsRepo sessionsRepository, tokenSvc tokenService) *AuthService {
+type mailer interface {
+	SendResetPasswordToken(ctx context.Context, to, token string) error
+	GetSendEmailTimeout() time.Duration
+}
+
+func NewAuthService(usersRepo usersRepository, sessionsRepo sessionsRepository, tokenSvc tokenService, mailer mailer) *AuthService {
 	return &AuthService{
 		usersRepo:    usersRepo,
 		sessionsRepo: sessionsRepo,
 		tokenService: tokenSvc,
+		mailer:       mailer,
 	}
 }

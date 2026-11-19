@@ -36,6 +36,10 @@ func (h *HTTPResponseHandler) JSONResponse(resp any, statusCode int) {
 	}
 }
 
+func (h *HTTPResponseHandler) Accepted() {
+	h.w.WriteHeader(http.StatusAccepted)
+}
+
 func (h *HTTPResponseHandler) NoContent() {
 	h.w.WriteHeader(http.StatusNoContent)
 }

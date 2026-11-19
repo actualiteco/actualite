@@ -106,3 +106,15 @@ func (s *TokenService) GetRefreshTokenExpiration() time.Time {
 func (s *TokenService) GetAccessTokenTTL() time.Duration {
 	return s.config.AccessTTL
 }
+
+func (s *TokenService) GetPasswordResetTokenExpiration() time.Time {
+	return time.Now().Add(s.config.PasswordResetTTL).UTC()
+}
+
+func (s *TokenService) GeneratePasswordResetToken() (string, error) {
+	return s.GenerateRefreshToken()
+}
+
+func (s *TokenService) HashPasswordResetToken(token string) string {
+	return s.HashRefreshToken(token)
+}
