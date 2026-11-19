@@ -96,6 +96,10 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusConflict
 		logFunc = h.log.Warn
 		customErr = domain.ErrConflict
+	case errors.Is(err, domain.ErrRequestIsTooLarge):
+		statusCode = http.StatusRequestEntityTooLarge
+		logFunc = h.log.Error
+		customErr = domain.ErrConflict
 	default:
 		statusCode = http.StatusInternalServerError
 		logFunc = h.log.Error
