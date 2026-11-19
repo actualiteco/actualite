@@ -50,7 +50,7 @@ func (h *PostsHTTPHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := h.PostsService.Create(ctx, userID, req.Content, req.ParentID, req.ImageURL)
+	post, err := h.postsService.Create(ctx, userID, req.Content, req.ParentID, req.ImageURL)
 	if err != nil {
 		log.Error("create post", zap.Error(err))
 		respWriter.MapError(err)

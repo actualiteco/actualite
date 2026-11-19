@@ -36,6 +36,10 @@ func (h *HTTPResponseHandler) JSONResponse(resp any, statusCode int) {
 	}
 }
 
+func (h *HTTPResponseHandler) NoContent() {
+	h.w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *HTTPResponseHandler) errorResponse(err domain.CustomError, statusCode int) {
 	h.JSONResponse(map[string]domain.CustomError{"error": err}, statusCode)
 }
@@ -68,10 +72,22 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusUnauthorized
 		logFunc = h.log.Warn
 		customErr = domain.ErrUnauthorized
+	case errors.Is(err, domain.ErrTokenExpired):
+		statusCode = http.StatusUnauthorized
+		logFunc = h.log.Warn
+		customErr = domain.ErrTokenExpired
+	case errors.Is(err, domain.ErrSessionRevokedOrExpired):
+		statusCode = http.StatusUnauthorized
+		logFunc = h.log.Warn
+		customErr = domain.ErrSessionRevokedOrExpired
 	case errors.Is(err, domain.ErrEmailAlreadyUsed):
 		statusCode = http.StatusConflict
 		logFunc = h.log.Warn
 		customErr = domain.ErrEmailAlreadyUsed
+	case errors.Is(err, domain.ErrUsernameAlreadyUsed):
+		statusCode = http.StatusConflict
+		logFunc = h.log.Warn
+		customErr = domain.ErrUsernameAlreadyUsed
 	case errors.Is(err, domain.ErrForbidden):
 		statusCode = http.StatusForbidden
 		logFunc = h.log.Warn

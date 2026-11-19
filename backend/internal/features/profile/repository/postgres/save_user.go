@@ -2,6 +2,7 @@ package users_repository
 
 import (
 	"actualiteco/actualite/internal/core/domain"
+	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
 	auth_models "actualiteco/actualite/internal/features/profile/repository"
 	"context"
 	"fmt"
@@ -39,7 +40,7 @@ func (r *UsersRepository) SaveNewUser(ctx context.Context, user domain.User) (do
 	)
 
 	if err != nil {
-		return domain.User{}, fmt.Errorf("scan returning user: %w", err)
+		return domain.User{}, fmt.Errorf("scan returning user: %w", postgres_pool.MapUniqueViolation(err, userConstraints))
 	}
 
 	return auth_models.ToDomain(model), nil

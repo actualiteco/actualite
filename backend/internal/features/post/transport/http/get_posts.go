@@ -45,7 +45,7 @@ func (h *PostsHTTPHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, pagination, err := h.PostsService.GetPosts(ctx, userID, page, pageSize)
+	posts, pagination, err := h.postsService.GetPosts(ctx, userID, page, pageSize)
 	if err != nil {
 		respWriter.MapError(err)
 		return

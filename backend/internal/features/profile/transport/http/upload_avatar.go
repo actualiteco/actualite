@@ -56,7 +56,7 @@ func (h *ProfileHTTPHandler) UploadAvatar(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	avatarURL, err := h.service.UploadAvatar(ctx, userID, data)
+	avatarURL, err := h.profileService.UploadAvatar(ctx, userID, data)
 	if err != nil {
 		log.Error("failed to upload avatar", zap.Error(err))
 		respWriter.MapError(err)

@@ -11,9 +11,12 @@ import (
 	"go.uber.org/zap"
 
 	"actualiteco/actualite/internal/core/logger"
+	"actualiteco/actualite/internal/core/middleware"
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
 	"actualiteco/actualite/internal/core/storage"
+	tokenservice "actualiteco/actualite/internal/core/token/service"
 	"actualiteco/actualite/internal/core/transport/server"
+	sessionsrepo "actualiteco/actualite/internal/features/auth/repository/postgres"
 	auth_service "actualiteco/actualite/internal/features/auth/service"
 	auth_transport "actualiteco/actualite/internal/features/auth/transport/http"
 	post_repository "actualiteco/actualite/internal/features/post/repository/postgres"
@@ -56,19 +59,28 @@ func main() {
 	log.Debug("initializing tx manager")
 	txManager := postgres_pool.NewTxManager(pool)
 
-	serv := server.NewHTTPServer(server.NewConfigMust(), log)
+	log.Debug("initializing token service")
+	tokenCfg, err := tokenservice.NewConfig()
+	if err != nil {
+		log.Fatal("creating token config", zap.Error(err))
+	}
+	tokenService := tokenservice.New(tokenCfg)
+
+	authMiddleware := middleware.AuthMiddleware(tokenService)
+	serv := server.NewHTTPServer(server.NewConfigMust(), log, authMiddleware)
 	serv.RegisterSwagger()
 
 	log.Debug("initializing auth service")
 	usersRepo := users_repository.NewAuthRepository(pool)
-	authService := auth_service.NewAuthService(usersRepo)
+	sessionsRepo := sessionsrepo.New(pool)
+	authService := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService)
 	authHandler := auth_transport.NewAuthHandler(authService)
 
 	log.Debug("initializing file storage")
 	storageClient := storage.NewSeaweedFSClient(storage.NewConfigMust())
 
 	log.Debug("initializing profile service")
-	profileService := profile_service.NewProfileService(usersRepo, storageClient)
+	profileService := profile_service.NewProfileService(usersRepo, storageClient, txManager)
 	profileHandler := profile_transport.NewProfileHTTPHandler(profileService)
 
 	log.Debug("initializing post service")

@@ -19,6 +19,7 @@ type UserModel struct {
 	EmailVerified  bool           `db:"email_verified"`
 	FollowersCount int            `db:"followers_count"`
 	FollowingCount int            `db:"following_count"`
+	IsFollowing    bool           `db:"is_following"`
 }
 
 func ToDomain(model UserModel) domain.User {
@@ -35,5 +36,6 @@ func ToDomain(model UserModel) domain.User {
 		EmailVerified:  model.EmailVerified,
 		FollowersCount: model.FollowersCount,
 		FollowingCount: model.FollowingCount,
+		IsFollowing:    model.IsFollowing,
 	}
 }

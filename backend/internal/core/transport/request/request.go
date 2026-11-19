@@ -4,6 +4,7 @@ import (
 	"actualiteco/actualite/internal/core/domain"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -22,4 +23,12 @@ func DecodeAndValidate(r *http.Request, dest any) error {
 	}
 
 	return nil
+}
+
+func GetIP(r *http.Request) (string, error) {
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return "", fmt.Errorf("get user ip: %v: %w", err, domain.ErrInvalidRequest)
+	}
+	return ip, nil
 }

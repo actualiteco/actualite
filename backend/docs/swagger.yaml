@@ -30,16 +30,10 @@ definitions:
     - email
     - password
     type: object
-  internal_features_auth_transport_http.LoginDTOResponse:
+  internal_features_auth_transport_http.RefreshDTO:
     properties:
-      token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTM2NjUxNzcsImlhdCI6MTc5MzYyMTk3NywiVXNlcklkIjoiODc5NGU1ODktMGRkYi00M2NlLTlmOTItMTZmYWFmY2Y0ZWU0IiwiUm9sZSI6InVzZXIifQ.iv_JT1Fke-QaK2nx2FEF_pkDroyJP-_xK81egOAV7h4
-        type: string
-      user_id:
-        example: 8794e589-0ddb-43ce-9f92-16faafcf4ee4
-        type: string
-      username:
-        example: username
+      refresh_token:
+        example: old_refresh_token
         type: string
     type: object
   internal_features_auth_transport_http.RegisterDTO:
@@ -89,6 +83,21 @@ definitions:
         example: m4rkek
         type: string
         x-order: "1"
+    type: object
+  internal_features_auth_transport_http.TokensDTOResponse:
+    properties:
+      access_token:
+        example: new_access_token
+        type: string
+      expires_in:
+        example: 600
+        type: integer
+      refresh_token:
+        example: new_refresh_token
+        type: string
+      token_type:
+        example: Bearer
+        type: string
     type: object
   internal_features_post_transport_http.CreatePostDTO:
     properties:
@@ -264,13 +273,14 @@ info:
   title: actualiteco/actualite
   version: "1.0"
 paths:
-  /login:
+  /auth/login:
     post:
       consumes:
       - application/json
-      description: Авторизует пользователя по email и паролю, возвращает JWT
+      description: Авторизует пользователя по email и паролю, возвращает access и
+        refresh токены с временем жизни access token в секундах (10 минут)
       parameters:
-      - description: тело запроса
+      - description: Тело запроса
         in: body
         name: request
         required: true
@@ -282,7 +292,7 @@ paths:
         "200":
           description: Успешная авторизация
           schema:
-            $ref: '#/definitions/internal_features_auth_transport_http.LoginDTOResponse'
+            $ref: '#/definitions/internal_features_auth_transport_http.TokensDTOResponse'
         "400":
           description: Невалидный запрос
           schema:
@@ -296,6 +306,107 @@ paths:
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
       summary: Авторизация по email и паролю
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Инвалидирует refresh-токен. Пока привязанный к нему access-токен
+        не протух, по нему еще можно будет делать запросы (будет исправлено позже
+        после интеграции Redis), но при это обновлять refresh-токен уже нельзя. Операция
+        идемпотентна, можно несколько раз отозвать один и тот же refresh-токен без
+        ошибки
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Access-токен протух или не валиден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Инвалидация refresh-токена
+      tags:
+      - Auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Обновляет refresh-токен, возвращает access и refresh токены с временем
+        жизни access token в секундах (10 минут). Используется, когда прежний AccessToken
+        протух
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.RefreshDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление токена
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.TokensDTOResponse'
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Refresh-токен протух или не валиден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Сессия или пользователь-обладатель сессии не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Обновление refresh-токена
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя и возвращает его данные
+      parameters:
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь создан
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTOResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Email или username уже заняты
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Регистрация пользователя
       tags:
       - Auth
   /posts:
@@ -389,7 +500,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Like a post as the authenticated user, including their own posts.
+      description: Поставить лайк на пост авторизованному пользователю
       parameters:
       - description: Post ID
         in: path
@@ -400,28 +511,28 @@ paths:
       - application/json
       responses:
         "200":
-          description: Success
+          description: Лайк успешно поставлен
           schema:
             $ref: '#/definitions/internal_features_post_transport_http.LikeResponse'
         "400":
-          description: Invalid post ID or like state
+          description: Невалидный post ID или состояние лайка
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "401":
-          description: Unauthorized
+          description: Пользователь не авторизован
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "404":
-          description: Post not found
+          description: Пост не найден
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "500":
-          description: Internal server error
+          description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
       security:
       - BearerAuth: []
-      summary: Like a post
+      summary: Поставить лайк
       tags:
       - Posts
   /posts/{postID}/replies:
@@ -484,7 +595,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Unlike a post as the authenticated user, including their own posts.
+      description: Убрать лайк с поста авторизованному пользователю
       parameters:
       - description: Post ID
         in: path
@@ -495,28 +606,28 @@ paths:
       - application/json
       responses:
         "200":
-          description: Success
+          description: Лайк успешно снят
           schema:
             $ref: '#/definitions/internal_features_post_transport_http.LikeResponse'
         "400":
-          description: Invalid post ID or like state
+          description: Невалидный post ID или состояние лайка
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "401":
-          description: Unauthorized
+          description: Пользователь не авторизован
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "404":
-          description: Post not found
+          description: Пост не найден
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "500":
-          description: Internal server error
+          description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
       security:
       - BearerAuth: []
-      summary: Unlike a post
+      summary: Убрать лайк
       tags:
       - Posts
   /posts/create:
@@ -832,36 +943,39 @@ paths:
       summary: Получить профиль пользователя по JWT
       tags:
       - Profile
-  /register:
-    post:
+  /profile/username-availability:
+    get:
       consumes:
       - application/json
-      description: Создаёт нового пользователя и возвращает его данные
+      description: Проверить, занят ли username
       parameters:
-      - description: тело запроса
-        in: body
-        name: request
+      - description: Username
+        in: query
+        name: username
         required: true
-        schema:
-          $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTO'
+        type: string
       produces:
       - application/json
       responses:
-        "201":
-          description: Пользователь создан
+        "200":
+          description: Username свободен
           schema:
-            $ref: '#/definitions/internal_features_auth_transport_http.RegisterDTOResponse'
+            $ref: '#/definitions/internal_features_profile_transport_http.FollowResponse'
         "400":
-          description: Неверный запрос или email уже занят
+          description: Неверный запрос (username не валиден или не указан)
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Username занят
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "500":
           description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
-      summary: Регистрация пользователя
+      summary: Проверка доступности username
       tags:
-      - Auth
+      - Profile
 securityDefinitions:
   BearerAuth:
     description: Введите "Bearer" и JWT-токен через пробел.

@@ -23,6 +23,7 @@ type User struct {
 	FollowingCount         int
 	PasswordResetToken     string
 	PasswordResetExpiresAt time.Time
+	IsFollowing            bool
 }
 
 func (u User) Validate() error {
@@ -44,6 +45,15 @@ func (u *User) UpdateDisplayName(displayName string) error {
 }
 
 func (u *User) UpdateUsername(username string) error {
+	if err := ValidateUsername(username); err != nil {
+		return err
+	}
+	u.Username = username
+
+	return nil
+}
+
+func ValidateUsername(username string) error {
 	if utf8.RuneCountInString(username) < 4 || utf8.RuneCountInString(username) > 15 {
 		return fmt.Errorf("invalid username=%s length: %w", username, ErrInvalidRequest)
 	}
@@ -51,7 +61,6 @@ func (u *User) UpdateUsername(username string) error {
 	if !usernameRe.MatchString(username) {
 		return fmt.Errorf("invalid username=%s: %w", username, ErrInvalidRequest)
 	}
-	u.Username = username
 
 	return nil
 }

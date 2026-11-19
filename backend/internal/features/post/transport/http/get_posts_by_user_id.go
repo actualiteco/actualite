@@ -55,7 +55,7 @@ func (h *PostsHTTPHandler) GetPostsByUserID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	posts, pagination, err := h.PostsService.GetPostsByAuthorID(ctx, userID, authorID, page, pageSize)
+	posts, pagination, err := h.postsService.GetPostsByAuthorID(ctx, userID, authorID, page, pageSize)
 	if err != nil {
 		log.Error("get posts by user", zap.Error(err))
 		respWriter.MapError(err)

@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/login": {
+        "/auth/login": {
             "post": {
-                "description": "Авторизует пользователя по email и паролю, возвращает JWT",
+                "description": "Авторизует пользователя по email и паролю, возвращает access и refresh токены с временем жизни access token в секундах (10 минут)",
                 "consumes": [
                     "application/json"
                 ],
@@ -30,7 +30,7 @@ const docTemplate = `{
                 "summary": "Авторизация по email и паролю",
                 "parameters": [
                     {
-                        "description": "тело запроса",
+                        "description": "Тело запроса",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -43,7 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Успешная авторизация",
                         "schema": {
-                            "$ref": "#/definitions/internal_features_auth_transport_http.LoginDTOResponse"
+                            "$ref": "#/definitions/internal_features_auth_transport_http.TokensDTOResponse"
                         }
                     },
                     "400": {
@@ -54,6 +54,153 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Неверные учётные данные",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Инвалидирует refresh-токен. Пока привязанный к нему access-токен не протух, по нему еще можно будет делать запросы (будет исправлено позже после интеграции Redis), но при это обновлять refresh-токен уже нельзя. Операция идемпотентна, можно несколько раз отозвать один и тот же refresh-токен без ошибки",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Инвалидация refresh-токена",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Access-токен протух или не валиден",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "description": "Обновляет refresh-токен, возвращает access и refresh токены с временем жизни access token в секундах (10 минут). Используется, когда прежний AccessToken протух",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Обновление refresh-токена",
+                "parameters": [
+                    {
+                        "description": "Тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.RefreshDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление токена",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.TokensDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Невалидный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Refresh-токен протух или не валиден",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Сессия или пользователь-обладатель сессии не найден",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Создаёт нового пользователя и возвращает его данные",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Регистрация пользователя",
+                "parameters": [
+                    {
+                        "description": "тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.RegisterDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Пользователь создан",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.RegisterDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Email или username уже заняты",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
@@ -265,7 +412,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Like a post as the authenticated user, including their own posts.",
+                "description": "Поставить лайк на пост авторизованному пользователю",
                 "consumes": [
                     "application/json"
                 ],
@@ -275,7 +422,7 @@ const docTemplate = `{
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Like a post",
+                "summary": "Поставить лайк",
                 "parameters": [
                     {
                         "type": "string",
@@ -287,31 +434,31 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success",
+                        "description": "Лайк успешно поставлен",
                         "schema": {
                             "$ref": "#/definitions/internal_features_post_transport_http.LikeResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid post ID or like state",
+                        "description": "Невалидный post ID или состояние лайка",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Пользователь не авторизован",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "404": {
-                        "description": "Post not found",
+                        "description": "Пост не найден",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Внутренняя ошибка сервера",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
                         }
@@ -406,7 +553,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Unlike a post as the authenticated user, including their own posts.",
+                "description": "Убрать лайк с поста авторизованному пользователю",
                 "consumes": [
                     "application/json"
                 ],
@@ -416,7 +563,7 @@ const docTemplate = `{
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Unlike a post",
+                "summary": "Убрать лайк",
                 "parameters": [
                     {
                         "type": "string",
@@ -428,31 +575,31 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success",
+                        "description": "Лайк успешно снят",
                         "schema": {
                             "$ref": "#/definitions/internal_features_post_transport_http.LikeResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid post ID or like state",
+                        "description": "Невалидный post ID или состояние лайка",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Пользователь не авторизован",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "404": {
-                        "description": "Post not found",
+                        "description": "Пост не найден",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Внутренняя ошибка сервера",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
                         }
@@ -611,6 +758,56 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Пользователь неавторизован",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/username-availability": {
+            "get": {
+                "description": "Проверить, занят ли username",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Проверка доступности username",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Username свободен",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_profile_transport_http.FollowResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос (username не валиден или не указан)",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Username занят",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
@@ -874,52 +1071,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/register": {
-            "post": {
-                "description": "Создаёт нового пользователя и возвращает его данные",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Регистрация пользователя",
-                "parameters": [
-                    {
-                        "description": "тело запроса",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_auth_transport_http.RegisterDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Пользователь создан",
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_auth_transport_http.RegisterDTOResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Неверный запрос или email уже занят",
-                        "schema": {
-                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -968,20 +1119,12 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_features_auth_transport_http.LoginDTOResponse": {
+        "internal_features_auth_transport_http.RefreshDTO": {
             "type": "object",
             "properties": {
-                "token": {
+                "refresh_token": {
                     "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTM2NjUxNzcsImlhdCI6MTc5MzYyMTk3NywiVXNlcklkIjoiODc5NGU1ODktMGRkYi00M2NlLTlmOTItMTZmYWFmY2Y0ZWU0IiwiUm9sZSI6InVzZXIifQ.iv_JT1Fke-QaK2nx2FEF_pkDroyJP-_xK81egOAV7h4"
-                },
-                "user_id": {
-                    "type": "string",
-                    "example": "8794e589-0ddb-43ce-9f92-16faafcf4ee4"
-                },
-                "username": {
-                    "type": "string",
-                    "example": "username"
+                    "example": "old_refresh_token"
                 }
             }
         },
@@ -1044,6 +1187,27 @@ const docTemplate = `{
                     "type": "string",
                     "x-order": "4",
                     "example": "2026-03-25T12:00:41.267Z"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.TokensDTOResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string",
+                    "example": "new_access_token"
+                },
+                "expires_in": {
+                    "type": "integer",
+                    "example": 600
+                },
+                "refresh_token": {
+                    "type": "string",
+                    "example": "new_refresh_token"
+                },
+                "token_type": {
+                    "type": "string",
+                    "example": "Bearer"
                 }
             }
         },
