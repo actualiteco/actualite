@@ -99,7 +99,11 @@ func (h *HTTPResponseHandler) MapError(err error) {
 	case errors.Is(err, domain.ErrRequestIsTooLarge):
 		statusCode = http.StatusRequestEntityTooLarge
 		logFunc = h.log.Error
-		customErr = domain.ErrConflict
+		customErr = domain.ErrRequestIsTooLarge
+	case errors.Is(err, domain.ErrUnsupportedImageType):
+		statusCode = http.StatusUnsupportedMediaType
+		logFunc = h.log.Error
+		customErr = domain.ErrUnsupportedImageType
 	default:
 		statusCode = http.StatusInternalServerError
 		logFunc = h.log.Error

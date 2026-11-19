@@ -28,6 +28,7 @@ type postsService interface {
 	GetReplies(ctx context.Context, userID, postID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
 	GetPosts(ctx context.Context, userID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
 	Delete(ctx context.Context, userID, postID uuid.UUID) error
+	UploadImage(ctx context.Context, data []byte) (string, error)
 }
 
 func NewPostsHandler(postsService postsService) *PostsHTTPHandler {
@@ -90,6 +91,12 @@ func (h *PostsHTTPHandler) Routes() []server.Route {
 			Method:       http.MethodGet,
 			URL:          "/posts/me",
 			Handler:      h.GetPostsByJWT,
+			AuthRequired: true,
+		},
+		{
+			Method:       http.MethodPost,
+			URL:          "/posts/image",
+			Handler:      h.UploadImage,
 			AuthRequired: true,
 		},
 	}

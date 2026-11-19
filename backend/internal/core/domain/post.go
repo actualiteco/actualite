@@ -7,6 +7,8 @@ import (
 	"uuid"
 )
 
+const MaxImageSize = 5 << 20
+
 type Post struct {
 	ID         uuid.UUID  `validate:"required"`
 	UserID     uuid.UUID  `validate:"required"`

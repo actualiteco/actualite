@@ -342,6 +342,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/posts/image": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Загрузить изображение для поста (jpg или png, до 5 МБ) в хранилище",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Загрузить изображение",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Файл изображения (jpg/png, до 5 МБ)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_post_transport_http.imageUrlDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос (например, файл пустой)",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Пользователь неавторизован",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "413": {
+                        "description": "Размер файла превышает допустимый",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "415": {
+                        "description": "Неподходящий формат файла",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
         "/posts/me": {
             "get": {
                 "security": [
@@ -840,13 +907,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос (неподходящий формат или размер файла)",
+                        "description": "Неверный запрос (неподходящий формат)",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "401": {
                         "description": "Пользователь неавторизован",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "413": {
+                        "description": "Размер файла превышает допустимый",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
@@ -1476,6 +1549,14 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/internal_features_post_transport_http.PostWithAuthorDTOResponse"
                     }
+                }
+            }
+        },
+        "internal_features_post_transport_http.imageUrlDTOResponse": {
+            "type": "object",
+            "properties": {
+                "image_url": {
+                    "type": "string"
                 }
             }
         },

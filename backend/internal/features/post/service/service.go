@@ -3,12 +3,14 @@ package post_service
 import (
 	"actualiteco/actualite/internal/core/domain"
 	"context"
+	"io"
 	"uuid"
 )
 
 type PostsService struct {
 	postsRepo PostsRepository
 	txManager txManager
+	storage   fileStorage
 }
 
 type PostsRepository interface {
@@ -31,9 +33,14 @@ type txManager interface {
 	Do(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
-func New(postsRepo PostsRepository, txManager txManager) *PostsService {
+type fileStorage interface {
+	Upload(ctx context.Context, filename string, file io.Reader) (string, error)
+}
+
+func New(postsRepo PostsRepository, txManager txManager, storage fileStorage) *PostsService {
 	return &PostsService{
 		postsRepo: postsRepo,
 		txManager: txManager,
+		storage:   storage,
 	}
 }

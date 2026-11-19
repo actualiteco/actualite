@@ -52,6 +52,10 @@ type PostsWithPaginationDTOResponse struct {
 	Pagination paginationDTO               `json:"pagination"`
 }
 
+type imageUrlDTOResponse struct {
+	ImageURL string `json:"image_url"`
+}
+
 func postToResponse(p domain.Post) PostDTOResponse {
 	return PostDTOResponse{
 		ID:         p.ID,
