@@ -43,7 +43,7 @@ func (h *PostsHTTPHandler) GetPostsByUserID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	authorID, err := httputils.GetUUIDPathValue(r, "userID")
+	authorID, err := httputils.GetUUIDPathValue(r, userIDPathValueKey)
 	if err != nil {
 		respWriter.MapError(err)
 		return

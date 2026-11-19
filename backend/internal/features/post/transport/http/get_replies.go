@@ -44,7 +44,7 @@ func (h *PostsHTTPHandler) GetReplies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postID, err := httputils.GetUUIDPathValue(r, "postID")
+	postID, err := httputils.GetUUIDPathValue(r, postIDPathValueKey)
 	if err != nil {
 		respWriter.MapError(err)
 		return

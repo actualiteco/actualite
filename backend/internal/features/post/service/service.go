@@ -19,6 +19,7 @@ type PostsRepository interface {
 	GetPostsByAuthorID(ctx context.Context, userID, authorID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)
 	GetReplies(ctx context.Context, userID, parentID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)
 	GetPostsFeed(ctx context.Context, userID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)
+	Delete(ctx context.Context, userID, postID uuid.UUID) error
 
 	GetCountOfPostsByUserID(ctx context.Context, userID uuid.UUID) (uint64, bool, error)
 	GetCountOfReplies(ctx context.Context, parentID uuid.UUID) (uint64, bool, error)

@@ -35,6 +35,8 @@ definitions:
       refresh_token:
         example: old_refresh_token
         type: string
+    required:
+    - refresh_token
     type: object
   internal_features_auth_transport_http.RegisterDTO:
     properties:
@@ -218,18 +220,9 @@ definitions:
       avatar_url:
         example: http://localhost:8080/avatar_url
         type: string
-      created_at:
-        example: 2006-01-02T15:04:05Z07:00
-        type: string
       display_name:
         example: mark
         type: string
-      email:
-        example: test.user@email.com
-        type: string
-      email_verified:
-        example: false
-        type: boolean
       followers_count:
         example: 10
         type: integer
@@ -239,6 +232,9 @@ definitions:
       id:
         example: 8794e589-0ddb-43ce-9f92-16faafcf4ee4
         type: string
+      is_following:
+        example: true
+        type: boolean
       role:
         example: user
         type: string
@@ -455,6 +451,49 @@ paths:
       tags:
       - Posts
   /posts/{postID}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет пост, если запрос на удаление исходит от автора поста.
+        Метод идемпотентен
+      parameters:
+      - description: Post ID (UUID)
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        format: uuid
+        in: path
+        name: postID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Пост успешно удален
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Пост не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Пост принадлежит не текущему пользователю
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Удаление поста
+      tags:
+      - Posts
     get:
       consumes:
       - application/json

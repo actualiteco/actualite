@@ -403,6 +403,70 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Удаляет пост, если запрос на удаление исходит от автора поста. Метод идемпотентен",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Удаление поста",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                        "description": "Post ID (UUID)",
+                        "name": "postID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Пост успешно удален"
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Неверные учетные данные",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Пост не найден",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Пост принадлежит не текущему пользователю",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
             }
         },
         "/posts/{postID}/like": {
@@ -1121,6 +1185,9 @@ const docTemplate = `{
         },
         "internal_features_auth_transport_http.RefreshDTO": {
             "type": "object",
+            "required": [
+                "refresh_token"
+            ],
             "properties": {
                 "refresh_token": {
                     "type": "string",
@@ -1378,21 +1445,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "http://localhost:8080/avatar_url"
                 },
-                "created_at": {
-                    "type": "string",
-                    "example": "2006-01-02T15:04:05Z07:00"
-                },
                 "display_name": {
                     "type": "string",
                     "example": "mark"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "test.user@email.com"
-                },
-                "email_verified": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "followers_count": {
                     "type": "integer",
@@ -1405,6 +1460,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "8794e589-0ddb-43ce-9f92-16faafcf4ee4"
+                },
+                "is_following": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "role": {
                     "type": "string",

@@ -8,6 +8,11 @@ import (
 	"uuid"
 )
 
+const (
+	postIDPathValueKey = "postID"
+	userIDPathValueKey = "userID"
+)
+
 type PostsHTTPHandler struct {
 	postsService postsService
 }
@@ -20,6 +25,7 @@ type postsService interface {
 	GetPostsByAuthorID(ctx context.Context, userID, authorID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
 	GetReplies(ctx context.Context, userID, postID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
 	GetPosts(ctx context.Context, userID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
+	Delete(ctx context.Context, userID, postID uuid.UUID) error
 }
 
 func NewPostsHandler(postsService postsService) *PostsHTTPHandler {
@@ -70,6 +76,12 @@ func (h *PostsHTTPHandler) Routes() []server.Route {
 			Method:       http.MethodGet,
 			URL:          "/posts",
 			Handler:      h.GetPosts,
+			AuthRequired: true,
+		},
+		{
+			Method:       http.MethodDelete,
+			URL:          "/posts/{postID}",
+			Handler:      h.DeletePost,
 			AuthRequired: true,
 		},
 	}

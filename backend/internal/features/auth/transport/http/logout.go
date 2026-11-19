@@ -17,7 +17,7 @@ import (
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Success 204
+// @Success 204 "Сессия успешно инвалидирована"
 // @Failure 401 {object} domain.CustomError "Access-токен протух или не валиден"
 // @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
 // @Router /auth/logout [post]
