@@ -296,6 +296,42 @@ info:
   title: actualiteco/actualite
   version: "1.0"
 paths:
+  /auth/email-confirmation/request:
+    post:
+      consumes:
+      - application/json
+      description: Создает токен, его хэш сохраняется в БД, а на почту приходит письмо
+        с ссылкой на страницу фронтенда для подтверждения email
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Письмо с ссылкой для верификации email отправлено на почту
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Почта уже подтверждена
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Обработка запроса на подтверждение email
+      tags:
+      - Auth
   /auth/login:
     post:
       consumes:

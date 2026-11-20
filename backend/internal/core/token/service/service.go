@@ -129,3 +129,15 @@ func (s *TokenService) CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
+
+func (s *TokenService) GetEmailConfirmationTokenExpiration() time.Time {
+	return time.Now().Add(s.config.EmailConfirmationTTL).UTC()
+}
+
+func (s *TokenService) GenerateEmailConfirmationToken() (string, error) {
+	return s.GenerateRefreshToken()
+}
+
+func (s *TokenService) HashEmailConfirmationToken(token string) string {
+	return s.HashRefreshToken(token)
+}

@@ -23,6 +23,8 @@ type usersRepository interface {
 	SavePasswordResetToken(ctx context.Context, userID uuid.UUID, email, tokenHash string, expirationTime time.Time) error
 	GetUserByPasswordResetToken(ctx context.Context, tokenHash string) (domain.User, error)
 	ResetPassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
+	GetOwnProfile(ctx context.Context, id uuid.UUID) (domain.User, error)
+	SaveEmailConfirmationToken(ctx context.Context, userID uuid.UUID, email, tokenHash string, expirationTime time.Time) error
 }
 
 type sessionsRepository interface {
@@ -36,19 +38,27 @@ type sessionsRepository interface {
 type tokenService interface {
 	GenerateRefreshToken() (string, error)
 	HashRefreshToken(token string) string
-	GenerateJWT(userID, sessionID uuid.UUID, role string) (string, error)
 	GetRefreshTokenExpiration() time.Time
+
+	GenerateJWT(userID, sessionID uuid.UUID, role string) (string, error)
 	GetAccessTokenTTL() time.Duration
+
 	GetPasswordResetTokenExpiration() time.Time
 	GeneratePasswordResetToken() (string, error)
 	HashPasswordResetToken(token string) string
+
 	HashPassword(password string) (string, error)
 	CheckPasswordHash(password, hash string) bool
+
+	GetEmailConfirmationTokenExpiration() time.Time
+	GenerateEmailConfirmationToken() (string, error)
+	HashEmailConfirmationToken(token string) string
 }
 
 type mailer interface {
 	SendLinkToResetPassword(ctx context.Context, to, link string) error
 	GetSendEmailTimeout() time.Duration
+	SendLinkToConfirmEmail(ctx context.Context, to, link string) error
 }
 
 type txManager interface {

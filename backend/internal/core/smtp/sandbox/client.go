@@ -8,7 +8,10 @@ import (
 	"github.com/wneessen/go-mail"
 )
 
-const resetPasswordTokenSubject = "Actualite. Reset Password Link"
+const (
+	resetPasswordTokenSubject = "Actualite. Reset Password Link"
+	confirmEmailSubject       = "Actualite. Email Confirmation Link"
+)
 
 type SMTPClient struct {
 	cfg    config
@@ -34,6 +37,10 @@ func (c *SMTPClient) SendLinkToResetPassword(ctx context.Context, to, link strin
 
 func (c *SMTPClient) GetSendEmailTimeout() time.Duration {
 	return c.cfg.Timeout
+}
+
+func (c *SMTPClient) SendLinkToConfirmEmail(ctx context.Context, to, link string) error {
+	return c.send(ctx, to, confirmEmailSubject, link)
 }
 
 func (c *SMTPClient) send(ctx context.Context, to string, subject string, body string) error {

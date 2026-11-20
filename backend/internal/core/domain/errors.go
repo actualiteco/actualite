@@ -14,6 +14,7 @@ var (
 	ErrRequestIsTooLarge          = NewCustomError("REQUEST_IS_TOO_LARGE", "request is too large")
 	ErrUnsupportedImageType       = NewCustomError("UNSUPPORTED_IMAGE_TYPE", "image type is invalid")
 	ErrResetTokenInvalidOrExpired = NewCustomError("PASSWORD_RESET_TOKEN_INVALID_OR_EXPIRED", "password reset token is invalid or expired")
+	ErrAlreadyVerified            = NewCustomError("ALREADY_VERIFIED", "user email is already verified")
 )
 
 type CustomError struct {

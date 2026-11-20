@@ -100,6 +100,10 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusForbidden
 		logFunc = h.log.Warn
 		customErr = domain.ErrForbidden
+	case errors.Is(err, domain.ErrAlreadyVerified):
+		statusCode = http.StatusConflict
+		logFunc = h.log.Info
+		customErr = domain.ErrAlreadyVerified
 	case errors.Is(err, domain.ErrConflict):
 		statusCode = http.StatusConflict
 		logFunc = h.log.Warn

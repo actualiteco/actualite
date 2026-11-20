@@ -61,7 +61,7 @@ func (s *AuthService) generateAndSendResetPasswordToken(ctx context.Context, use
 	tokenHash := s.tokenService.HashPasswordResetToken(token)
 	expirationTime := s.tokenService.GetPasswordResetTokenExpiration()
 
-	link, err := createLinkToResetPassword(token)
+	link, err := createLinkWithToken(token)
 	if err != nil {
 		return fmt.Errorf("create link to reset password: %w", err)
 	}
@@ -77,7 +77,7 @@ func (s *AuthService) generateAndSendResetPasswordToken(ctx context.Context, use
 	return nil
 }
 
-func createLinkToResetPassword(token string) (string, error) {
+func createLinkWithToken(token string) (string, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return "", fmt.Errorf("parse app base URL: %w", err)

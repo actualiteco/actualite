@@ -9,21 +9,23 @@ import (
 const MaxAvatarSize = 2 << 20
 
 type User struct {
-	ID                     string `validate:"required,uuid"`
-	Email                  string `validate:"email"`
-	Password               string
-	Role                   string `validate:"oneof=admin user"`
-	CreatedAt              time.Time
-	Username               string `validate:"min=4,max=15,username_validation"`
-	DisplayName            string `validate:"omitempty,min=1,max=30"`
-	AvatarURL              string
-	Status                 string `validate:"omitempty,max=100"`
-	EmailVerified          bool
-	FollowersCount         int
-	FollowingCount         int
-	PasswordResetToken     string
-	PasswordResetExpiresAt time.Time
-	IsFollowing            bool
+	ID                         string `validate:"required,uuid"`
+	Email                      string `validate:"email"`
+	Password                   string
+	Role                       string `validate:"oneof=admin user"`
+	CreatedAt                  time.Time
+	Username                   string `validate:"min=4,max=15,username_validation"`
+	DisplayName                string `validate:"omitempty,min=1,max=30"`
+	AvatarURL                  string
+	Status                     string `validate:"omitempty,max=100"`
+	EmailVerified              bool
+	FollowersCount             int
+	FollowingCount             int
+	PasswordResetToken         string
+	PasswordResetExpiresAt     time.Time
+	IsFollowing                bool
+	EmailConfirmationToken     string
+	EmailConfirmationExpiresAt time.Time
 }
 
 func (u User) Validate() error {
