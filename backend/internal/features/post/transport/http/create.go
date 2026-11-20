@@ -26,6 +26,7 @@ import (
 // @Success 201 {object} PostDTOResponse "Пост создан"
 // @Failure 400 {object} domain.CustomError "Неверный запрос (content > 280 символов; userID неправильного формата)"
 // @Failure 401 {object} domain.CustomError "Неверные учетные данные"
+// @Failure 403 {object} domain.CustomError "Для действия требуется подтверждение почты"
 // @Failure 404 {object} domain.CustomError "Не удалось найти пост с данным parent_id"
 // @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
 // @Router /posts/create [post]

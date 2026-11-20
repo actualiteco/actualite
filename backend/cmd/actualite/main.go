@@ -13,6 +13,7 @@ import (
 	"actualiteco/actualite/internal/core/logger"
 	"actualiteco/actualite/internal/core/middleware"
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
+	smtpsandboxclient "actualiteco/actualite/internal/core/smtp/sandbox"
 	"actualiteco/actualite/internal/core/storage"
 	tokenservice "actualiteco/actualite/internal/core/token/service"
 	"actualiteco/actualite/internal/core/transport/server"
@@ -70,10 +71,16 @@ func main() {
 	serv := server.NewHTTPServer(server.NewConfigMust(), log, authMiddleware)
 	serv.RegisterSwagger()
 
+	log.Debug("initializing smtp client")
+	smtpClient, err := smtpsandboxclient.New(smtpsandboxclient.NewConfigMust())
+	if err != nil {
+		log.Fatal("creating smtp client", zap.Error(err))
+	}
+
 	log.Debug("initializing auth service")
 	usersRepo := users_repository.NewAuthRepository(pool)
 	sessionsRepo := sessionsrepo.New(pool)
-	authService := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService)
+	authService := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService, smtpClient, txManager)
 	authHandler := auth_transport.NewAuthHandler(authService)
 
 	log.Debug("initializing file storage")

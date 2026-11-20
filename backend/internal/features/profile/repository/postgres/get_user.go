@@ -4,7 +4,10 @@ import (
 	"actualiteco/actualite/internal/core/domain"
 	auth_models "actualiteco/actualite/internal/features/profile/repository"
 	"context"
+	"errors"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (r *UsersRepository) GetUser(ctx context.Context, email string) (domain.User, error) {
@@ -23,6 +26,10 @@ func (r *UsersRepository) GetUser(ctx context.Context, email string) (domain.Use
 	err := row.Scan(&model.ID, &model.Email, &model.Password, &model.Role, &model.CreatedAt,
 		&model.Username, &model.DisplayName, &model.Status, &model.AvatarURL, &model.EmailVerified)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, fmt.Errorf("no user with email=%s: %w", email, domain.ErrNotFound)
+		}
+
 		return domain.User{}, fmt.Errorf("scan returning user: %w", err)
 	}
 

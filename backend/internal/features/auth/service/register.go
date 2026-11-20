@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"actualiteco/actualite/internal/core/domain"
-	hash_utils "actualiteco/actualite/internal/utils/hash"
 
 	"uuid"
 )
@@ -14,7 +13,7 @@ import (
 func (s *AuthService) RegisterUser(ctx context.Context, user domain.User, password string) (domain.User, error) {
 	user.ID = uuid.New().String()
 
-	hash, err := hash_utils.HashPassword(password)
+	hash, err := s.tokenService.HashPassword(password)
 	if err != nil {
 		return domain.User{}, fmt.Errorf("hash generating: %w", domain.ErrInternal)
 	}

@@ -36,6 +36,10 @@ func (h *HTTPResponseHandler) JSONResponse(resp any, statusCode int) {
 	}
 }
 
+func (h *HTTPResponseHandler) Accepted() {
+	h.w.WriteHeader(http.StatusAccepted)
+}
+
 func (h *HTTPResponseHandler) NoContent() {
 	h.w.WriteHeader(http.StatusNoContent)
 }
@@ -72,14 +76,18 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusUnauthorized
 		logFunc = h.log.Warn
 		customErr = domain.ErrUnauthorized
-	case errors.Is(err, domain.ErrTokenExpired):
+	case errors.Is(err, domain.ErrAccessTokenExpired):
 		statusCode = http.StatusUnauthorized
 		logFunc = h.log.Warn
-		customErr = domain.ErrTokenExpired
+		customErr = domain.ErrAccessTokenExpired
 	case errors.Is(err, domain.ErrSessionRevokedOrExpired):
 		statusCode = http.StatusUnauthorized
 		logFunc = h.log.Warn
 		customErr = domain.ErrSessionRevokedOrExpired
+	case errors.Is(err, domain.ErrTokenInvalidOrExpired):
+		statusCode = http.StatusUnauthorized
+		logFunc = h.log.Warn
+		customErr = domain.ErrTokenInvalidOrExpired
 	case errors.Is(err, domain.ErrEmailAlreadyUsed):
 		statusCode = http.StatusConflict
 		logFunc = h.log.Warn
@@ -92,6 +100,10 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusForbidden
 		logFunc = h.log.Warn
 		customErr = domain.ErrForbidden
+	case errors.Is(err, domain.ErrAlreadyVerified):
+		statusCode = http.StatusConflict
+		logFunc = h.log.Info
+		customErr = domain.ErrAlreadyVerified
 	case errors.Is(err, domain.ErrConflict):
 		statusCode = http.StatusConflict
 		logFunc = h.log.Warn
@@ -104,6 +116,10 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusUnsupportedMediaType
 		logFunc = h.log.Error
 		customErr = domain.ErrUnsupportedImageType
+	case errors.Is(err, domain.ErrEmailVerificationRequired):
+		statusCode = http.StatusForbidden
+		logFunc = h.log.Warn
+		customErr = domain.ErrEmailVerificationRequired
 	default:
 		statusCode = http.StatusInternalServerError
 		logFunc = h.log.Error

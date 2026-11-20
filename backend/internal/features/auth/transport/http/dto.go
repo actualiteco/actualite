@@ -29,6 +29,19 @@ type RegisterDTOResponse struct {
 	CreatedAt time.Time `json:"createdAt" example:"2026-03-25T12:00:41.267Z" extensions:"x-order=4"`
 }
 
+type ResetPasswordDTORequest struct {
+	Email string `json:"email" example:"test.user@email.com" validate:"required,email"`
+}
+
+type ConfirmPasswordResetDTORequest struct {
+	Token       string `json:"token" example:"reset-token" validate:"required"`
+	NewPassword string `json:"new_password" example:"new_password" validate:"required,min=8,max=64,ascii"`
+}
+
+type ConfirmEmailDTORequest struct {
+	Token string `json:"token" example:"email-confirmation-token" validate:"required"`
+}
+
 func toTokensDTOResponse(accessToken, refreshToken string, expiresIn int64) TokensDTOResponse {
 	return TokensDTOResponse{
 		AccessToken:  accessToken,
