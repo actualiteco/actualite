@@ -37,7 +37,7 @@ func (h *PostsHTTPHandler) Like(w http.ResponseWriter, r *http.Request) {
 		respWriter.MapError(err)
 		return
 	}
-	postID, err := httputils.GetUUIDPathValue(r, "postID")
+	postID, err := httputils.GetUUIDPathValue(r, postIDPathValueKey)
 	if err != nil {
 		respWriter.MapError(err)
 		return
@@ -73,7 +73,7 @@ func (h *PostsHTTPHandler) Unlike(w http.ResponseWriter, r *http.Request) {
 		respWriter.MapError(err)
 		return
 	}
-	postID, err := httputils.GetUUIDPathValue(r, "postID")
+	postID, err := httputils.GetUUIDPathValue(r, postIDPathValueKey)
 	if err != nil {
 		respWriter.MapError(err)
 		return

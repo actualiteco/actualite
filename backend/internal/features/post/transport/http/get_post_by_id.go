@@ -35,7 +35,7 @@ func (h *PostsHTTPHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(ctx)
 	respWriter := response.NewResponseHandler(log, w)
 
-	postID, err := httputils.GetUUIDPathValue(r, "postID")
+	postID, err := httputils.GetUUIDPathValue(r, postIDPathValueKey)
 	if err != nil {
 		respWriter.MapError(err)
 		return

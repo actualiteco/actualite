@@ -32,19 +32,13 @@ func (h *PostsHTTPHandler) GetReplies(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(ctx)
 	respWriter := response.NewResponseHandler(log, w)
 
-	page, err := httputils.GetUintQueryParam(r, "page")
+	page, pageSize, err := getPaginationParamsFromQuery(r)
 	if err != nil {
 		respWriter.MapError(err)
 		return
 	}
 
-	pageSize, err := httputils.GetUintQueryParam(r, "page_size")
-	if err != nil {
-		respWriter.MapError(err)
-		return
-	}
-
-	postID, err := httputils.GetUUIDPathValue(r, "postID")
+	postID, err := httputils.GetUUIDPathValue(r, postIDPathValueKey)
 	if err != nil {
 		respWriter.MapError(err)
 		return

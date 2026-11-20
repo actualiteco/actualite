@@ -2,6 +2,9 @@ package post_transport
 
 import (
 	"actualiteco/actualite/internal/core/domain"
+	httputils "actualiteco/actualite/internal/utils/http"
+	"fmt"
+	"net/http"
 	"time"
 	"uuid"
 )
@@ -47,6 +50,10 @@ type paginationDTO struct {
 type PostsWithPaginationDTOResponse struct {
 	Posts      []PostWithAuthorDTOResponse `json:"posts"`
 	Pagination paginationDTO               `json:"pagination"`
+}
+
+type imageUrlDTOResponse struct {
+	ImageURL string `json:"image_url"`
 }
 
 func postToResponse(p domain.Post) PostDTOResponse {
@@ -99,4 +106,18 @@ func postsWithPaginationToResponse(posts []domain.PostWithAuthor, pagination dom
 		Posts:      postsResponse,
 		Pagination: paginationResponse,
 	}
+}
+
+func getPaginationParamsFromQuery(r *http.Request) (*uint64, *uint64, error) {
+	page, err := httputils.GetUintQueryParam(r, pageQueryValueKey)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get page from query param: %w", err)
+	}
+
+	pageSize, err := httputils.GetUintQueryParam(r, pageSizeQueryValueKey)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get page size from query param: %w", err)
+	}
+
+	return page, pageSize, nil
 }

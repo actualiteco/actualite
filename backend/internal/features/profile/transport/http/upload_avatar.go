@@ -3,9 +3,8 @@ package profile_transport
 import (
 	"actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
+	httprequest "actualiteco/actualite/internal/core/transport/request"
 	"actualiteco/actualite/internal/core/transport/response"
-	"fmt"
-	"io"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -22,8 +21,10 @@ const multipartOverhead = 512 << 10
 // @Produce json
 // @Param file formData file true "Файл аватара (jpg/png, до 2 МБ)"
 // @Success 200 {object} UploadAvatarResponse "Успешный запрос"
-// @Failure 400 {object} domain.CustomError "Неверный запрос (неподходящий формат или размер файла)"
+// @Failure 400 {object} domain.CustomError "Неверный запрос (например, пустой файл)"
 // @Failure 401 {object} domain.CustomError "Пользователь неавторизован"
+// @Failure 413 {object} domain.CustomError "Размер файла превышает допустимый"
+// @Failure 415 {object} domain.CustomError "Неподходящий формат файла"
 // @Failure 500 {object}  domain.InternalError "Внутренняя ошибка сервера"
 // @Router /profile/avatar [post]
 // @Security BearerAuth
@@ -41,18 +42,9 @@ func (h *ProfileHTTPHandler) UploadAvatar(w http.ResponseWriter, r *http.Request
 
 	r.Body = http.MaxBytesReader(w, r.Body, domain.MaxAvatarSize+multipartOverhead)
 
-	file, _, err := r.FormFile("file")
+	data, err := httprequest.GetFileBytes(r, "file", domain.MaxAvatarSize)
 	if err != nil {
-		log.Debug("failed to get file from form", zap.Error(err))
-		respWriter.MapError(fmt.Errorf("get file from form: %w: %w", err, domain.ErrInvalidRequest))
-		return
-	}
-	defer file.Close()
-
-	data, err := io.ReadAll(io.LimitReader(file, domain.MaxAvatarSize+1))
-	if err != nil {
-		log.Debug("failed to read file", zap.Error(err))
-		respWriter.MapError(fmt.Errorf("read file: %w: %w", err, domain.ErrInvalidRequest))
+		respWriter.MapError(err)
 		return
 	}
 

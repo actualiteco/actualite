@@ -85,7 +85,7 @@ func main() {
 
 	log.Debug("initializing post service")
 	postRepository := post_repository.New(pool)
-	postService := post_service.New(postRepository, txManager)
+	postService := post_service.New(postRepository, txManager, storageClient)
 	postHandler := post_transport.NewPostsHandler(postService)
 
 	serv.RegisterRoutes(authHandler, profileHandler, postHandler)

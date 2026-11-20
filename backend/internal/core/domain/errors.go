@@ -11,6 +11,8 @@ var (
 	ErrUsernameAlreadyUsed     = NewCustomError("USERNAME_ALREADY_USED", "username is already in use")
 	ErrTokenExpired            = NewCustomError("TOKEN_EXPIRED", "access-token expired")
 	ErrSessionRevokedOrExpired = NewCustomError("SESSION_REVOKED_OR_EXPIRED", "session was revoked or expired")
+	ErrRequestIsTooLarge       = NewCustomError("REQUEST IS TOO LARGE", "request is too large")
+	ErrUnsupportedImageType    = NewCustomError("UNSUPPORTED IMAGE TYPE", "image type is invalid")
 )
 
 type CustomError struct {

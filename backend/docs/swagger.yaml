@@ -35,6 +35,8 @@ definitions:
       refresh_token:
         example: old_refresh_token
         type: string
+    required:
+    - refresh_token
     type: object
   internal_features_auth_transport_http.RegisterDTO:
     properties:
@@ -192,6 +194,11 @@ definitions:
           $ref: '#/definitions/internal_features_post_transport_http.PostWithAuthorDTOResponse'
         type: array
     type: object
+  internal_features_post_transport_http.imageUrlDTOResponse:
+    properties:
+      image_url:
+        type: string
+    type: object
   internal_features_post_transport_http.paginationDTO:
     properties:
       page:
@@ -218,18 +225,9 @@ definitions:
       avatar_url:
         example: http://localhost:8080/avatar_url
         type: string
-      created_at:
-        example: 2006-01-02T15:04:05Z07:00
-        type: string
       display_name:
         example: mark
         type: string
-      email:
-        example: test.user@email.com
-        type: string
-      email_verified:
-        example: false
-        type: boolean
       followers_count:
         example: 10
         type: integer
@@ -239,6 +237,9 @@ definitions:
       id:
         example: 8794e589-0ddb-43ce-9f92-16faafcf4ee4
         type: string
+      is_following:
+        example: true
+        type: boolean
       role:
         example: user
         type: string
@@ -321,7 +322,7 @@ paths:
       - application/json
       responses:
         "204":
-          description: No Content
+          description: Сессия успешно инвалидирована
         "401":
           description: Access-токен протух или не валиден
           schema:
@@ -455,6 +456,49 @@ paths:
       tags:
       - Posts
   /posts/{postID}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет пост, если запрос на удаление исходит от автора поста.
+        Метод идемпотентен
+      parameters:
+      - description: Post ID (UUID)
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        format: uuid
+        in: path
+        name: postID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Пост успешно удален
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Пост не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Пост принадлежит не текущему пользователю
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Удаление поста
+      tags:
+      - Posts
     get:
       consumes:
       - application/json
@@ -669,6 +713,98 @@ paths:
       security:
       - BearerAuth: []
       summary: Создание поста
+      tags:
+      - Posts
+  /posts/image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загрузить изображение для поста (jpg или png, до 5 МБ) в хранилище
+      parameters:
+      - description: Файл изображения (jpg/png, до 5 МБ)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный запрос
+          schema:
+            $ref: '#/definitions/internal_features_post_transport_http.imageUrlDTOResponse'
+        "400":
+          description: Неверный запрос (например, файл пустой)
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Пользователь неавторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "413":
+          description: Размер файла превышает допустимый
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "415":
+          description: Неподходящий формат файла
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Загрузить изображение
+      tags:
+      - Posts
+  /posts/me:
+    get:
+      consumes:
+      - application/json
+      description: Ищет посты пользователя по его Access Token с поддержкой пагинации
+        через параметры page и page_size
+      parameters:
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: Размер страницы
+        in: query
+        maximum: 30
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Все существующие посты возвращены (если у пользователя нет
+            постов - будет пустой массив)
+          schema:
+            $ref: '#/definitions/internal_features_post_transport_http.PostsWithPaginationDTOResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Поиск постов пользователя по его JWT
       tags:
       - Posts
   /profile:
@@ -898,11 +1034,19 @@ paths:
           schema:
             $ref: '#/definitions/internal_features_profile_transport_http.UploadAvatarResponse'
         "400":
-          description: Неверный запрос (неподходящий формат или размер файла)
+          description: Неверный запрос (например, пустой файл)
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "401":
           description: Пользователь неавторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "413":
+          description: Размер файла превышает допустимый
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "415":
+          description: Неподходящий формат файла
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "500":

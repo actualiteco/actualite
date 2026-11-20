@@ -15,14 +15,10 @@ var avatarExtensions = map[string]string{
 }
 
 func (s *ProfileService) UploadAvatar(ctx context.Context, id uuid.UUID, data []byte) (string, error) {
-	if len(data) == 0 || len(data) > domain.MaxAvatarSize {
-		return "", fmt.Errorf("invalid avatar size=%d: %w", len(data), domain.ErrInvalidRequest)
-	}
-
 	contentType := http.DetectContentType(data)
 	ext, ok := avatarExtensions[contentType]
 	if !ok {
-		return "", fmt.Errorf("unsupported avatar content type=%s: %w", contentType, domain.ErrInvalidRequest)
+		return "", fmt.Errorf("unsupported avatar content type=%s: %w", contentType, domain.ErrUnsupportedImageType)
 	}
 
 	avatarURL, err := s.storage.Upload(ctx, "avatar"+ext, bytes.NewReader(data))

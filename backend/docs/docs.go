@@ -87,7 +87,7 @@ const docTemplate = `{
                 "summary": "Инвалидация refresh-токена",
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": "Сессия успешно инвалидирована"
                     },
                     "401": {
                         "description": "Access-токен протух или не валиден",
@@ -342,6 +342,144 @@ const docTemplate = `{
                 }
             }
         },
+        "/posts/image": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Загрузить изображение для поста (jpg или png, до 5 МБ) в хранилище",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Загрузить изображение",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Файл изображения (jpg/png, до 5 МБ)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_post_transport_http.imageUrlDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос (например, файл пустой)",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Пользователь неавторизован",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "413": {
+                        "description": "Размер файла превышает допустимый",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "415": {
+                        "description": "Неподходящий формат файла",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Ищет посты пользователя по его Access Token с поддержкой пагинации через параметры page и page_size",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Поиск постов пользователя по его JWT",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 30,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Размер страницы",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Все существующие посты возвращены (если у пользователя нет постов - будет пустой массив)",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_post_transport_http.PostsWithPaginationDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Неверные учетные данные",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь не найден",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
         "/posts/{postID}": {
             "get": {
                 "security": [
@@ -392,6 +530,70 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Пост не найден",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Удаляет пост, если запрос на удаление исходит от автора поста. Метод идемпотентен",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Удаление поста",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                        "description": "Post ID (UUID)",
+                        "name": "postID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Пост успешно удален"
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Неверные учетные данные",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "404": {
+                        "description": "Пост не найден",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "409": {
+                        "description": "Пост принадлежит не текущему пользователю",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
@@ -705,13 +907,25 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос (неподходящий формат или размер файла)",
+                        "description": "Неверный запрос (например, пустой файл)",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
                     "401": {
                         "description": "Пользователь неавторизован",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "413": {
+                        "description": "Размер файла превышает допустимый",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "415": {
+                        "description": "Неподходящий формат файла",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
@@ -1121,6 +1335,9 @@ const docTemplate = `{
         },
         "internal_features_auth_transport_http.RefreshDTO": {
             "type": "object",
+            "required": [
+                "refresh_token"
+            ],
             "properties": {
                 "refresh_token": {
                     "type": "string",
@@ -1341,6 +1558,14 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_features_post_transport_http.imageUrlDTOResponse": {
+            "type": "object",
+            "properties": {
+                "image_url": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_features_post_transport_http.paginationDTO": {
             "type": "object",
             "properties": {
@@ -1378,21 +1603,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "http://localhost:8080/avatar_url"
                 },
-                "created_at": {
-                    "type": "string",
-                    "example": "2006-01-02T15:04:05Z07:00"
-                },
                 "display_name": {
                     "type": "string",
                     "example": "mark"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "test.user@email.com"
-                },
-                "email_verified": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "followers_count": {
                     "type": "integer",
@@ -1405,6 +1618,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "8794e589-0ddb-43ce-9f92-16faafcf4ee4"
+                },
+                "is_following": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "role": {
                     "type": "string",
