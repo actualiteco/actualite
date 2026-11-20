@@ -22,6 +22,7 @@ type AuthService interface {
 	ProcessResetPasswordRequest(ctx context.Context, mail string) error
 	ResetPassword(ctx context.Context, token string, newPassword string) error
 	ProcessEmailConfirmationRequest(ctx context.Context, userID uuid.UUID) error
+	ConfirmEmail(ctx context.Context, userID uuid.UUID, token string) error
 }
 
 func NewAuthHandler(authServ AuthService) *AuthHTTPHandler {
@@ -70,6 +71,12 @@ func (h *AuthHTTPHandler) Routes() []server.Route {
 			Method:       http.MethodPost,
 			URL:          "/auth/email-confirmation/request",
 			Handler:      h.ProcessEmailConfirmationRequest,
+			AuthRequired: true,
+		},
+		{
+			Method:       http.MethodPost,
+			URL:          "/auth/email-confirmation/confirm",
+			Handler:      h.ConfirmEmail,
 			AuthRequired: true,
 		},
 	}

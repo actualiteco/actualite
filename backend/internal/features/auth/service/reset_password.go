@@ -16,13 +16,13 @@ func (s *AuthService) ResetPassword(ctx context.Context, token string, newPasswo
 		user, err := s.usersRepo.GetUserByPasswordResetToken(ctx, tokenHash)
 		if err != nil {
 			if errors.Is(err, domain.ErrNotFound) {
-				return fmt.Errorf("get password reset token: %v: %w", err, domain.ErrResetTokenInvalidOrExpired)
+				return fmt.Errorf("get password reset token: %v: %w", err, domain.ErrTokenInvalidOrExpired)
 			}
 			return fmt.Errorf("get password reset token: %w", err)
 		}
 
 		if time.Now().After(user.PasswordResetExpiresAt) {
-			return domain.ErrResetTokenInvalidOrExpired
+			return domain.ErrTokenInvalidOrExpired
 		}
 
 		userID, err := uuid.Parse(user.ID)

@@ -84,10 +84,10 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusUnauthorized
 		logFunc = h.log.Warn
 		customErr = domain.ErrSessionRevokedOrExpired
-	case errors.Is(err, domain.ErrResetTokenInvalidOrExpired):
+	case errors.Is(err, domain.ErrTokenInvalidOrExpired):
 		statusCode = http.StatusUnauthorized
 		logFunc = h.log.Warn
-		customErr = domain.ErrResetTokenInvalidOrExpired
+		customErr = domain.ErrTokenInvalidOrExpired
 	case errors.Is(err, domain.ErrEmailAlreadyUsed):
 		statusCode = http.StatusConflict
 		logFunc = h.log.Warn

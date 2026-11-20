@@ -25,6 +25,7 @@ type usersRepository interface {
 	ResetPassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
 	GetOwnProfile(ctx context.Context, id uuid.UUID) (domain.User, error)
 	SaveEmailConfirmationToken(ctx context.Context, userID uuid.UUID, email, tokenHash string, expirationTime time.Time) error
+	ConfirmEmail(ctx context.Context, userID uuid.UUID, tokenHash string) error
 }
 
 type sessionsRepository interface {

@@ -16,6 +16,14 @@ definitions:
       message:
         type: string
     type: object
+  internal_features_auth_transport_http.ConfirmEmailDTORequest:
+    properties:
+      token:
+        example: email-confirmation-token
+        type: string
+    required:
+    - token
+    type: object
   internal_features_auth_transport_http.ConfirmPasswordResetDTORequest:
     properties:
       new_password:
@@ -296,6 +304,49 @@ info:
   title: actualiteco/actualite
   version: "1.0"
 paths:
+  /auth/email-confirmation/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Принимает токен для подтверждения почты (должен парситься из URL
+        ссылки, которая присылается на почту при запросе на подтверждение)
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.ConfirmEmailDTORequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Почта успешно подтверждена
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Ошибка авторизации
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Не удалось подтвердить почту
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Подтверждение почты
+      tags:
+      - Auth
   /auth/email-confirmation/request:
     post:
       consumes:
