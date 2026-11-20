@@ -23,6 +23,7 @@ const multipartOverhead = 512 << 10
 // @Success 200 {object} UploadAvatarResponse "Успешный запрос"
 // @Failure 400 {object} domain.CustomError "Неверный запрос (например, пустой файл)"
 // @Failure 401 {object} domain.CustomError "Пользователь неавторизован"
+// @Failure 403 {object} domain.CustomError "Для действия требуется подтверждение почты"
 // @Failure 413 {object} domain.CustomError "Размер файла превышает допустимый"
 // @Failure 415 {object} domain.CustomError "Неподходящий формат файла"
 // @Failure 500 {object}  domain.InternalError "Внутренняя ошибка сервера"

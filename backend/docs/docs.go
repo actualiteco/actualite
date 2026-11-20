@@ -540,6 +540,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
+                    "403": {
+                        "description": "Для действия требуется подтверждение почты",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
                     "404": {
                         "description": "Не удалось найти пост с данным parent_id",
                         "schema": {
@@ -597,6 +603,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Пользователь неавторизован",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "403": {
+                        "description": "Для действия требуется подтверждение почты",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
@@ -795,6 +807,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Неверные учетные данные",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "403": {
+                        "description": "Для действия требуется подтверждение почты",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
@@ -1064,8 +1082,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
                     },
+                    "401": {
+                        "description": "Пользователь не авторизован",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
                     "403": {
-                        "description": "Пользователь неавторизован",
+                        "description": "Для действия требуется подтверждение почты",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }
@@ -1127,6 +1151,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Пользователь неавторизован",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "403": {
+                        "description": "Для действия требуется подтверждение почты",
                         "schema": {
                             "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
                         }

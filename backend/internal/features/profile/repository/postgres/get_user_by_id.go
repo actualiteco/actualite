@@ -16,7 +16,7 @@ func (r *UsersRepository) GetUserByID(ctx context.Context, id, targetID uuid.UUI
 	defer cancel()
 
 	query := `
-	SELECT id, role, username, display_name, status, avatar_url,
+	SELECT id, role, username, display_name, status, avatar_url, email_verified,
 		(SELECT COUNT(*) FROM follows WHERE following_id = users.id) AS followers_count,
 		(SELECT COUNT(*) FROM follows WHERE follower_id = users.id) AS following_count,
 		EXISTS (
@@ -33,7 +33,7 @@ func (r *UsersRepository) GetUserByID(ctx context.Context, id, targetID uuid.UUI
 
 	var model auth_models.UserModel
 	err := row.Scan(&model.ID, &model.Role, &model.Username, &model.DisplayName, &model.Status, &model.AvatarURL,
-		&model.FollowersCount, &model.FollowingCount, &model.IsFollowing)
+		&model.EmailVerified, &model.FollowersCount, &model.FollowingCount, &model.IsFollowing)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.User{}, fmt.Errorf("user not found: %w", domain.ErrNotFound)

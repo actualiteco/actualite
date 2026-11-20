@@ -44,7 +44,7 @@ func (s *AuthService) Login(ctx context.Context, email, password, userAgent, ipA
 		return "", "", 0, fmt.Errorf("save session: %w", err)
 	}
 
-	accessToken, err := s.tokenService.GenerateJWT(userID, session.ID, user.Role)
+	accessToken, err := s.tokenService.GenerateJWT(userID, session.ID, user.Role, user.EmailVerified)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("generate access token: %w", err)
 	}

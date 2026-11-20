@@ -116,6 +116,10 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusUnsupportedMediaType
 		logFunc = h.log.Error
 		customErr = domain.ErrUnsupportedImageType
+	case errors.Is(err, domain.ErrEmailVerificationRequired):
+		statusCode = http.StatusForbidden
+		logFunc = h.log.Warn
+		customErr = domain.ErrEmailVerificationRequired
 	default:
 		statusCode = http.StatusInternalServerError
 		logFunc = h.log.Error

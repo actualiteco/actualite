@@ -27,12 +27,13 @@ func New(cfg config) *TokenService {
 	}
 }
 
-func (s *TokenService) GenerateJWT(userID, sessionID uuid.UUID, role string) (string, error) {
+func (s *TokenService) GenerateJWT(userID, sessionID uuid.UUID, role string, emailVerified bool) (string, error) {
 	expirationTime := time.Now().Add(s.config.AccessTTL).UTC()
 
 	claims := tokenclaims.CustomClaims{
-		SessionID: sessionID.String(),
-		Role:      role,
+		SessionID:     sessionID.String(),
+		Role:          role,
+		EmailVerified: emailVerified,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   userID.String(),
 			Issuer:    "actualiteco",

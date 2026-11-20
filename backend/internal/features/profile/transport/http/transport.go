@@ -2,6 +2,7 @@ package profile_transport
 
 import (
 	"actualiteco/actualite/internal/core/domain"
+	"actualiteco/actualite/internal/core/middleware"
 	"actualiteco/actualite/internal/core/transport/server"
 	"context"
 	"net/http"
@@ -43,16 +44,18 @@ func (h *ProfileHTTPHandler) Routes() []server.Route {
 			AuthRequired: true,
 		},
 		{
-			Method:       http.MethodPatch,
-			URL:          "/profile",
-			Handler:      h.Update,
-			AuthRequired: true,
+			Method:               http.MethodPatch,
+			URL:                  "/profile",
+			Handler:              h.Update,
+			AuthRequired:         true,
+			AdditionalMiddleware: []middleware.Middleware{middleware.EmailVerificationMiddleware()},
 		},
 		{
-			Method:       http.MethodPost,
-			URL:          "/profile/avatar",
-			Handler:      h.UploadAvatar,
-			AuthRequired: true,
+			Method:               http.MethodPost,
+			URL:                  "/profile/avatar",
+			Handler:              h.UploadAvatar,
+			AuthRequired:         true,
+			AdditionalMiddleware: []middleware.Middleware{middleware.EmailVerificationMiddleware()},
 		},
 		{
 			Method:       http.MethodPost,

@@ -41,7 +41,7 @@ type tokenService interface {
 	HashRefreshToken(token string) string
 	GetRefreshTokenExpiration() time.Time
 
-	GenerateJWT(userID, sessionID uuid.UUID, role string) (string, error)
+	GenerateJWT(userID, sessionID uuid.UUID, role string, isEmailVerified bool) (string, error)
 	GetAccessTokenTTL() time.Duration
 
 	GetPasswordResetTokenExpiration() time.Time
