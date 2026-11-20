@@ -5,6 +5,7 @@ import (
 	"actualiteco/actualite/internal/core/logger"
 	"context"
 	"fmt"
+	"net/url"
 	"uuid"
 
 	"go.uber.org/zap"
@@ -50,7 +51,7 @@ func (s *AuthService) generateAndSendEmailConfirmationToken(ctx context.Context,
 	tokenHash := s.tokenService.HashEmailConfirmationToken(token)
 	expirationTime := s.tokenService.GetEmailConfirmationTokenExpiration()
 
-	link, err := createLinkWithToken(token)
+	link, err := createConfirmEmailLinkWithToken(token)
 	if err != nil {
 		return fmt.Errorf("create link to confirm email: %w", err)
 	}
@@ -64,4 +65,18 @@ func (s *AuthService) generateAndSendEmailConfirmationToken(ctx context.Context,
 	}
 
 	return nil
+}
+
+func createConfirmEmailLinkWithToken(token string) (string, error) {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return "", fmt.Errorf("parse app base URL: %w", err)
+	}
+
+	u.Path = "/confirm-email"
+	q := u.Query()
+	q.Set("token", token)
+	u.RawQuery = q.Encode()
+
+	return u.String(), nil
 }
