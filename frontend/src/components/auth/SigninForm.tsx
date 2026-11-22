@@ -25,7 +25,7 @@ const SigninForm = () => {
                 toast.success('С возвращением!');
             } catch (error) {
                 const { status, message } = parseApiError(error);
-                if (status === 401 || status === 403) {
+                if (status === 401 || status === 400 || status === 403) {
                     toast.error('Неверный email или пароль');
                 } else if (status === 429) {
                     toast.error('Слишком много попыток. Попробуйте позже');
