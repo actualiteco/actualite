@@ -1,19 +1,23 @@
 import { safeGetItem, safeRemoveItem, safeSetItem } from './storage.utils';
-import { isTokenExpired } from './string.utils';
 
-export const TOKEN_KEY = 'token';
+const ACCESS_KEY = 'access_token';
+const REFRESH_KEY = 'refresh_token';
+const LEGACY_KEY = 'token';
 
-export const getToken = (): string | null => safeGetItem(TOKEN_KEY);
+export const getAccessToken = (): string | null => safeGetItem(ACCESS_KEY);
+export const getRefreshToken = (): string | null => safeGetItem(REFRESH_KEY);
 
-export const setToken = (token: string): void => {
-    if (!safeSetItem(TOKEN_KEY, token)) {
-        throw new Error('Не удалось сохранить сессию в localStorage. Возможно, включён приватный режим или заблокированы cookies.');
+export const setTokens = (accessToken: string, refreshToken: string): void => {
+    const saved = safeSetItem(ACCESS_KEY, accessToken) && safeSetItem(REFRESH_KEY, refreshToken);
+    if (!saved) {
+        throw new Error('Не удалось сохранить сессию: хранилище браузера недоступно');
     }
 };
 
-export const clearToken = (): void => safeRemoveItem(TOKEN_KEY);
-
-export const hasValidToken = (): boolean => {
-    const token = getToken();
-    return Boolean(token) && !isTokenExpired(token as string);
+export const clearTokens = (): void => {
+    safeRemoveItem(ACCESS_KEY);
+    safeRemoveItem(REFRESH_KEY);
+    safeRemoveItem(LEGACY_KEY);
 };
+
+export const hasSession = (): boolean => Boolean(getRefreshToken());
