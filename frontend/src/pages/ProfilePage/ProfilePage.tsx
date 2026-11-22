@@ -1,55 +1,154 @@
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import AppLayout from '@components/layout/AppLayout/AppLayout';
-import ProfileHeader from '@components/profile/ProfileHeader/ProfileHeader';
-import ProfileSkeleton from '@components/profile/ProfileSkeleton/ProfileSkeleton';
-import ProfileError from '@components/profile/ProfileError/ProfileError';
-import UserPosts from '@components/profile/UserPosts/UserPosts';
-import FollowButton from '@components/profile/FollowButton/FollowButton';
-import OwnProfileActions from '@components/profile/OwnProfileActions/OwnProfileActions';
+import PostList from '@components/posts/PostList';
+import ProfileEditModal from '@components/profile/ProfileEditModal';
+import ProfileHeader from '@components/profile/ProfileHeader';
+import Button from '@components/shared/Button/Button';
+import EmptyState from '@components/shared/EmptyState/EmptyState';
+import { usePaginatedPosts } from '@hooks/usePaginatedPosts';
+import { PostService } from '@services/PostService';
+import { ProfileService } from '@services/ProfileService';
 import { useAuthStore } from '@stores/useAuthStore';
-import { useProfileStore } from '@stores/useProfileStore';
+import type { Profile } from '@models/Profile';
+import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
+
+type Status = 'loading' | 'ready' | 'notFound' | 'error';
 
 const ProfilePage = () => {
     const { id } = useParams<{ id: string }>();
-    const userId = useAuthStore((state) => state.userId);
-
-    const profile = useProfileStore((state) => state.profile);
-    const status = useProfileStore((state) => state.status);
-    const error = useProfileStore((state) => state.error);
-    const fetchProfile = useProfileStore((state) => state.fetchProfile);
-    const reset = useProfileStore((state) => state.reset);
-
+    const { userId, email, setProfile: saveMyProfile } = useAuthStore();
     const isOwn = !id || id === userId;
-    const targetId = isOwn ? undefined : id;
+
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [status, setStatus] = useState<Status>('loading');
+    const [reloadKey, setReloadKey] = useState(0);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isFollowBusy, setIsFollowBusy] = useState(false);
 
     useEffect(() => {
-        fetchProfile(targetId);
-        return reset;
-    }, [targetId, fetchProfile, reset]);
+        let cancelled = false;
+        setStatus('loading');
+        setProfile(null);
 
-    const renderContent = () => {
-        if (status === 'error' && error) {
-            return <ProfileError error={error} onRetry={() => fetchProfile(targetId)} />;
+        const request = isOwn ? ProfileService.getMe() : ProfileService.getById(id as string);
+        request
+            .then((loaded) => {
+                if (cancelled) return;
+                setProfile(loaded);
+                setStatus('ready');
+                if (isOwn) {
+                    saveMyProfile(loaded);
+                }
+            })
+            .catch((error) => {
+                if (cancelled) return;
+                const code = parseApiError(error).status;
+                setStatus(code === 404 || code === 400 ? 'notFound' : 'error');
+            });
+
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id, isOwn, reloadKey]);
+
+    const profileId = profile?.id || undefined;
+    const posts = usePaginatedPosts(
+        (page, pageSize) => PostService.getUserPosts(profileId as string, page, pageSize),
+        [profileId],
+        Boolean(profileId),
+    );
+
+    const handleToggleFollow = async () => {
+        if (!profile?.id || isFollowBusy) {
+            return;
         }
-        if (status === 'success' && profile) {
-            return (
+        setIsFollowBusy(true);
+        const before = profile;
+        const wasFollowing = before.isFollowing === true;
+        setProfile({
+            ...before,
+            isFollowing: !wasFollowing,
+            followersCount: Math.max(0, before.followersCount + (wasFollowing ? -1 : 1)),
+        });
+        try {
+            if (wasFollowing) {
+                await ProfileService.unfollow(before.id);
+            } else {
+                await ProfileService.follow(before.id);
+            }
+        } catch (error) {
+            setProfile(before);
+            toast.error(
+                parseApiError(error).status === 429
+                    ? 'Достигнут лимит подписок (50 в час). Попробуйте позже'
+                    : getApiErrorMessage(error, 'Не удалось выполнить действие'),
+            );
+        } finally {
+            setIsFollowBusy(false);
+        }
+    };
+
+    const handleSaved = (updated: Profile) => {
+        setProfile(updated);
+        if (isOwn) {
+            saveMyProfile(updated);
+        }
+    };
+
+    return (
+        <AppLayout title="Профиль" showBack={Boolean(id) && !isOwn}>
+            {status === 'loading' && <EmptyState title="Загрузка…" />}
+
+            {status === 'notFound' && (
+                <EmptyState title="Пользователь не найден">
+                    <p>Возможно, ссылка неверна.</p>
+                </EmptyState>
+            )}
+
+            {status === 'error' && (
+                <EmptyState title="Не удалось загрузить профиль">
+                    <Button variant="outlined" onClick={() => setReloadKey((key) => key + 1)}>
+                        Повторить
+                    </Button>
+                </EmptyState>
+            )}
+
+            {status === 'ready' && profile && (
                 <>
                     <ProfileHeader
                         profile={profile}
                         isOwn={isOwn}
-                        actions={isOwn ? <OwnProfileActions profile={profile} /> : <FollowButton />}
+                        email={email}
+                        isFollowBusy={isFollowBusy}
+                        onEdit={() => setIsEditing(true)}
+                        onToggleFollow={handleToggleFollow}
                     />
-                    <UserPosts userId={profile.id} isOwn={isOwn} />
+                    <PostList
+                        posts={posts.posts}
+                        isLoading={posts.isLoading}
+                        error={posts.error}
+                        hasMore={posts.hasMore}
+                        loadedOnce={posts.loadedOnce}
+                        currentUserId={userId}
+                        emptyTitle="Постов пока нет"
+                        showParentLink
+                        onLoadMore={posts.loadMore}
+                        onPostChange={posts.update}
+                        onPostDeleted={posts.remove}
+                    />
+                    {isOwn && (
+                        <ProfileEditModal
+                            open={isEditing}
+                            profile={profile}
+                            onClose={() => setIsEditing(false)}
+                            onSaved={handleSaved}
+                        />
+                    )}
                 </>
-            );
-        }
-        return <ProfileSkeleton />;
-    };
-
-    return (
-        <AppLayout title="Профиль" showBack={Boolean(id)}>
-            {renderContent()}
+            )}
         </AppLayout>
     );
 };
