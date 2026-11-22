@@ -31,3 +31,9 @@ export const isTokenExpired = (token: string): boolean => {
     }
     return payload.exp * 1000 <= Date.now();
 };
+
+export const truncate = (text: string, max: number): string => {
+    if (!text) return '';
+    if (text.length <= max) return text;
+    return text.slice(0, max).trimEnd() + '…';
+};
