@@ -9,7 +9,7 @@ import (
 
 // ProcessEmailConfirmationRequest godoc
 // @Summary Обработка запроса на подтверждение email
-// @Description Создает токен, его хэш сохраняется в БД, а на почту приходит письмо с ссылкой на страницу фронтенда для подтверждения email
+// @Description Создает токен, его хэш сохраняется в БД, а на почту приходит письмо с ссылкой на страницу фронтенда (/confirm-email?token=...) для подтверждения email
 // @Tags Auth
 // @Accept json
 // @Produce json

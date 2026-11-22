@@ -51,28 +51,23 @@ func (s *AuthService) generateAndSendEmailConfirmationToken(ctx context.Context,
 	tokenHash := s.tokenService.HashEmailConfirmationToken(token)
 	expirationTime := s.tokenService.GetEmailConfirmationTokenExpiration()
 
-	link, err := createConfirmEmailLinkWithToken(token)
+	link, err := createConfirmEmailLinkWithToken(token, s.frontendURL)
 	if err != nil {
 		return fmt.Errorf("create link to confirm email: %w", err)
-	}
-
-	if err = s.mailer.SendLinkToConfirmEmail(ctx, email, link); err != nil {
-		return fmt.Errorf("send confirmation email token: %w", err)
 	}
 
 	if err := s.usersRepo.SaveEmailConfirmationToken(ctx, userID, email, tokenHash, expirationTime); err != nil {
 		return fmt.Errorf("save email confirmation token: %w", err)
 	}
 
+	if err = s.mailer.SendLinkToConfirmEmail(ctx, email, link); err != nil {
+		return fmt.Errorf("send confirmation email token: %w", err)
+	}
+
 	return nil
 }
 
-func createConfirmEmailLinkWithToken(token string) (string, error) {
-	u, err := url.Parse(baseURL)
-	if err != nil {
-		return "", fmt.Errorf("parse app base URL: %w", err)
-	}
-
+func createConfirmEmailLinkWithToken(token string, u *url.URL) (string, error) {
 	u.Path = "/confirm-email"
 	q := u.Query()
 	q.Set("token", token)

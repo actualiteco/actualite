@@ -68,7 +68,8 @@ func main() {
 	tokenService := tokenservice.New(tokenCfg)
 
 	authMiddleware := middleware.AuthMiddleware(tokenService)
-	serv := server.NewHTTPServer(server.NewConfigMust(), log, authMiddleware)
+	serverCfg := server.NewConfigMust()
+	serv := server.NewHTTPServer(serverCfg, log, authMiddleware)
 	serv.RegisterSwagger()
 
 	log.Debug("initializing smtp client")
@@ -80,7 +81,7 @@ func main() {
 	log.Debug("initializing auth service")
 	usersRepo := users_repository.NewAuthRepository(pool)
 	sessionsRepo := sessionsrepo.New(pool)
-	authService := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService, smtpClient, txManager)
+	authService, err := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService, smtpClient, txManager, serverCfg.FrontendBaseURL)
 	authHandler := auth_transport.NewAuthHandler(authService)
 
 	log.Debug("initializing file storage")

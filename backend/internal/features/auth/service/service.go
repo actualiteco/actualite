@@ -2,6 +2,8 @@ package auth_service
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"time"
 	"uuid"
 
@@ -14,6 +16,8 @@ type AuthService struct {
 	tokenService tokenService
 	mailer       mailer
 	txManager    txManager
+
+	frontendURL *url.URL
 }
 
 type usersRepository interface {
@@ -66,12 +70,19 @@ type txManager interface {
 	DoWrite(ctx context.Context, fn func(context.Context) error) error
 }
 
-func NewAuthService(usersRepo usersRepository, sessionsRepo sessionsRepository, tokenSvc tokenService, mailer mailer, tx txManager) *AuthService {
+func NewAuthService(usersRepo usersRepository, sessionsRepo sessionsRepository, tokenSvc tokenService,
+	mailer mailer, tx txManager, frontendBaseURL string) (*AuthService, error) {
+	u, err := url.Parse(frontendBaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("parse frontend base url: %w", err)
+	}
+
 	return &AuthService{
 		usersRepo:    usersRepo,
 		sessionsRepo: sessionsRepo,
 		tokenService: tokenSvc,
 		mailer:       mailer,
 		txManager:    tx,
-	}
+		frontendURL:  u,
+	}, nil
 }
