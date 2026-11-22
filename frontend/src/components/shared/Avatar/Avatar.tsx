@@ -1,34 +1,30 @@
-import { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import styles from './Avatar.module.scss';
 
 interface AvatarProps {
-    name: string;
-    src?: string;
+    url?: string | null;
+    name?: string | null;
     size?: number;
 }
 
-const Avatar: FC<AvatarProps> = ({ name, src, size = 72 }) => {
-    const [failedSrc, setFailedSrc] = useState<string | null>(null);
+const Avatar: FC<AvatarProps> = ({ url, name, size = 40 }) => {
+    const [failed, setFailed] = useState(false);
 
-    const style = { width: size, height: size, fontSize: Math.round(size * 0.4) };
-    const letter = Array.from(name.trim())[0]?.toUpperCase() ?? '?';
+    useEffect(() => setFailed(false), [url]);
 
-    if (src && src !== failedSrc) {
-        return (
-            <img
-                className={styles.avatar}
-                style={style}
-                src={src}
-                alt={name}
-                onError={() => setFailedSrc(src)}
-            />
-        );
-    }
+    const letter = (name ?? '').trim().charAt(0) || '?';
 
     return (
-        <div className={`${styles.avatar} ${styles.placeholder}`} style={style} aria-hidden="true">
-            {letter}
-        </div>
+        <span
+            className={styles.avatar}
+            style={{ width: size, height: size, fontSize: Math.round(size * 0.4) }}
+        >
+            {url && !failed ? (
+                <img className={styles.image} src={url} alt="" onError={() => setFailed(true)} />
+            ) : (
+                letter
+            )}
+        </span>
     );
 };
 
