@@ -1,0 +1,49 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.title {
+    margin-bottom: 8px;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+}
+
+.avatarRow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+}
+
+.avatarHint {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.avatarError {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--error);
+}
+
+.counter {
+    align-self: flex-end;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.hiddenInput {
+    display: none;
+}
