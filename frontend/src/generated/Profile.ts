@@ -105,6 +105,33 @@ export class Profile<
       ...params,
     });
   /**
+   * @description Проверить, занят ли username
+   *
+   * @tags Profile
+   * @name UsernameAvailabilityList
+   * @summary Проверка доступности username
+   * @request GET:/profile/username-availability
+   */
+  usernameAvailabilityList = (
+    query: {
+      /** Username */
+      username: string;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<
+      InternalFeaturesProfileTransportHttpFollowResponse,
+      | ActualitecoActualiteInternalCoreDomainCustomError
+      | ActualitecoActualiteInternalCoreDomainInternalError
+    >({
+      path: `/profile/username-availability`,
+      method: "GET",
+      query: query,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Получить профиль пользователя с постами по id пользователя
    *
    * @tags Profile

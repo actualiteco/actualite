@@ -38,7 +38,7 @@ export class Login<
       | ActualitecoActualiteInternalCoreDomainCustomError
       | ActualitecoActualiteInternalCoreDomainInternalError
     >({
-      path: `/login`,
+      path: `auth/login`,
       method: "POST",
       body: request,
       type: ContentType.Json,

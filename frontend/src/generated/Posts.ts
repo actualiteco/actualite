@@ -14,6 +14,7 @@ import {
   ActualitecoActualiteInternalCoreDomainCustomError,
   ActualitecoActualiteInternalCoreDomainInternalError,
   InternalFeaturesPostTransportHttpCreatePostDTO,
+  InternalFeaturesPostTransportHttpImageUrlDTOResponse,
   InternalFeaturesPostTransportHttpLikeResponse,
   InternalFeaturesPostTransportHttpPostDTOResponse,
   InternalFeaturesPostTransportHttpPostWithAuthorDTOResponse,
@@ -91,6 +92,78 @@ export class Posts<
       ...params,
     });
   /**
+   * @description Загрузить изображение для поста (jpg или png, до 5 МБ) в хранилище
+   *
+   * @tags Posts
+   * @name ImageCreate
+   * @summary Загрузить изображение
+   * @request POST:/posts/image
+   * @secure
+   */
+  imageCreate = (
+    data: {
+      /**
+       * Файл изображения (jpg/png, до 5 МБ)
+       * @format binary
+       */
+      file: File;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<
+      InternalFeaturesPostTransportHttpImageUrlDTOResponse,
+      | ActualitecoActualiteInternalCoreDomainCustomError
+      | ActualitecoActualiteInternalCoreDomainInternalError
+    >({
+      path: `/posts/image`,
+      method: "POST",
+      body: data,
+      secure: true,
+      type: ContentType.FormData,
+      format: "json",
+      ...params,
+    });
+  /**
+   * @description Ищет посты пользователя по его Access Token с поддержкой пагинации через параметры page и page_size
+   *
+   * @tags Posts
+   * @name GetPosts
+   * @summary Поиск постов пользователя по его JWT
+   * @request GET:/posts/me
+   * @secure
+   */
+  getPosts = (
+    query?: {
+      /**
+       * Номер страницы
+       * @min 1
+       * @default 1
+       */
+      page?: number;
+      /**
+       * Размер страницы
+       * @min 1
+       * @max 30
+       * @default 20
+       */
+      page_size?: number;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<
+      InternalFeaturesPostTransportHttpPostsWithPaginationDTOResponse,
+      | ActualitecoActualiteInternalCoreDomainCustomError
+      | ActualitecoActualiteInternalCoreDomainInternalError
+    >({
+      path: `/posts/me`,
+      method: "GET",
+      query: query,
+      secure: true,
+      type: ContentType.Json,
+      format: "json",
+      ...params,
+    });
+  /**
    * @description Ищет пост по ID и возвращает информацию о посте + краткую информацию об авторе (username, display_name, avatar_url)
    *
    * @tags Posts
@@ -113,11 +186,32 @@ export class Posts<
       ...params,
     });
   /**
-   * @description Like a post as the authenticated user, including their own posts.
+   * @description Удаляет пост, если запрос на удаление исходит от автора поста. Метод идемпотентен
+   *
+   * @tags Posts
+   * @name PostsDelete
+   * @summary Удаление поста
+   * @request DELETE:/posts/{postID}
+   * @secure
+   */
+  postsDelete = (postId: string, params: RequestParams = {}) =>
+    this.request<
+      void,
+      | ActualitecoActualiteInternalCoreDomainCustomError
+      | ActualitecoActualiteInternalCoreDomainInternalError
+    >({
+      path: `/posts/${postId}`,
+      method: "DELETE",
+      secure: true,
+      type: ContentType.Json,
+      ...params,
+    });
+  /**
+   * @description Поставить лайк на пост авторизованному пользователю
    *
    * @tags Posts
    * @name LikeCreate
-   * @summary Like a post
+   * @summary Поставить лайк
    * @request POST:/posts/{postID}/like
    * @secure
    */
@@ -176,11 +270,11 @@ export class Posts<
       ...params,
     });
   /**
-   * @description Unlike a post as the authenticated user, including their own posts.
+   * @description Убрать лайк с поста авторизованному пользователю
    *
    * @tags Posts
    * @name UnlikeCreate
-   * @summary Unlike a post
+   * @summary Убрать лайк
    * @request POST:/posts/{postID}/unlike
    * @secure
    */

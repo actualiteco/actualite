@@ -38,7 +38,7 @@ export class Register<
       | ActualitecoActualiteInternalCoreDomainCustomError
       | ActualitecoActualiteInternalCoreDomainInternalError
     >({
-      path: `/register`,
+      path: `auth/register`,
       method: "POST",
       body: request,
       type: ContentType.Json,
