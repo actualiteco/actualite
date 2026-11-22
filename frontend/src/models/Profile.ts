@@ -32,20 +32,30 @@ export const toProfile = (dto: ProfileDTO): Profile => ({
     displayName: dto.display_name ?? '',
     avatarUrl: dto.avatar_url ?? '',
     status: dto.status ?? '',
-    email: dto.email ?? '',
+    email: '',
     followersCount: dto.followers_count ?? 0,
     followingCount: dto.following_count ?? 0,
-    createdAt: dto.created_at ?? '',
+    createdAt: '',
     isFollowing: dto.is_following ?? null,
 });
 
-export const toUpdateRequest = (
-    changes: ProfileChanges,
-): InternalFeaturesProfileTransportHttpUpdateProfileRequest => ({
-    display_name: changes.displayName,
-    username: changes.username,
-    status: changes.status,
-});
+export const toUpdateRequest = (changes: ProfileChanges) => {
+    const request: Record<string, string> = {};
+
+    if (changes.displayName !== undefined) {
+        request.display_name = changes.displayName;
+    }
+
+    if (changes.username !== undefined) {
+        request.username = changes.username;
+    }
+
+    if (changes.status !== undefined) {
+        request.status = changes.status;
+    }
+
+    return request;
+};
 
 export const getDisplayName = (profile: Pick<Profile, 'displayName' | 'username'>): string =>
     profile.displayName.trim() || profile.username;
