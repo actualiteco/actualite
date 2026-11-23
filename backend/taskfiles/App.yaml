@@ -17,12 +17,12 @@ tasks:
   build-up:
     desc: "Собрать приложение в docker-образ и запустить. Если образ уже есть - просто запустить"
     cmds:
-      - docker compose up -d actualite db-postgres seaweedfs
+      - docker compose up -d actualite db-postgres seaweedfs mailhog
 
   build-down:
-    desc: "Завершить работу приложения (actualite, PostgreSQL, SeaweedFS)"
+    desc: "Завершить работу приложения (actualite, PostgreSQL, SeaweedFS, MailHog)"
     cmds:
-      - docker compose down actualite db-postgres seaweedfs
+      - docker compose down actualite db-postgres seaweedfs mailhog
 
   swagger:
     desc: "Обновить OpenAPI спецификацию"

@@ -8,6 +8,7 @@ includes:
   migrate: ./taskfiles/Migrate.yaml
   lint: ./taskfiles/Lint.yaml
   app: ./taskfiles/App.yaml
+  mail: ./taskfiles/Mailer.yaml
 
 vars:
   GO_VERSION: '1.27.0'
