@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useRef } from 'react';
 import Button from '@components/shared/Button/Button';
 import EmptyState from '@components/shared/EmptyState/EmptyState';
-import PostCard from '@components/posts/PostCard';
+import PostCard from '@components/post/PostCard/PostCard';
 import type { Post } from '@models/api.types';
 import styles from './PostList.module.scss';
 

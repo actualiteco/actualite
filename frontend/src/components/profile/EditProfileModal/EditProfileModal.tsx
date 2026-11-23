@@ -11,9 +11,9 @@ import { getDisplayName } from '@models/Profile';
 import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
 import { validateImageFile } from '@utils/file.utils';
 import { charCount } from '@utils/validators.utils';
-import AvatarCropModal, { AVATAR_MAX_BYTES } from './AvatarCropModal';
-import { STATUS_MAX, isUsernameFormatValid, profileSchema } from './validation';
-import styles from './ProfileEditModal.module.scss';
+import AvatarCropModal, { AVATAR_MAX_BYTES } from '../AvatarCropModal/AvatarCropModal';
+import { STATUS_MAX, isUsernameFormatValid, profileSchema } from '../validation';
+import styles from './EditProfileModal.module.scss';
 
 interface ProfileEditModalProps {
     open: boolean;

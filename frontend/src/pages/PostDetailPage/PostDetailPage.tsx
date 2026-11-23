@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AppLayout from '@components/layout/AppLayout/AppLayout';
-import PostCard from '@components/posts/PostCard';
+import PostCard from '@components/post/PostCard/PostCard';
 import PostComposer from '@components/posts/PostComposer';
 import PostList from '@components/posts/PostList';
 import Button from '@components/shared/Button/Button';
