@@ -8,6 +8,10 @@ services:
       - POSTGRES_HOST=db-postgres:5432
       - SEAWEEDFS_MASTER_URL=http://seaweedfs:9333
       - SEAWEEDFS_VOLUME_SERVER=seaweedfs:8080
+      - SMTP_MAILHOG_HOST=mailhog
+      - SMTP_MAILHOG_PORT=1025
+      - SMTP_MAILHOG_FROM=no-reply@actualite.co
+      - SMTP_MAILHOG_TIMEOUT=10s
     volumes:
       - ./out/logs:/out/logs
       - ./docs:/docs
@@ -15,6 +19,8 @@ services:
       db-postgres:
         condition: service_healthy
       seaweedfs:
+        condition: service_started
+      mailhog:
         condition: service_started
 
   db-postgres:
@@ -44,6 +50,19 @@ services:
       - "8333:8080"
     volumes:
       - ./db/seaweedfs/data:/data
+    restart: always
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    environment:
+      - MH_STORAGE=maildir
+      - MH_MAILDIR_PATH=/maildir
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    volumes:
+      - ./db/mailhog/maildir:/maildir
     restart: always
 
   db-migrations:

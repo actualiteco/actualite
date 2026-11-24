@@ -31,7 +31,7 @@ func (s *AuthService) Refresh(ctx context.Context, oldRefreshToken string) (stri
 		return "", "", 0, fmt.Errorf("get user by id: %w", err)
 	}
 
-	accessToken, err := s.tokenService.GenerateJWT(session.UserID, session.ID, user.Role)
+	accessToken, err := s.tokenService.GenerateJWT(session.UserID, session.ID, user.Role, user.EmailVerified)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("generate access token: %w", err)
 	}

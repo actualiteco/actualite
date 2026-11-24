@@ -2,7 +2,6 @@ package auth_service
 
 import (
 	"actualiteco/actualite/internal/core/domain"
-	hash_utils "actualiteco/actualite/internal/utils/hash"
 	"context"
 	"errors"
 	"fmt"
@@ -21,7 +20,7 @@ func (s *AuthService) Login(ctx context.Context, email, password, userAgent, ipA
 		return "", "", 0, fmt.Errorf("get from database: %w", domain.ErrInternal)
 	}
 
-	if !hash_utils.CheckPasswordHash(password, user.Password) {
+	if !s.tokenService.CheckPasswordHash(password, user.Password) {
 		return "", "", 0, fmt.Errorf("wrong password: %w", domain.ErrUnauthorized)
 	}
 
@@ -45,7 +44,7 @@ func (s *AuthService) Login(ctx context.Context, email, password, userAgent, ipA
 		return "", "", 0, fmt.Errorf("save session: %w", err)
 	}
 
-	accessToken, err := s.tokenService.GenerateJWT(userID, session.ID, user.Role)
+	accessToken, err := s.tokenService.GenerateJWT(userID, session.ID, user.Role, user.EmailVerified)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("generate access token: %w", err)
 	}

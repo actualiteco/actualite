@@ -19,7 +19,8 @@ import (
 // @Param request body UpdateProfileRequest true "Информация профиля"
 // @Success 200 {object} ProfileResponse "Успешный запрос"
 // @Failure 400 {object} domain.CustomError "Неверный запрос"
-// @Failure 403 {object} domain.CustomError "Пользователь неавторизован"
+// @Failure 401 {object} domain.CustomError "Пользователь не авторизован"
+// @Failure 403 {object} domain.CustomError "Для действия требуется подтверждение почты"
 // @Failure 409 {object} domain.CustomError "Пользователь с таким юзернеймом уже существует"
 // @Failure 500 {object}  domain.InternalError "Внутренняя ошибка сервера"
 // @Router /profile [patch]

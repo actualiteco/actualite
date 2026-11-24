@@ -18,6 +18,7 @@ import (
 // @Success 204 "Пост успешно удален"
 // @Failure 400 {object} domain.CustomError "Неверный запрос"
 // @Failure 401 {object} domain.CustomError "Неверные учетные данные"
+// @Failure 403 {object} domain.CustomError "Для действия требуется подтверждение почты"
 // @Failure 404 {object} domain.CustomError "Пост не найден"
 // @Failure 409 {object} domain.CustomError "Пост принадлежит не текущему пользователю"
 // @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"

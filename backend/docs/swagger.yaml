@@ -16,6 +16,28 @@ definitions:
       message:
         type: string
     type: object
+  internal_features_auth_transport_http.ConfirmEmailDTORequest:
+    properties:
+      token:
+        example: email-confirmation-token
+        type: string
+    required:
+    - token
+    type: object
+  internal_features_auth_transport_http.ConfirmPasswordResetDTORequest:
+    properties:
+      new_password:
+        example: new_password
+        maxLength: 64
+        minLength: 8
+        type: string
+      token:
+        example: reset-token
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
   internal_features_auth_transport_http.LoginDTO:
     properties:
       email:
@@ -85,6 +107,14 @@ definitions:
         example: m4rkek
         type: string
         x-order: "1"
+    type: object
+  internal_features_auth_transport_http.ResetPasswordDTORequest:
+    properties:
+      email:
+        example: test.user@email.com
+        type: string
+    required:
+    - email
     type: object
   internal_features_auth_transport_http.TokensDTOResponse:
     properties:
@@ -274,6 +304,85 @@ info:
   title: actualiteco/actualite
   version: "1.0"
 paths:
+  /auth/email-confirmation/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Принимает токен для подтверждения почты (должен парситься из URL
+        ссылки, которая присылается на почту при запросе на подтверждение)
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.ConfirmEmailDTORequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Почта успешно подтверждена
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Ошибка авторизации
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Не удалось подтвердить почту
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Подтверждение почты
+      tags:
+      - Auth
+  /auth/email-confirmation/request:
+    post:
+      consumes:
+      - application/json
+      description: Создает токен, его хэш сохраняется в БД, а на почту приходит письмо
+        с ссылкой на страницу фронтенда для подтверждения email
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Письмо с ссылкой для верификации email отправлено на почту
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Почта уже подтверждена
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Обработка запроса на подтверждение email
+      tags:
+      - Auth
   /auth/login:
     post:
       consumes:
@@ -334,6 +443,71 @@ paths:
       security:
       - BearerAuth: []
       summary: Инвалидация refresh-токена
+      tags:
+      - Auth
+  /auth/password-reset/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Принимает токен для смены пароля и новый пароль, если все успешно
+        - возвращается 204
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.ConfirmPasswordResetDTORequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Пароль успешно подтвержден
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "409":
+          description: Не удалось подтвердить смену пароля
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Подтверждение смены пароля
+      tags:
+      - Auth
+  /auth/password-reset/request:
+    post:
+      consumes:
+      - application/json
+      description: Создает password_reset_token с временем жизни, указанным в .env,
+        а также асинхронно присылает письмо с ссылкой на страницу фронтенда (/reset?token=...)
+        для смены пароля (если почта есть и верифицирована. если нет - статус-код
+        ответа также 202, но письмо не будет отправлено)
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.ResetPasswordDTORequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Письмо с ссылкой для смены пароля отправлено на почту, если
+            почта верифицирована
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      summary: Обработка запроса на смену пароля
       tags:
       - Auth
   /auth/refresh:
@@ -480,6 +654,10 @@ paths:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "401":
           description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "403":
+          description: Для действия требуется подтверждение почты
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "404":
@@ -702,6 +880,10 @@ paths:
           description: Неверные учетные данные
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "403":
+          description: Для действия требуется подтверждение почты
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "404":
           description: Не удалось найти пост с данным parent_id
           schema:
@@ -739,6 +921,10 @@ paths:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "401":
           description: Пользователь неавторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "403":
+          description: Для действия требуется подтверждение почты
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "413":
@@ -830,8 +1016,12 @@ paths:
           description: Неверный запрос
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "403":
-          description: Пользователь неавторизован
+          description: Для действия требуется подтверждение почты
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "409":
@@ -1039,6 +1229,10 @@ paths:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "401":
           description: Пользователь неавторизован
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "403":
+          description: Для действия требуется подтверждение почты
           schema:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
         "413":

@@ -7,8 +7,9 @@ import (
 )
 
 type CustomClaims struct {
-	SessionID string `json:"sid"`
-	Role      string `json:"role,omitempty"`
+	SessionID     string `json:"sid"`
+	Role          string `json:"role,omitempty"`
+	EmailVerified bool   `json:"is_email_verified"`
 
 	jwt.RegisteredClaims
 }

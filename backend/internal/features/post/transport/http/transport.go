@@ -2,6 +2,7 @@ package post_transport
 
 import (
 	"actualiteco/actualite/internal/core/domain"
+	"actualiteco/actualite/internal/core/middleware"
 	"actualiteco/actualite/internal/core/transport/server"
 	"context"
 	"net/http"
@@ -52,10 +53,11 @@ func (h *PostsHTTPHandler) Routes() []server.Route {
 			AuthRequired: true,
 		},
 		{
-			Method:       http.MethodPost,
-			URL:          "/posts/create",
-			Handler:      h.Create,
-			AuthRequired: true,
+			Method:               http.MethodPost,
+			URL:                  "/posts/create",
+			Handler:              h.Create,
+			AuthRequired:         true,
+			AdditionalMiddleware: []middleware.Middleware{middleware.EmailVerificationMiddleware()},
 		},
 		{
 			Method:       http.MethodGet,
@@ -82,10 +84,11 @@ func (h *PostsHTTPHandler) Routes() []server.Route {
 			AuthRequired: true,
 		},
 		{
-			Method:       http.MethodDelete,
-			URL:          "/posts/{postID}",
-			Handler:      h.DeletePost,
-			AuthRequired: true,
+			Method:               http.MethodDelete,
+			URL:                  "/posts/{postID}",
+			Handler:              h.DeletePost,
+			AuthRequired:         true,
+			AdditionalMiddleware: []middleware.Middleware{middleware.EmailVerificationMiddleware()},
 		},
 		{
 			Method:       http.MethodGet,
@@ -94,10 +97,11 @@ func (h *PostsHTTPHandler) Routes() []server.Route {
 			AuthRequired: true,
 		},
 		{
-			Method:       http.MethodPost,
-			URL:          "/posts/image",
-			Handler:      h.UploadImage,
-			AuthRequired: true,
+			Method:               http.MethodPost,
+			URL:                  "/posts/image",
+			Handler:              h.UploadImage,
+			AuthRequired:         true,
+			AdditionalMiddleware: []middleware.Middleware{middleware.EmailVerificationMiddleware()},
 		},
 	}
 }

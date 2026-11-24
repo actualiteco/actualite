@@ -13,6 +13,7 @@ import (
 	"actualiteco/actualite/internal/core/logger"
 	"actualiteco/actualite/internal/core/middleware"
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
+	smtpmailhogclient "actualiteco/actualite/internal/core/smtp/mailhog"
 	"actualiteco/actualite/internal/core/storage"
 	tokenservice "actualiteco/actualite/internal/core/token/service"
 	"actualiteco/actualite/internal/core/transport/server"
@@ -67,13 +68,20 @@ func main() {
 	tokenService := tokenservice.New(tokenCfg)
 
 	authMiddleware := middleware.AuthMiddleware(tokenService)
-	serv := server.NewHTTPServer(server.NewConfigMust(), log, authMiddleware)
+	serverCfg := server.NewConfigMust()
+	serv := server.NewHTTPServer(serverCfg, log, authMiddleware)
 	serv.RegisterSwagger()
+
+	log.Debug("initializing smtp client")
+	smtpClient := smtpmailhogclient.NewMust()
 
 	log.Debug("initializing auth service")
 	usersRepo := users_repository.NewAuthRepository(pool)
 	sessionsRepo := sessionsrepo.New(pool)
-	authService := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService)
+	authService, err := auth_service.NewAuthService(usersRepo, sessionsRepo, tokenService, smtpClient, txManager, serverCfg.FrontendBaseURL)
+	if err != nil {
+		log.Fatal("init auth service (service layer)", zap.Error(err))
+	}
 	authHandler := auth_transport.NewAuthHandler(authService)
 
 	log.Debug("initializing file storage")

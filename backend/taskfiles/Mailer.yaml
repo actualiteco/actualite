@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  up:
+    desc: "Запустить почтовый клиент MailHog"
+    cmds:
+      - docker compose up -d mailhog
+
+  down:
+    desc: "Остановить почтовый клиент MailHog"
+    cmds:
+      - docker compose down mailhog
+
+  clear:
+    desc: "Остановить почтовый клиент и удалить письма"
+    cmds:
+      - docker compose down -v mailhog
+      - rm -rf ./db/mailhog
