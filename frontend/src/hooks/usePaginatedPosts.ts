@@ -6,7 +6,11 @@ export const PAGE_SIZE = 20;
 
 type PageFetcher = (page: number, pageSize: number) => Promise<PostsPage>;
 
-export const usePaginatedPosts = (fetchPage: PageFetcher, deps: unknown[], enabled = true) => {
+export const usePaginatedPosts = (
+    fetchPage: PageFetcher,
+    resetKey: string | undefined,
+    enabled = true,
+) => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -73,10 +77,16 @@ export const usePaginatedPosts = (fetchPage: PageFetcher, deps: unknown[], enabl
 
     useEffect(() => {
         reset();
+
         if (enabled) {
             void loadMore();
         }
-    }, [...deps, enabled]);
+
+        return () => {
+            generation.current += 1;
+            loadingRef.current = false;
+        };
+    }, [resetKey, enabled, reset, loadMore]);
 
     const prepend = useCallback((post: Post) => {
         setPosts((prev) => [post, ...prev.filter((item) => item.id !== post.id)]);

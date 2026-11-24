@@ -60,7 +60,7 @@ const PostDetailPage = () => {
 
     const replies = usePaginatedPosts(
         (page, pageSize) => PostService.getReplies(id as string, page, pageSize),
-        [id],
+        id,
         status === 'ready',
     );
 

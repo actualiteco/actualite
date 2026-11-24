@@ -8,7 +8,7 @@ import { useAuthStore } from '@stores/useAuthStore';
 
 const FeedPage = () => {
     const userId = useAuthStore((state) => state.userId);
-    const feed = usePaginatedPosts(PostService.getFeed, []);
+    const feed = usePaginatedPosts(PostService.getFeed, undefined);
 
     return (
         <AppLayout title="Главная">

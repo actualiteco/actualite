@@ -74,7 +74,7 @@ const ProfilePage = () => {
     const posts = usePaginatedPosts(
         (page, pageSize) =>
             PostService.getUserPosts(profileId as string, page, pageSize),
-        [profileId],
+        profileId,
         Boolean(profileId),
     );
 
@@ -104,7 +104,9 @@ const ProfilePage = () => {
                 await ProfileService.follow(before.id);
             }
         } catch (error) {
-            setProfile(before);
+            setProfile((current) =>
+                current?.id === before.id ? before : current,
+            );
 
             toast.error(
                 parseApiError(error).status === 429
