@@ -26,6 +26,9 @@ import (
 	users_repository "actualiteco/actualite/internal/features/profile/repository/postgres"
 	profile_service "actualiteco/actualite/internal/features/profile/service"
 	profile_transport "actualiteco/actualite/internal/features/profile/transport/http"
+	search_repository "actualiteco/actualite/internal/search/repository/postgres"
+	search_service "actualiteco/actualite/internal/search/service"
+	search_transport "actualiteco/actualite/internal/search/transport/http"
 )
 
 // @title actualiteco/actualite
@@ -96,7 +99,12 @@ func main() {
 	postService := post_service.New(postRepository, txManager, storageClient)
 	postHandler := post_transport.NewPostsHandler(postService)
 
-	serv.RegisterRoutes(authHandler, profileHandler, postHandler)
+	log.Debug("initializing search service")
+	searchRepository := search_repository.New(pool)
+	searchService := search_service.New(searchRepository, txManager)
+	searchHandler := search_transport.NewSearchHTTPHandler(searchService)
+
+	serv.RegisterRoutes(authHandler, profileHandler, postHandler, searchHandler)
 
 	if err = serv.Run(ctx); err != nil {
 		log.Error("server error occured", zap.Error(err))

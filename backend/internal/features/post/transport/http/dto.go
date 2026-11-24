@@ -94,7 +94,7 @@ func paginationToResponse(p domain.Pagination) paginationDTO {
 	}
 }
 
-func postsWithPaginationToResponse(posts []domain.PostWithAuthor, pagination domain.Pagination) PostsWithPaginationDTOResponse {
+func PostsWithPaginationToResponse(posts []domain.PostWithAuthor, pagination domain.Pagination) PostsWithPaginationDTOResponse {
 	postsResponse := make([]PostWithAuthorDTOResponse, len(posts))
 	for i, post := range posts {
 		postsResponse[i] = postWithAuthorToResponse(post)

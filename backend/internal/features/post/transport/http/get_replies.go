@@ -59,5 +59,5 @@ func (h *PostsHTTPHandler) GetReplies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respWriter.JSONResponse(postsWithPaginationToResponse(posts, pagination), http.StatusOK)
+	respWriter.JSONResponse(PostsWithPaginationToResponse(posts, pagination), http.StatusOK)
 }
