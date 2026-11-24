@@ -6,13 +6,23 @@ import Button from '@components/shared/Button/Button';
 import Modal from '@components/shared/Modal/Modal';
 import TextField from '@components/shared/TextField/TextField';
 import { ProfileService } from '@services/ProfileService';
+import { useProfileStore } from '@stores/useProfileStore';
 import type { Profile, ProfileChanges } from '@models/Profile';
 import { getDisplayName } from '@models/Profile';
 import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
 import { validateImageFile } from '@utils/file.utils';
 import { charCount } from '@utils/validators.utils';
-import AvatarCropModal, { AVATAR_MAX_BYTES } from '../AvatarCropModal/AvatarCropModal';
-import { STATUS_MAX, isUsernameFormatValid, profileSchema } from '../validation';
+
+import AvatarCropModal, {
+    AVATAR_MAX_BYTES,
+} from '../AvatarCropModal/AvatarCropModal';
+
+import {
+    STATUS_MAX,
+    isUsernameFormatValid,
+    profileSchema,
+} from '../validation';
+
 import styles from './EditProfileModal.module.scss';
 
 interface ProfileEditModalProps {
@@ -34,25 +44,42 @@ const toValues = (profile: Profile): ProfileFormValues => ({
     status: profile.status,
 });
 
-const buildChanges = (values: ProfileFormValues, initial: ProfileFormValues): ProfileChanges => {
+const buildChanges = (
+    values: ProfileFormValues,
+    initial: ProfileFormValues,
+): ProfileChanges => {
     const changes: ProfileChanges = {};
+
     const displayName = values.displayName.trim();
+
     if (displayName !== initial.displayName.trim()) {
         changes.displayName = displayName;
     }
+
     if (values.username !== initial.username) {
         changes.username = values.username;
     }
+
     if (values.status.trim() !== initial.status.trim()) {
         changes.status = values.status.trim();
     }
+
     return changes;
 };
 
-const ProfileEditModal: FC<ProfileEditModalProps> = ({ open, profile, onClose, onSaved }) => {
+const ProfileEditModal: FC<ProfileEditModalProps> = ({
+    open,
+    profile,
+    onClose,
+    onSaved,
+}) => {
+    const updateProfile = useProfileStore((state) => state.updateProfile);
+    const uploadAvatar = useProfileStore((state) => state.uploadAvatar);
+
     const [cropFile, setCropFile] = useState<File | null>(null);
     const [avatarError, setAvatarError] = useState<string | null>(null);
     const [isAvatarSaving, setIsAvatarSaving] = useState(false);
+
     const fileInput = useRef<HTMLInputElement>(null);
 
     const initial = toValues(profile);
@@ -60,34 +87,31 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({ open, profile, onClose, o
     const formik = useFormik<ProfileFormValues>({
         initialValues: initial,
         validationSchema: profileSchema,
-        onSubmit: async (values: ProfileFormValues) => {
+
+        onSubmit: async (values) => {
             const changes = buildChanges(values, initial);
 
             if (Object.keys(changes).length === 0) {
                 onClose();
                 return;
             }
+
             try {
-                const updated = await ProfileService.update(changes);
+                const updated = await updateProfile(changes);
+
                 toast.success('Профиль обновлён');
-                onSaved({
-                    ...profile,
-                    displayName:
-                        changes.displayName !== undefined
-                            ? updated.displayName || changes.displayName
-                            : profile.displayName,
-                    username:
-                        changes.username !== undefined
-                            ? updated.username || changes.username
-                            : profile.username,
-                    status: changes.status !== undefined ? changes.status : profile.status,
-                });
+                onSaved(updated);
                 onClose();
             } catch (error) {
                 if (parseApiError(error).status === 409) {
                     formik.setFieldError('username', 'Никнейм занят');
                 } else {
-                    toast.error(getApiErrorMessage(error, 'Не удалось сохранить профиль'));
+                    toast.error(
+                        getApiErrorMessage(
+                            error,
+                            'Не удалось сохранить профиль',
+                        ),
+                    );
                 }
             }
         },
@@ -100,27 +124,35 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({ open, profile, onClose, o
         }
     }, [open, profile]);
 
-    const handleUsernameBlur = async (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleUsernameBlur = async (
+        event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => {
         formik.handleBlur(event);
+
         const username = formik.values.username;
-        if (username === profile.username || !isUsernameFormatValid(username)) {
+
+        if (
+            username === profile.username ||
+            !isUsernameFormatValid(username)
+        ) {
             return;
         }
+
         try {
             if (!(await ProfileService.isUsernameAvailable(username))) {
                 formik.setFieldError('username', 'Никнейм занят');
             }
         } catch {
-            // Проверка необязательна: окончательно занятость проверит сервер при сохранении
+            // Проверка необязательна: окончательно занятость проверит сервер.
         }
     };
 
     const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         event.target.value = '';
-        if (!file) {
-            return;
-        }
+
+        if (!file) return;
+
         const error = validateImageFile(file, AVATAR_MAX_BYTES);
         setAvatarError(error);
         if (!error) {
@@ -131,30 +163,49 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({ open, profile, onClose, o
     const handleAvatarConfirm = async (blob: Blob, fileName: string) => {
         setIsAvatarSaving(true);
         try {
-            const avatarUrl = await ProfileService.uploadAvatar(blob, fileName);
+            const avatarUrl = await uploadAvatar(blob, fileName);
+
             toast.success('Аватар обновлён');
             onSaved({ ...profile, avatarUrl });
             setCropFile(null);
         } catch (error) {
-            toast.error(getApiErrorMessage(error, 'Не удалось загрузить аватар'));
+            toast.error(
+                getApiErrorMessage(error, 'Не удалось загрузить аватар'),
+            );
         } finally {
             setIsAvatarSaving(false);
         }
     };
 
     const shown = (name: keyof ProfileFormValues) =>
-        Boolean(formik.touched[name]) || formik.values[name] !== initial[name];
-    const hasChanges = Object.keys(buildChanges(formik.values, initial)).length > 0;
-    const disabled = !hasChanges || !formik.isValid || formik.isSubmitting;
+        Boolean(formik.touched[name]) ||
+        formik.values[name] !== initial[name];
+
+    const hasChanges =
+        Object.keys(buildChanges(formik.values, initial)).length > 0;
+
+    const disabled =
+        !hasChanges || !formik.isValid || formik.isSubmitting;
 
     return (
         <>
             <Modal open={open && !cropFile} onClose={onClose}>
-                <form className={styles.form} onSubmit={formik.handleSubmit} noValidate>
-                    <h1 className={styles.title}>Редактировать профиль</h1>
+                <form
+                    className={styles.form}
+                    onSubmit={formik.handleSubmit}
+                    noValidate
+                >
+                    <h1 className={styles.title}>
+                        Редактировать профиль
+                    </h1>
 
                     <div className={styles.avatarRow}>
-                        <Avatar url={profile.avatarUrl} name={getDisplayName(profile)} size={64} />
+                        <Avatar
+                            url={profile.avatarUrl}
+                            name={getDisplayName(profile)}
+                            size={64}
+                        />
+
                         <div>
                             <input
                                 ref={fileInput}
@@ -163,11 +214,23 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({ open, profile, onClose, o
                                 accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                                 onChange={handleFile}
                             />
-                            <Button variant="outlined" onClick={() => fileInput.current?.click()}>
+
+                            <Button
+                                variant="outlined"
+                                onClick={() => fileInput.current?.click()}
+                            >
                                 Сменить фото
                             </Button>
-                            <p className={styles.avatarHint}>JPG или PNG, до 2 МБ</p>
-                            {avatarError && <p className={styles.avatarError}>{avatarError}</p>}
+
+                            <p className={styles.avatarHint}>
+                                JPG или PNG, до 2 МБ
+                            </p>
+
+                            {avatarError && (
+                                <p className={styles.avatarError}>
+                                    {avatarError}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -181,6 +244,7 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({ open, profile, onClose, o
                         error={formik.errors.displayName}
                         touched={shown('displayName')}
                     />
+
                     <TextField
                         name="username"
                         placeholder="Никнейм"
@@ -191,6 +255,7 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({ open, profile, onClose, o
                         error={formik.errors.username}
                         touched={shown('username')}
                     />
+
                     <TextField
                         name="status"
                         placeholder="Статус"
@@ -210,7 +275,12 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({ open, profile, onClose, o
                         <Button variant="outlined" onClick={onClose}>
                             Отмена
                         </Button>
-                        <Button type="submit" disabled={disabled} isLoading={formik.isSubmitting}>
+
+                        <Button
+                            type="submit"
+                            disabled={disabled}
+                            isLoading={formik.isSubmitting}
+                        >
                             Сохранить
                         </Button>
                     </div>

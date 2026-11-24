@@ -75,6 +75,8 @@ const PostCard: FC<PostCardProps> = ({
         }
     };
 
+    const shouldShowParentLink = showParentLink && Boolean(post.parent_id);
+
     return (
         <article className={styles.card}>
             {post.user_id ? (
@@ -101,14 +103,19 @@ const PostCard: FC<PostCardProps> = ({
                     {isOwn && <PostActionsMenu isDeleting={isDeleting} onDelete={handleDelete} />}
                 </div>
 
-                {showParentLink && post.parent_id && (
-                    <Link to={getPostPath(post.parent_id)} className={styles.replyTo}>
+                {shouldShowParentLink && (
+                    <Link to={getPostPath(post.parent_id!)} className={styles.replyTo}>
                         <Icon name="reply" size={12} />
-                        В ответ на пост: "{truncate(post.parent_id, 15)}"
+                        В ответ на пост: "{truncate(post.parent_id!, 15)}"
                     </Link>
                 )}
 
-                <Link to={getPostPath(postId)} className={styles.content}>
+                <Link
+                    to={getPostPath(postId)}
+                    className={`${styles.content} ${
+                        shouldShowParentLink ? styles.contentAfterReply : ''
+                    }`}
+                >
                     {post.content}
                 </Link>
 

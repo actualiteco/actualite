@@ -1,128 +1,71 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+
 import AppLayout from '@components/layout/AppLayout/AppLayout';
 import PostList from '@components/posts/PostList';
 import ProfileEditModal from '@components/profile/EditProfileModal/EditProfileModal';
-import ProfileError, { ProfileErrorType } from '@components/profile/ProfileError/ProfileError';
+import ProfileError from '@components/profile/ProfileError/ProfileError';
 import ProfileHeader from '@components/profile/ProfileHeader/ProfileHeader';
 import ProfileSkeleton from '@components/profile/ProfileSkeleton/ProfileSkeleton';
+
 import { usePaginatedPosts } from '@hooks/usePaginatedPosts';
 import { PostService } from '@services/PostService';
-import { ProfileService } from '@services/ProfileService';
-import { useAuthStore } from '@stores/useAuthStore';
-import type { Profile } from '@models/Profile';
-import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
 
-type Status = 'loading' | 'ready' | ProfileErrorType;
+import { useAuthStore } from '@stores/useAuthStore';
+import { useProfileStore } from '@stores/useProfileStore';
+
+import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
 
 const ProfilePage = () => {
     const { id } = useParams<{ id: string }>();
-    const { userId, email, setProfile: saveMyProfile } = useAuthStore();
+
+    const userId = useAuthStore((state) => state.userId);
+    const email = useAuthStore((state) => state.email);
+
+    const profile = useProfileStore((state) => state.profile);
+    const status = useProfileStore((state) => state.status);
+    const error = useProfileStore((state) => state.error);
+    const isFollowPending = useProfileStore((state) => state.isFollowPending);
+
+    const fetchProfile = useProfileStore((state) => state.fetchProfile);
+    const toggleFollow = useProfileStore((state) => state.toggleFollow);
+    const reset = useProfileStore((state) => state.reset);
+
     const isOwn = !id || id === userId;
 
-    const [profile, setProfile] = useState<Profile | null>(null);
-    const [status, setStatus] = useState<Status>('loading');
     const [reloadKey, setReloadKey] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
-    const [isFollowBusy, setIsFollowBusy] = useState(false);
 
     useEffect(() => {
-        let cancelled = false;
-
-        setStatus('loading');
-        setProfile(null);
-
-        const request = isOwn
-            ? ProfileService.getMe()
-            : ProfileService.getById(id as string);
-
-        request
-            .then((loaded) => {
-                if (cancelled) return;
-
-                setProfile(loaded);
-                setStatus('ready');
-
-                if (isOwn) {
-                    saveMyProfile(loaded);
-                }
-            })
-            .catch((error: unknown) => {
-                if (cancelled) return;
-
-                const { status: code, isNetworkError } = parseApiError(error);
-
-                if (code === 404 || code === 400) {
-                    setStatus('notFound');
-                } else if (code === 403) {
-                    setStatus('forbidden');
-                } else if (isNetworkError) {
-                    setStatus('network');
-                } else {
-                    setStatus('unknown');
-                }
-            });
+        void fetchProfile(isOwn ? undefined : id);
 
         return () => {
-            cancelled = true;
+            reset();
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id, isOwn, reloadKey]);
+    }, [id, isOwn, reloadKey, fetchProfile, reset]);
 
     const profileId = profile?.id || undefined;
+
     const posts = usePaginatedPosts(
         (page, pageSize) =>
             PostService.getUserPosts(profileId as string, page, pageSize),
         profileId,
-        Boolean(profileId),
+        Boolean(profileId && status === 'success'),
     );
 
     const handleToggleFollow = async () => {
-        if (!profile?.id || isFollowBusy) {
-            return;
-        }
-
-        setIsFollowBusy(true);
-
-        const before = profile;
-        const wasFollowing = before.isFollowing === true;
-
-        setProfile({
-            ...before,
-            isFollowing: !wasFollowing,
-            followersCount: Math.max(
-                0,
-                before.followersCount + (wasFollowing ? -1 : 1),
-            ),
-        });
-
         try {
-            if (wasFollowing) {
-                await ProfileService.unfollow(before.id);
-            } else {
-                await ProfileService.follow(before.id);
-            }
+            await toggleFollow();
         } catch (error) {
-            setProfile((current) =>
-                current?.id === before.id ? before : current,
-            );
-
             toast.error(
                 parseApiError(error).status === 429
                     ? 'Достигнут лимит подписок (50 в час). Попробуйте позже'
-                    : getApiErrorMessage(error, 'Не удалось выполнить действие'),
+                    : getApiErrorMessage(
+                          error,
+                          'Не удалось выполнить действие',
+                      ),
             );
-        } finally {
-            setIsFollowBusy(false);
-        }
-    };
-
-    const handleSaved = (updated: Profile) => {
-        setProfile(updated);
-
-        if (isOwn) {
-            saveMyProfile(updated);
         }
     };
 
@@ -132,22 +75,24 @@ const ProfilePage = () => {
 
     return (
         <AppLayout title="Профиль" showBack={Boolean(id) && !isOwn}>
-            {status === 'loading' && <ProfileSkeleton />}
+            {(status === 'idle' || status === 'loading') && (
+                <ProfileSkeleton />
+            )}
 
-            {status !== 'loading' && status !== 'ready' && (
+            {status === 'error' && error && (
                 <ProfileError
-                    error={status}
+                    error={error}
                     onRetry={handleRetry}
                 />
             )}
 
-            {status === 'ready' && profile && (
+            {status === 'success' && profile && (
                 <>
                     <ProfileHeader
                         profile={profile}
                         isOwn={isOwn}
                         email={email}
-                        isFollowBusy={isFollowBusy}
+                        isFollowBusy={isFollowPending}
                         onEdit={() => setIsEditing(true)}
                         onToggleFollow={handleToggleFollow}
                     />
@@ -171,7 +116,7 @@ const ProfilePage = () => {
                             open={isEditing}
                             profile={profile}
                             onClose={() => setIsEditing(false)}
-                            onSaved={handleSaved}
+                            onSaved={() => setIsEditing(false)}
                         />
                     )}
                 </>

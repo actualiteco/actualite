@@ -58,13 +58,16 @@
 
 .content {
   display: block;
-  margin-top: 6px;
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.45;
   text-decoration: none;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.contentAfterReply {
+  margin-top: 6px;
 }
 
 .image {
