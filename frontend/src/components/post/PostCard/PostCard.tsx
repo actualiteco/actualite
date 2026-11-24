@@ -76,6 +76,7 @@ const PostCard: FC<PostCardProps> = ({
     };
 
     const shouldShowParentLink = showParentLink && Boolean(post.parent_id);
+    const shouldIndentContent = shouldShowParentLink && !isOwn;
 
     return (
         <article className={styles.card}>
@@ -113,7 +114,7 @@ const PostCard: FC<PostCardProps> = ({
                 <Link
                     to={getPostPath(postId)}
                     className={`${styles.content} ${
-                        shouldShowParentLink ? styles.contentAfterReply : ''
+                        shouldIndentContent ? styles.contentAfterReply : ''
                     }`}
                 >
                     {post.content}

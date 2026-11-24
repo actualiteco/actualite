@@ -3,15 +3,14 @@ import { ProfileService } from '@services/ProfileService';
 import type { Profile, ProfileChanges } from '@models/Profile';
 import { useAuthStore } from '@stores/useAuthStore';
 import { parseApiError } from '@utils/error.utils';
-import { ProfileErrorType } from '@components/profile/ProfileError/ProfileError';
+import type { ProfileErrorType } from '@components/profile/ProfileError/ProfileError';
 
 export type ProfileLoadStatus = 'idle' | 'loading' | 'success' | 'error';
-export type ProfileLoadError = ProfileErrorType;
 
 interface ProfileState {
     profile: Profile | null;
     status: ProfileLoadStatus;
-    error: ProfileLoadError | null;
+    error: ProfileErrorType | null;
     isFollowPending: boolean;
 
     fetchProfile: (id?: string) => Promise<void>;
@@ -37,10 +36,22 @@ const initialState: ProfileData = {
 let lastRequestId = 0;
 
 const toLoadError = (error: unknown): ProfileErrorType => {
-    const { status, isNetworkError } = parseApiError(error);
+    const { status, code, isNetworkError } = parseApiError(error);
 
     if (isNetworkError) return 'network';
-    if (status === 404 || status === 400) return 'notFound';
+
+    switch (code) {
+        case 'NOT_FOUND':
+            return 'notFound';
+
+        case 'FORBIDDEN':
+            return 'forbidden';
+
+        default:
+            break;
+    }
+
+    if (status === 404) return 'notFound';
     if (status === 403) return 'forbidden';
 
     return 'unknown';
@@ -92,21 +103,35 @@ export const useProfileStore = create<ProfileState>()((set, get) => ({
             status: 'success',
             error: null,
         });
+
+        if (profile.id === useAuthStore.getState().userId) {
+            useAuthStore.getState().setProfile(profile);
+        }
     },
 
     async updateProfile(changes: ProfileChanges) {
         const updated = await ProfileService.update(changes);
 
-        set((state) => ({
-            profile: state.profile
-                ? {
-                      ...state.profile,
-                      ...updated,
-                  }
-                : updated,
-            status: 'success',
-            error: null,
-        }));
+        set((state) => {
+            if (!state.profile) {
+                return {
+                    profile: updated,
+                    status: 'success',
+                    error: null,
+                };
+            }
+
+            return {
+                profile: {
+                    ...state.profile,
+                    ...updated,
+                    email: updated.email || state.profile.email,
+                    createdAt: updated.createdAt || state.profile.createdAt,
+                },
+                status: 'success',
+                error: null,
+            };
+        });
 
         const profile = get().profile;
 
