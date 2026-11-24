@@ -1,114 +1,114 @@
 .card {
-    display: flex;
-    gap: 12px;
-    padding: 14px 0;
-    border-bottom: 0.2px solid var(--border-color);
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 0.2px solid var(--border-color);
 }
 
 .body {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .head {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 8px;
-    font-size: 12px;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 12px;
 }
 
 .author {
-    color: var(--text-primary);
-    font-size: 13px;
-    text-decoration: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-decoration: none;
 
-    &:hover {
-        text-decoration: underline;
-    }
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .meta {
-    color: var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 .replyTo {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-    font-size: 11px;
-    letter-spacing: 0.02em;
-    color: var(--text-secondary);
-    text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+  text-decoration: none;
 
-    &:hover {
-        color: var(--text-primary);
-    }
+  &:hover {
+    color: var(--text-primary);
+  }
 }
 
 .content {
-    display: block;
-    margin-top: 6px;
-    color: var(--text-primary);
-    font-size: 14px;
-    line-height: 1.45;
-    text-decoration: none;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+  display: block;
+  margin-top: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.45;
+  text-decoration: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .image {
-    display: block;
-    max-width: 100%;
-    max-height: 420px;
-    margin-top: 10px;
-    border: 0.2px solid var(--border-color);
-    object-fit: contain;
+  display: block;
+  max-width: 100%;
+  max-height: 420px;
+  margin-top: 10px;
+  border: 0.2px solid var(--border-color);
+  object-fit: contain;
 }
 
 .actions {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 10px;
 }
 
 .action {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 0;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 12px;
-    text-decoration: none;
-    cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
 
-    &:hover:not(:disabled) {
-        color: var(--text-primary);
-    }
+  &:hover:not(:disabled) {
+    color: var(--text-primary);
+  }
 
-    &:disabled {
-        opacity: 0.5;
-        cursor: default;
-    }
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 }
 
 .liked {
-    color: var(--error);
+  color: var(--error);
 
-    &:hover:not(:disabled) {
-        color: var(--error);
-    }
+  &:hover:not(:disabled) {
+    color: var(--error);
+  }
 }

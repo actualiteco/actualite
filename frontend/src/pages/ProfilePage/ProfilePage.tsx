@@ -4,9 +4,9 @@ import { toast } from 'react-toastify';
 import AppLayout from '@components/layout/AppLayout/AppLayout';
 import PostList from '@components/posts/PostList';
 import ProfileEditModal from '@components/profile/EditProfileModal/EditProfileModal';
+import ProfileError, { ProfileErrorType } from '@components/profile/ProfileError/ProfileError';
 import ProfileHeader from '@components/profile/ProfileHeader/ProfileHeader';
-import Button from '@components/shared/Button/Button';
-import EmptyState from '@components/shared/EmptyState/EmptyState';
+import ProfileSkeleton from '@components/profile/ProfileSkeleton/ProfileSkeleton';
 import { usePaginatedPosts } from '@hooks/usePaginatedPosts';
 import { PostService } from '@services/PostService';
 import { ProfileService } from '@services/ProfileService';
@@ -14,7 +14,7 @@ import { useAuthStore } from '@stores/useAuthStore';
 import type { Profile } from '@models/Profile';
 import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
 
-type Status = 'loading' | 'ready' | 'notFound' | 'error';
+type Status = 'loading' | 'ready' | ProfileErrorType;
 
 const ProfilePage = () => {
     const { id } = useParams<{ id: string }>();
@@ -29,23 +29,39 @@ const ProfilePage = () => {
 
     useEffect(() => {
         let cancelled = false;
+
         setStatus('loading');
         setProfile(null);
 
-        const request = isOwn ? ProfileService.getMe() : ProfileService.getById(id as string);
+        const request = isOwn
+            ? ProfileService.getMe()
+            : ProfileService.getById(id as string);
+
         request
             .then((loaded) => {
                 if (cancelled) return;
+
                 setProfile(loaded);
                 setStatus('ready');
+
                 if (isOwn) {
                     saveMyProfile(loaded);
                 }
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
                 if (cancelled) return;
-                const code = parseApiError(error).status;
-                setStatus(code === 404 || code === 400 ? 'notFound' : 'error');
+
+                const { status: code, isNetworkError } = parseApiError(error);
+
+                if (code === 404 || code === 400) {
+                    setStatus('notFound');
+                } else if (code === 403) {
+                    setStatus('forbidden');
+                } else if (isNetworkError) {
+                    setStatus('network');
+                } else {
+                    setStatus('unknown');
+                }
             });
 
         return () => {
@@ -56,7 +72,8 @@ const ProfilePage = () => {
 
     const profileId = profile?.id || undefined;
     const posts = usePaginatedPosts(
-        (page, pageSize) => PostService.getUserPosts(profileId as string, page, pageSize),
+        (page, pageSize) =>
+            PostService.getUserPosts(profileId as string, page, pageSize),
         [profileId],
         Boolean(profileId),
     );
@@ -65,14 +82,21 @@ const ProfilePage = () => {
         if (!profile?.id || isFollowBusy) {
             return;
         }
+
         setIsFollowBusy(true);
+
         const before = profile;
         const wasFollowing = before.isFollowing === true;
+
         setProfile({
             ...before,
             isFollowing: !wasFollowing,
-            followersCount: Math.max(0, before.followersCount + (wasFollowing ? -1 : 1)),
+            followersCount: Math.max(
+                0,
+                before.followersCount + (wasFollowing ? -1 : 1),
+            ),
         });
+
         try {
             if (wasFollowing) {
                 await ProfileService.unfollow(before.id);
@@ -81,6 +105,7 @@ const ProfilePage = () => {
             }
         } catch (error) {
             setProfile(before);
+
             toast.error(
                 parseApiError(error).status === 429
                     ? 'Достигнут лимит подписок (50 в час). Попробуйте позже'
@@ -93,27 +118,25 @@ const ProfilePage = () => {
 
     const handleSaved = (updated: Profile) => {
         setProfile(updated);
+
         if (isOwn) {
             saveMyProfile(updated);
         }
     };
 
+    const handleRetry = () => {
+        setReloadKey((key) => key + 1);
+    };
+
     return (
         <AppLayout title="Профиль" showBack={Boolean(id) && !isOwn}>
-            {status === 'loading' && <EmptyState title="Загрузка…" />}
+            {status === 'loading' && <ProfileSkeleton />}
 
-            {status === 'notFound' && (
-                <EmptyState title="Пользователь не найден">
-                    <p>Возможно, ссылка неверна.</p>
-                </EmptyState>
-            )}
-
-            {status === 'error' && (
-                <EmptyState title="Не удалось загрузить профиль">
-                    <Button variant="outlined" onClick={() => setReloadKey((key) => key + 1)}>
-                        Повторить
-                    </Button>
-                </EmptyState>
+            {status !== 'loading' && status !== 'ready' && (
+                <ProfileError
+                    error={status}
+                    onRetry={handleRetry}
+                />
             )}
 
             {status === 'ready' && profile && (
@@ -126,6 +149,7 @@ const ProfilePage = () => {
                         onEdit={() => setIsEditing(true)}
                         onToggleFollow={handleToggleFollow}
                     />
+
                     <PostList
                         posts={posts.posts}
                         isLoading={posts.isLoading}
@@ -139,6 +163,7 @@ const ProfilePage = () => {
                         onPostChange={posts.update}
                         onPostDeleted={posts.remove}
                     />
+
                     {isOwn && (
                         <ProfileEditModal
                             open={isEditing}

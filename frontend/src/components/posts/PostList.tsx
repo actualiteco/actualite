@@ -21,16 +21,22 @@ interface PostListProps {
     onPostDeleted: (postId: string) => void;
 }
 
-const Sentinel: FC<{ onVisible: () => void; watch: number }> = ({ onVisible, watch }) => {
+const Sentinel: FC<{
+    onVisible: () => void;
+    watch: number;
+}> = ({ onVisible, watch }) => {
     const ref = useRef<HTMLDivElement>(null);
     const callback = useRef(onVisible);
+
     callback.current = onVisible;
 
     useEffect(() => {
         const element = ref.current;
+
         if (!element) {
             return undefined;
         }
+
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries.some((entry) => entry.isIntersecting)) {
@@ -39,11 +45,19 @@ const Sentinel: FC<{ onVisible: () => void; watch: number }> = ({ onVisible, wat
             },
             { rootMargin: '200px' },
         );
+
         observer.observe(element);
+
         return () => observer.disconnect();
     }, [watch]);
 
-    return <div ref={ref} className={styles.sentinel} aria-hidden="true" />;
+    return (
+        <div
+            ref={ref}
+            className={styles.sentinel}
+            aria-hidden="true"
+        />
+    );
 };
 
 const PostList: FC<PostListProps> = ({
@@ -62,6 +76,7 @@ const PostList: FC<PostListProps> = ({
     onPostDeleted,
 }) => {
     const isEmpty = loadedOnce && posts.length === 0;
+    const isInitialLoading = isLoading && !loadedOnce && posts.length === 0;
 
     return (
         <div>
@@ -76,16 +91,34 @@ const PostList: FC<PostListProps> = ({
                 />
             ))}
 
-            {isEmpty && (
-                <EmptyState title={emptyTitle}>{emptyText && <p>{emptyText}</p>}</EmptyState>
+            {isInitialLoading && (
+                <div
+                    className={styles.skeletonList}
+                    role="status"
+                    aria-label="Загрузка публикаций"
+                >
+                    <div className={styles.skeletonItem} />
+                    <div className={styles.skeletonItem} />
+                    <div className={styles.skeletonItem} />
+                </div>
             )}
 
-            {isLoading && <div className={styles.status}>Загрузка…</div>}
+            {isEmpty && (
+                <EmptyState title={emptyTitle}>
+                    {emptyText && <p>{emptyText}</p>}
+                </EmptyState>
+            )}
+
+            {isLoading && !isInitialLoading && (
+                <div className={styles.status}>Загрузка…</div>
+            )}
 
             {error && (
                 <div className={styles.more}>
                     <div>
-                        <p className={`${styles.status} ${styles.error}`}>{error}</p>
+                        <p className={`${styles.status} ${styles.error}`}>
+                            {error}
+                        </p>
                         <Button variant="outlined" onClick={onLoadMore}>
                             Повторить
                         </Button>
@@ -93,17 +126,28 @@ const PostList: FC<PostListProps> = ({
                 </div>
             )}
 
-            {!error && !isLoading && hasMore && mode === 'infinite' && posts.length > 0 && (
-                <Sentinel onVisible={onLoadMore} watch={posts.length} />
-            )}
+            {!error &&
+                !isLoading &&
+                hasMore &&
+                mode === 'infinite' &&
+                posts.length > 0 && (
+                    <Sentinel
+                        onVisible={onLoadMore}
+                        watch={posts.length}
+                    />
+                )}
 
-            {!error && !isLoading && hasMore && mode === 'button' && posts.length > 0 && (
-                <div className={styles.more}>
-                    <Button variant="outlined" onClick={onLoadMore}>
-                        Показать ещё
-                    </Button>
-                </div>
-            )}
+            {!error &&
+                !isLoading &&
+                hasMore &&
+                mode === 'button' &&
+                posts.length > 0 && (
+                    <div className={styles.more}>
+                        <Button variant="outlined" onClick={onLoadMore}>
+                            Показать ещё
+                        </Button>
+                    </div>
+                )}
         </div>
     );
 };
