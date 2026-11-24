@@ -20,6 +20,7 @@ import (
 	sessionsrepo "actualiteco/actualite/internal/features/auth/repository/postgres"
 	auth_service "actualiteco/actualite/internal/features/auth/service"
 	auth_transport "actualiteco/actualite/internal/features/auth/transport/http"
+	notification_repository "actualiteco/actualite/internal/features/notification/repository/postgres"
 	post_repository "actualiteco/actualite/internal/features/post/repository/postgres"
 	post_service "actualiteco/actualite/internal/features/post/service"
 	post_transport "actualiteco/actualite/internal/features/post/transport/http"
@@ -88,7 +89,8 @@ func main() {
 	storageClient := storage.NewSeaweedFSClient(storage.NewConfigMust())
 
 	log.Debug("initializing profile service")
-	profileService := profile_service.NewProfileService(usersRepo, storageClient, txManager)
+	notificationRepo := notification_repository.New(pool)
+	profileService := profile_service.NewProfileService(usersRepo, notificationRepo, storageClient, txManager)
 	profileHandler := profile_transport.NewProfileHTTPHandler(profileService)
 
 	log.Debug("initializing post service")

@@ -9,6 +9,7 @@ import (
 
 type ProfileService struct {
 	repo      usersRepo
+	notifRepo notificationsRepo
 	storage   fileStorage
 	txManager txManager
 }
@@ -21,6 +22,10 @@ type txManager interface {
 	DoWrite(ctx context.Context, fn func(context.Context) error) error
 }
 
+type notificationsRepo interface {
+	Create(ctx context.Context, n domain.Notification) error
+}
+
 type usersRepo interface {
 	GetOwnProfile(ctx context.Context, id uuid.UUID) (domain.User, error)
 	GetUserByID(ctx context.Context, id, targetID uuid.UUID) (domain.User, error)
@@ -31,9 +36,10 @@ type usersRepo interface {
 	UpdateAvatar(ctx context.Context, id uuid.UUID, avatarURL string) error
 }
 
-func NewProfileService(repo usersRepo, storage fileStorage, txManager txManager) *ProfileService {
+func NewProfileService(repo usersRepo, notifRepo notificationsRepo, storage fileStorage, txManager txManager) *ProfileService {
 	return &ProfileService{
 		repo:      repo,
+		notifRepo: notifRepo,
 		storage:   storage,
 		txManager: txManager,
 	}
