@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import AppLayout from '@components/layout/AppLayout/AppLayout';
-import PostList from '@components/posts/PostList';
+import PostList from '@components/post/PostList/PostList';
 import ProfileEditModal from '@components/profile/EditProfileModal/EditProfileModal';
 import ProfileError from '@components/profile/ProfileError/ProfileError';
 import ProfileHeader from '@components/profile/ProfileHeader/ProfileHeader';

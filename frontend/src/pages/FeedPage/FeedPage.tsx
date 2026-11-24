@@ -1,7 +1,7 @@
 import React from 'react';
 import AppLayout from '@components/layout/AppLayout/AppLayout';
-import PostComposer from '@components/posts/PostComposer';
-import PostList from '@components/posts/PostList';
+import PostComposer from '@components/post/PostComposer/PostComposer';
+import PostList from '@components/post/PostList/PostList';
 import { usePaginatedPosts } from '@hooks/usePaginatedPosts';
 import { PostService } from '@services/PostService';
 import { useAuthStore } from '@stores/useAuthStore';

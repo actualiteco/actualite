@@ -1,7 +1,7 @@
 import React, { FC, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import PostActionsMenu from '@components/posts/PostActionsMenu';
+import PostActionsMenu from '@components/post/PostActionsMenu/PostActionsMenu';
 import Avatar from '@components/shared/Avatar/Avatar';
 import Icon from '@components/shared/Icon/Icon';
 import { PostService } from '@services/PostService';
@@ -76,7 +76,6 @@ const PostCard: FC<PostCardProps> = ({
     };
 
     const shouldShowParentLink = showParentLink && Boolean(post.parent_id);
-    const shouldIndentContent = shouldShowParentLink && !isOwn;
 
     return (
         <article className={styles.card}>
@@ -111,12 +110,7 @@ const PostCard: FC<PostCardProps> = ({
                     </Link>
                 )}
 
-                <Link
-                    to={getPostPath(postId)}
-                    className={`${styles.content} ${
-                        shouldIndentContent ? styles.contentAfterReply : ''
-                    }`}
-                >
+                <Link to={getPostPath(postId)} className={styles.content}>
                     {post.content}
                 </Link>
 
