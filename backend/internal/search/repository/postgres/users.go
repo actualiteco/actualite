@@ -9,6 +9,8 @@ import (
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
 )
 
+const userSearchLimit = 20
+
 var escapeLike = strings.NewReplacer("\\", "\\\\", "%", "\\%", "_", "\\_")
 
 func (r *SearchRepository) SearchUsers(ctx context.Context, query string) ([]domain.UserSummary, error) {
@@ -20,9 +22,10 @@ func (r *SearchRepository) SearchUsers(ctx context.Context, query string) ([]dom
 		FROM users
 		WHERE username ILIKE $1 OR display_name ILIKE $1
 		ORDER BY lower(username), id
+		LIMIT $2
 	`
 	pattern := "%" + escapeLike.Replace(query) + "%"
-	rows, err := postgres_pool.ExecutorFromContext(ctx, r.pool).Query(ctx, sql, pattern)
+	rows, err := postgres_pool.ExecutorFromContext(ctx, r.pool).Query(ctx, sql, pattern, userSearchLimit)
 	if err != nil {
 		return nil, fmt.Errorf("query matching users: %w", err)
 	}

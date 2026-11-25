@@ -2,8 +2,6 @@ package search_service
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"uuid"
 
 	"actualiteco/actualite/internal/core/domain"
@@ -26,12 +24,4 @@ type SearchService struct {
 
 func New(repo SearchRepository, txManager txManager) *SearchService {
 	return &SearchService{repo: repo, txManager: txManager}
-}
-
-func trimQuery(query string) (string, error) {
-	query = strings.TrimSpace(query)
-	if query == "" {
-		return "", fmt.Errorf("query is required: %w", domain.ErrInvalidRequest)
-	}
-	return query, nil
 }

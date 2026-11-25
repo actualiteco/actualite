@@ -2,15 +2,16 @@ package search_service
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"uuid"
 
 	"actualiteco/actualite/internal/core/domain"
 )
 
 func (s *SearchService) SearchPosts(ctx context.Context, query string, userID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error) {
-	query, err := trimQuery(query)
-	if err != nil {
-		return nil, domain.Pagination{}, err
+	if query = strings.TrimSpace(query); query == "" {
+		return nil, domain.Pagination{}, fmt.Errorf("query is required: %w", domain.ErrInvalidRequest)
 	}
 
 	pagination := domain.NewPagination(page, pageSize)
