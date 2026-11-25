@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import TextField from '@components/shared/TextField/TextField';
 import Button from '@components/shared/Button/Button';
 import { useAuthStore } from '@stores/useAuthStore';
+import { ApiErrorCode } from '@models/apiErrorCodes';
 import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
 import { isFilled, signupSchema } from './validation';
 import styles from './AuthForms.module.scss';
@@ -12,12 +13,6 @@ interface SignupFormValues {
     email: string;
     password: string;
 }
-
-const EMAIL_CODE = /EMAIL/;
-const USERNAME_CODE = /USERNAME|NICKNAME/;
-const TAKEN_CODE = /ALREADY|USED|EXIST|TAKEN|DUPLICATE|CONFLICT/;
-
-const TAKEN_HINT = /taken|exist|already|used|занят|существ|использ/;
 
 const SignupForm = () => {
     const register = useAuthStore((state) => state.register);
@@ -31,26 +26,30 @@ const SignupForm = () => {
                 await register(values.email.trim(), values.username, values.password);
                 toast.success('Добро пожаловать в actualite!');
             } catch (error) {
-                const { status, code, message } = parseApiError(error);
-                const errorCode = (code ?? '').toUpperCase();
-                const text = message.toLowerCase();
+                const { status, code } = parseApiError(error);
 
-                if (status === 429) {
-                    toast.error('Слишком много попыток. Попробуйте позже');
-                } else if (TAKEN_CODE.test(errorCode) && EMAIL_CODE.test(errorCode)) {
-                    formik.setFieldError('email', 'Email уже используется');
-                } else if (TAKEN_CODE.test(errorCode) && USERNAME_CODE.test(errorCode)) {
-                    formik.setFieldError('username', 'Никнейм занят');
-                } else if (/username|никнейм|имя пользователя/.test(text) && TAKEN_HINT.test(text)) {
-                    formik.setFieldError('username', 'Никнейм занят');
-                } else if (/email|почт/.test(text) && TAKEN_HINT.test(text)) {
-                    formik.setFieldError('email', 'Email уже используется');
-                } else if (status === 409) {
-                    formik.setFieldError('email', 'Email или никнейм уже используются');
-                } else {
-                    toast.error(
-                        getApiErrorMessage(error, 'Не удалось зарегистрироваться. Попробуйте ещё раз'),
-                    );
+                switch (code) {
+                    case ApiErrorCode.EmailAlreadyUsed:
+                        formik.setFieldError('email', 'Email уже используется');
+                        break;
+
+                    case ApiErrorCode.UsernameAlreadyUsed:
+                        formik.setFieldError('username', 'Никнейм занят');
+                        break;
+
+                    case ApiErrorCode.InvalidRequest:
+                        toast.error('Проверьте правильность введённых данных');
+                        break;
+
+                    default:
+                        toast.error(
+                            status === 429
+                                ? 'Слишком много попыток. Попробуйте позже'
+                                : getApiErrorMessage(
+                                      error,
+                                      'Не удалось зарегистрироваться. Попробуйте ещё раз',
+                                  ),
+                        );
                 }
             }
         },

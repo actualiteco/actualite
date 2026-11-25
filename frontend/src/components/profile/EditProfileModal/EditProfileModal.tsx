@@ -9,6 +9,7 @@ import { ProfileService } from '@services/ProfileService';
 import { useProfileStore } from '@stores/useProfileStore';
 import type { Profile, ProfileChanges } from '@models/Profile';
 import { getDisplayName } from '@models/Profile';
+import { ApiErrorCode } from '@models/apiErrorCodes';
 import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
 import { validateImageFile } from '@utils/file.utils';
 import { charCount } from '@utils/validators.utils';
@@ -103,7 +104,7 @@ const ProfileEditModal: FC<ProfileEditModalProps> = ({
                 onSaved(updated);
                 onClose();
             } catch (error) {
-                if (parseApiError(error).status === 409) {
+                if (parseApiError(error).code === ApiErrorCode.UsernameAlreadyUsed) {
                     formik.setFieldError('username', 'Никнейм занят');
                 } else {
                     toast.error(

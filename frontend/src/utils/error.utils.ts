@@ -1,4 +1,5 @@
 import { isAxiosError } from 'axios';
+import { ApiErrorCode } from '@models/apiErrorCodes';
 
 export interface ApiErrorInfo {
     status?: number;
@@ -30,6 +31,21 @@ export const parseApiError = (error: unknown): ApiErrorInfo => {
     return { message: error instanceof Error ? error.message : '', isNetworkError: false };
 };
 
+const CODE_MESSAGES: Partial<Record<string, string>> = {
+    [ApiErrorCode.InvalidRequest]: 'Что-то пошло не так',
+    [ApiErrorCode.Unauthorized]: 'Нужно войти в аккаунт',
+    [ApiErrorCode.Forbidden]: 'Недостаточно прав',
+    [ApiErrorCode.NotFound]: 'Не найдено',
+    [ApiErrorCode.Conflict]: 'Конфликт данных',
+    [ApiErrorCode.EmailAlreadyUsed]: 'Email уже используется',
+    [ApiErrorCode.UsernameAlreadyUsed]: 'Никнейм занят',
+    [ApiErrorCode.TokenExpired]: 'Сессия истекла. Войдите снова',
+    [ApiErrorCode.SessionRevokedOrExpired]: 'Сессия истекла. Войдите снова',
+    [ApiErrorCode.RequestTooLarge]: 'Файл слишком большой',
+    [ApiErrorCode.UnsupportedImageType]: 'Неподходящий формат файла',
+    [ApiErrorCode.Internal]: 'Ошибка сервера. Попробуйте позже',
+};
+
 const STATUS_MESSAGES: Record<number, string> = {
     401: 'Нужно войти в аккаунт',
     403: 'Недостаточно прав',
@@ -41,9 +57,12 @@ const STATUS_MESSAGES: Record<number, string> = {
 };
 
 export const getApiErrorMessage = (error: unknown, fallback: string): string => {
-    const { status, isNetworkError, message } = parseApiError(error);
+    const { status, code, isNetworkError, message } = parseApiError(error);
     if (isNetworkError) {
         return 'Нет соединения с сервером';
+    }
+    if (code && CODE_MESSAGES[code]) {
+        return CODE_MESSAGES[code];
     }
     if (status && STATUS_MESSAGES[status]) {
         return STATUS_MESSAGES[status];

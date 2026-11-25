@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { ProfileService } from '@services/ProfileService';
 import type { Profile, ProfileChanges } from '@models/Profile';
 import { useAuthStore } from '@stores/useAuthStore';
+import { ApiErrorCode } from '@models/apiErrorCodes';
 import { parseApiError } from '@utils/error.utils';
 import type { ProfileErrorType } from '@components/profile/ProfileError/ProfileError';
 
@@ -41,10 +42,10 @@ const toLoadError = (error: unknown): ProfileErrorType => {
     if (isNetworkError) return 'network';
 
     switch (code) {
-        case 'NOT_FOUND':
+        case ApiErrorCode.NotFound:
             return 'notFound';
 
-        case 'FORBIDDEN':
+        case ApiErrorCode.Forbidden:
             return 'forbidden';
 
         default:
