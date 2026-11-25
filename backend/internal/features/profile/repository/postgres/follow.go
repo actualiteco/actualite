@@ -2,6 +2,7 @@ package users_repository
 
 import (
 	"actualiteco/actualite/internal/core/domain"
+	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
 	"context"
 	"errors"
 	"fmt"
@@ -13,7 +14,7 @@ import (
 const foreignKeyViolation = "23503"
 
 func (r *UsersRepository) Follow(ctx context.Context, followerID, followingID uuid.UUID) error {
-	ctxTimeout, cancel := context.WithTimeout(ctx, r.ConnPool.OpTimeout())
+	ctx, cancel := context.WithTimeout(ctx, r.ConnPool.OpTimeout())
 	defer cancel()
 
 	query := `
@@ -22,7 +23,8 @@ func (r *UsersRepository) Follow(ctx context.Context, followerID, followingID uu
 	ON CONFLICT DO NOTHING
 	`
 
-	tag, err := r.ConnPool.Exec(ctxTimeout, query, followerID.String(), followingID.String())
+	executor := postgres_pool.ExecutorFromContext(ctx, r.ConnPool)
+	tag, err := executor.Exec(ctx, query, followerID.String(), followingID.String())
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == foreignKeyViolation {

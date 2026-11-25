@@ -12,11 +12,17 @@ func (s *ProfileService) Follow(ctx context.Context, followerID, followingID uui
 		return fmt.Errorf("user can't follow themselves: %w", domain.ErrInvalidRequest)
 	}
 
-	if err := s.repo.Follow(ctx, followerID, followingID); err != nil {
-		return fmt.Errorf("follow user: %w", err)
-	}
+	return s.txManager.DoWrite(ctx, func(ctx context.Context) error {
+		if err := s.repo.Follow(ctx, followerID, followingID); err != nil {
+			return fmt.Errorf("follow user: %w", err)
+		}
 
-	return nil
+		if err := s.notifRepo.Create(ctx, domain.NewFollowNotification(followingID, followerID)); err != nil {
+			return fmt.Errorf("create follow notification: %w", err)
+		}
+
+		return nil
+	})
 }
 
 func (s *ProfileService) Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error {
