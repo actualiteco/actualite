@@ -1,7 +1,8 @@
-import React, { FC, ReactNode } from 'react';
+import React, { FC, ReactNode, useEffect } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@stores/useAuthStore';
+import Icon from '@components/shared/Icon/Icon';
 import { RoutePath } from '@router/paths';
 import styles from './AppLayout.module.scss';
 
@@ -17,6 +18,14 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 const AppLayout: FC<AppLayoutProps> = ({ title, showBack = false, children }) => {
     const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
+    const userId = useAuthStore((state) => state.userId);
+    const loadProfile = useAuthStore((state) => state.loadProfile);
+
+    useEffect(() => {
+        if (!userId) {
+            loadProfile().catch(() => undefined);
+        }
+    }, [userId, loadProfile]);
 
     const handleLogout = () => {
         logout();
@@ -31,7 +40,7 @@ const AppLayout: FC<AppLayoutProps> = ({ title, showBack = false, children }) =>
                 </Link>
                 <nav className={styles.nav}>
                     <NavLink to={RoutePath.feed} end className={navClass}>
-                        <span className={styles.navIcon}>⌂</span>
+                        <span className={styles.navIcon}><Icon name="home" size={16} /></span>
                         <span>Главная</span>
                     </NavLink>
                     <span
@@ -39,7 +48,7 @@ const AppLayout: FC<AppLayoutProps> = ({ title, showBack = false, children }) =>
                         aria-disabled="true"
                         title="Скоро"
                     >
-                        <span className={styles.navIcon}>⌕</span>
+                        <span className={styles.navIcon}><Icon name="search" size={16} /></span>
                         <span>Поиск</span>
                     </span>
                     <span
@@ -47,17 +56,17 @@ const AppLayout: FC<AppLayoutProps> = ({ title, showBack = false, children }) =>
                         aria-disabled="true"
                         title="Скоро"
                     >
-                        <span className={styles.navIcon}>🕭</span>
+                        <span className={styles.navIcon}><Icon name="bell" size={16} /></span>
                         <span>Уведомления</span>
                     </span>
                     <NavLink to={RoutePath.profile} end className={navClass}>
-                        <span className={styles.navIcon}>♙</span>
+                        <span className={styles.navIcon}><Icon name="user" size={16} /></span>
                         <span>Мой профиль</span>
                     </NavLink>
                 </nav>
                 <div className={styles.sidebarBottom}>
                     <button type="button" className={styles.navItem} onClick={handleLogout}>
-                        <span className={styles.navIcon}>⎋</span>
+                        <span className={styles.navIcon}><Icon name="logout" size={16} /></span>
                         <span>Выйти</span>
                     </button>
                 </div>
@@ -72,7 +81,7 @@ const AppLayout: FC<AppLayoutProps> = ({ title, showBack = false, children }) =>
                             onClick={() => navigate(-1)}
                             aria-label="Назад"
                         >
-                            ←
+                            <Icon name="arrowLeft" size={18} />
                         </button>
                     )}
                     <h1 className={styles.title}>{title}</h1>

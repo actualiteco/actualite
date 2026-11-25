@@ -1,26 +1,11 @@
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 export const AVATAR_OUTPUT_SIZE = 400;
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png'];
-const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png'];
-
 export interface CropArea {
     x: number;
     y: number;
     size: number;
 }
-
-export const validateAvatarFile = (file: File): string | null => {
-    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
-
-    if (!ALLOWED_TYPES.includes(file.type) || !ALLOWED_EXTENSIONS.includes(extension)) {
-        return 'Допустимы только изображения jpg и png';
-    }
-    if (file.size > AVATAR_MAX_BYTES) {
-        return 'Размер файла не должен превышать 2 МБ';
-    }
-    return null;
-};
 
 export const cropToBlob = (
     image: HTMLImageElement,

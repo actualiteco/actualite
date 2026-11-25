@@ -1,4 +1,5 @@
 import React, { FC, ReactNode, useEffect } from 'react';
+import Icon from '@components/shared/Icon/Icon';
 import styles from './Modal.module.scss';
 
 interface ModalProps {
@@ -32,7 +33,7 @@ const Modal: FC<ModalProps> = ({ open, onClose, children }) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 <button type="button" className={styles.close} onClick={onClose} aria-label="Закрыть">
-                    ✕
+                    <Icon name="close" size={16} />
                 </button>
                 {children}
             </div>

@@ -32,13 +32,9 @@ export interface InternalFeaturesAuthTransportHttpLoginDTO {
   password: string;
 }
 
-export interface InternalFeaturesAuthTransportHttpLoginDTOResponse {
-  /** @example "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTM2NjUxNzcsImlhdCI6MTc5MzYyMTk3NywiVXNlcklkIjoiODc5NGU1ODktMGRkYi00M2NlLTlmOTItMTZmYWFmY2Y0ZWU0IiwiUm9sZSI6InVzZXIifQ.iv_JT1Fke-QaK2nx2FEF_pkDroyJP-_xK81egOAV7h4" */
-  token?: string;
-  /** @example "8794e589-0ddb-43ce-9f92-16faafcf4ee4" */
-  user_id?: string;
-  /** @example "username" */
-  username?: string;
+export interface InternalFeaturesAuthTransportHttpRefreshDTO {
+  /** @example "old_refresh_token" */
+  refresh_token: string;
 }
 
 export interface InternalFeaturesAuthTransportHttpRegisterDTO {
@@ -67,6 +63,17 @@ export interface InternalFeaturesAuthTransportHttpRegisterDTOResponse {
   role?: string;
   /** @example "2026-03-25T12:00:41.267Z" */
   createdAt?: string;
+}
+
+export interface InternalFeaturesAuthTransportHttpTokensDTOResponse {
+  /** @example "new_access_token" */
+  access_token?: string;
+  /** @example 600 */
+  expires_in?: number;
+  /** @example "new_refresh_token" */
+  refresh_token?: string;
+  /** @example "Bearer" */
+  token_type?: string;
 }
 
 export interface InternalFeaturesPostTransportHttpCreatePostDTO {
@@ -135,6 +142,10 @@ export interface InternalFeaturesPostTransportHttpPostsWithPaginationDTOResponse
   posts?: InternalFeaturesPostTransportHttpPostWithAuthorDTOResponse[];
 }
 
+export interface InternalFeaturesPostTransportHttpImageUrlDTOResponse {
+  image_url?: string;
+}
+
 export interface InternalFeaturesPostTransportHttpPaginationDTO {
   /** @example 1 */
   page?: number;
@@ -154,20 +165,16 @@ export interface InternalFeaturesProfileTransportHttpFollowResponse {
 export interface InternalFeaturesProfileTransportHttpProfileResponse {
   /** @example "http://localhost:8080/avatar_url" */
   avatar_url?: string;
-  /** @example "2006-01-02T15:04:05Z07:00" */
-  created_at?: string;
   /** @example "mark" */
   display_name?: string;
-  /** @example "test.user@email.com" */
-  email?: string;
-  /** @example false */
-  email_verified?: boolean;
   /** @example 10 */
   followers_count?: number;
   /** @example 5 */
   following_count?: number;
   /** @example "8794e589-0ddb-43ce-9f92-16faafcf4ee4" */
   id?: string;
+  /** @example true */
+  is_following?: boolean;
   /** @example "user" */
   role?: string;
   /** @example "something smart" */

@@ -1,16 +1,21 @@
 import { FC } from 'react';
 import Button from '@components/shared/Button/Button';
 import EmptyState from '@components/shared/EmptyState/EmptyState';
-import type { ProfileLoadError } from '@stores/useProfileStore';
 import styles from './ProfileError.module.scss';
 
+export type ProfileErrorType =
+    | 'notFound'
+    | 'forbidden'
+    | 'network'
+    | 'unknown';
+
 interface ProfileErrorProps {
-    error: ProfileLoadError;
+    error: ProfileErrorType;
     onRetry: () => void;
 }
 
-const MESSAGES: Record<ProfileLoadError, { title: string; text: string }> = {
-    not_found: {
+const MESSAGES: Record<ProfileErrorType, { title: string; text: string }> = {
+    notFound: {
         title: 'Пользователь не найден',
         text: 'Возможно, профиль был удалён или ссылка неверна.',
     },
@@ -28,15 +33,14 @@ const MESSAGES: Record<ProfileLoadError, { title: string; text: string }> = {
     },
 };
 
-const RETRYABLE: ProfileLoadError[] = ['network', 'unknown'];
-
 const ProfileError: FC<ProfileErrorProps> = ({ error, onRetry }) => {
     const { title, text } = MESSAGES[error];
+    const canRetry = error === 'network' || error === 'unknown';
 
     return (
         <EmptyState title={title}>
             <p>{text}</p>
-            {RETRYABLE.includes(error) && (
+            {canRetry && (
                 <div className={styles.actions}>
                     <Button onClick={onRetry}>Повторить</Button>
                 </div>

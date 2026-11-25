@@ -1,188 +1,301 @@
-import { ChangeEvent, FC, useState } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import { toast } from 'react-toastify';
+import Avatar from '@components/shared/Avatar/Avatar';
+import Button from '@components/shared/Button/Button';
 import Modal from '@components/shared/Modal/Modal';
 import TextField from '@components/shared/TextField/TextField';
-import Button from '@components/shared/Button/Button';
+import { ProfileService } from '@services/ProfileService';
+import { useProfileStore } from '@stores/useProfileStore';
 import type { Profile, ProfileChanges } from '@models/Profile';
 import { getDisplayName } from '@models/Profile';
-import { useProfileStore } from '@stores/useProfileStore';
-import { ApiErrorCode, parseApiError } from '@utils/error.utils';
+import { ApiErrorCode } from '@models/apiErrorCodes';
+import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
+import { validateImageFile } from '@utils/file.utils';
+import { charCount } from '@utils/validators.utils';
+
+import AvatarCropModal, {
+    AVATAR_MAX_BYTES,
+} from '../AvatarCropModal/AvatarCropModal';
+
 import {
-    DISPLAY_NAME_MAX,
     STATUS_MAX,
-    USERNAME_MAX,
-    charCount,
-    displayNameField,
-    isBlank,
-    sanitizeUsername,
-    statusField,
-    truncateChars,
-    usernameField,
-} from '@utils/validators.utils';
+    isUsernameFormatValid,
+    profileSchema,
+} from '../validation';
+
 import styles from './EditProfileModal.module.scss';
 
-interface FormValues {
+interface ProfileEditModalProps {
+    open: boolean;
+    profile: Profile;
+    onClose: () => void;
+    onSaved: (profile: Profile) => void;
+}
+
+interface ProfileFormValues {
     displayName: string;
     username: string;
     status: string;
 }
 
-interface EditProfileModalProps {
-    open: boolean;
-    profile: Profile;
-    onClose: () => void;
-}
+const toValues = (profile: Profile): ProfileFormValues => ({
+    displayName: getDisplayName(profile),
+    username: profile.username,
+    status: profile.status,
+});
 
-const buildChanges = (values: FormValues, initial: FormValues): ProfileChanges => {
+const buildChanges = (
+    values: ProfileFormValues,
+    initial: ProfileFormValues,
+): ProfileChanges => {
     const changes: ProfileChanges = {};
+
     const displayName = values.displayName.trim();
-    const status = values.status.trim();
 
     if (displayName !== initial.displayName.trim()) {
         changes.displayName = displayName;
     }
+
     if (values.username !== initial.username) {
         changes.username = values.username;
     }
-    if (status !== initial.status.trim()) {
-        changes.status = status;
+
+    if (values.status.trim() !== initial.status.trim()) {
+        changes.status = values.status.trim();
     }
+
     return changes;
 };
 
-const buildSchema = (initial: FormValues) =>
-    Yup.object().shape({
-        displayName: displayNameField(),
-        username: usernameField(),
-        status: statusField().test(
-            'not-cleared',
-            'Статус не может быть пустым',
-            (value) => isBlank(initial.status) || !isBlank(value),
-        ),
-    });
-
-const counter = (value: string, max: number) => `${charCount(value)}/${max}`;
-
-const EditProfileForm: FC<Omit<EditProfileModalProps, 'open'>> = ({ profile, onClose }) => {
+const ProfileEditModal: FC<ProfileEditModalProps> = ({
+    open,
+    profile,
+    onClose,
+    onSaved,
+}) => {
     const updateProfile = useProfileStore((state) => state.updateProfile);
+    const uploadAvatar = useProfileStore((state) => state.uploadAvatar);
 
-    const [initialValues] = useState<FormValues>(() => ({
-        displayName: getDisplayName(profile),
-        username: profile.username,
-        status: profile.status,
-    }));
-    const [schema] = useState(() => buildSchema(initialValues));
+    const [cropFile, setCropFile] = useState<File | null>(null);
+    const [avatarError, setAvatarError] = useState<string | null>(null);
+    const [isAvatarSaving, setIsAvatarSaving] = useState(false);
 
-    const formik = useFormik<FormValues>({
-        initialValues,
-        validationSchema: schema,
-        onSubmit: async (values, { setFieldError }) => {
-            const changes = buildChanges(values, initialValues);
+    const fileInput = useRef<HTMLInputElement>(null);
+
+    const initial = toValues(profile);
+
+    const formik = useFormik<ProfileFormValues>({
+        initialValues: initial,
+        validationSchema: profileSchema,
+
+        onSubmit: async (values) => {
+            const changes = buildChanges(values, initial);
+
             if (Object.keys(changes).length === 0) {
                 onClose();
                 return;
             }
 
             try {
-                await updateProfile(changes);
+                const updated = await updateProfile(changes);
+
                 toast.success('Профиль обновлён');
+                onSaved(updated);
                 onClose();
             } catch (error) {
-                const { status, code, isNetwork } = parseApiError(error);
-                if (isNetwork) {
-                    return;
-                }
-                if (code === ApiErrorCode.Conflict) {
-                    setFieldError('username', 'Никнейм занят');
-                } else if (status === 429) {
-                    toast.error('Слишком много попыток. Попробуйте позже');
+                if (parseApiError(error).code === ApiErrorCode.UsernameAlreadyUsed) {
+                    formik.setFieldError('username', 'Никнейм занят');
                 } else {
-                    toast.error('Не удалось сохранить профиль. Попробуйте ещё раз');
+                    toast.error(
+                        getApiErrorMessage(
+                            error,
+                            'Не удалось сохранить профиль',
+                        ),
+                    );
                 }
             }
         },
     });
 
-    const handleChange =
-        (name: keyof FormValues, transform: (value: string) => string) =>
-        (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            formik.setFieldValue(name, transform(event.target.value));
-        };
+    useEffect(() => {
+        if (open) {
+            formik.resetForm({ values: toValues(profile) });
+            setAvatarError(null);
+        }
+    }, [open, profile]);
 
-    const shown = (name: keyof FormValues) =>
-        Boolean(formik.touched[name]) || formik.values[name] !== initialValues[name];
+    const handleUsernameBlur = async (
+        event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => {
+        formik.handleBlur(event);
 
-    const hasChanges = Object.keys(buildChanges(formik.values, initialValues)).length > 0;
-    const disabled = !hasChanges || !formik.isValid || formik.isSubmitting;
+        const username = formik.values.username;
+
+        if (
+            username === profile.username ||
+            !isUsernameFormatValid(username)
+        ) {
+            return;
+        }
+
+        try {
+            if (!(await ProfileService.isUsernameAvailable(username))) {
+                formik.setFieldError('username', 'Никнейм занят');
+            }
+        } catch {
+            // Проверка необязательна: окончательно занятость проверит сервер.
+        }
+    };
+
+    const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+
+        if (!file) return;
+
+        const error = validateImageFile(file, AVATAR_MAX_BYTES);
+        setAvatarError(error);
+        if (!error) {
+            setCropFile(file);
+        }
+    };
+
+    const handleAvatarConfirm = async (blob: Blob, fileName: string) => {
+        setIsAvatarSaving(true);
+        try {
+            const avatarUrl = await uploadAvatar(blob, fileName);
+
+            toast.success('Аватар обновлён');
+            onSaved({ ...profile, avatarUrl });
+            setCropFile(null);
+        } catch (error) {
+            toast.error(
+                getApiErrorMessage(error, 'Не удалось загрузить аватар'),
+            );
+        } finally {
+            setIsAvatarSaving(false);
+        }
+    };
+
+    const shown = (name: keyof ProfileFormValues) =>
+        Boolean(formik.touched[name]) ||
+        formik.values[name] !== initial[name];
+
+    const hasChanges =
+        Object.keys(buildChanges(formik.values, initial)).length > 0;
+
+    const disabled =
+        !hasChanges || !formik.isValid || formik.isSubmitting;
 
     return (
-        <form onSubmit={formik.handleSubmit} className={styles.form} noValidate>
-            <header className={styles.header}>
-                <h2 className={styles.title}>Редактировать профиль</h2>
-            </header>
+        <>
+            <Modal open={open && !cropFile} onClose={onClose}>
+                <form
+                    className={styles.form}
+                    onSubmit={formik.handleSubmit}
+                    noValidate
+                >
+                    <h1 className={styles.title}>
+                        Редактировать профиль
+                    </h1>
 
-            <div className={styles.fields}>
-                <TextField
-                    label="Имя"
-                    hint={counter(formik.values.displayName, DISPLAY_NAME_MAX)}
-                    name="displayName"
-                    autoComplete="off"
-                    reserveError
-                    value={formik.values.displayName}
-                    onChange={handleChange('displayName', (value) =>
-                        truncateChars(value, DISPLAY_NAME_MAX),
-                    )}
-                    onBlur={formik.handleBlur}
-                    error={formik.errors.displayName}
-                    touched={shown('displayName')}
-                />
+                    <div className={styles.avatarRow}>
+                        <Avatar
+                            url={profile.avatarUrl}
+                            name={getDisplayName(profile)}
+                            size={64}
+                        />
 
-                <TextField
-                    label="Никнейм"
-                    hint={counter(formik.values.username, USERNAME_MAX)}
-                    prefix="@"
-                    name="username"
-                    autoComplete="off"
-                    reserveError
-                    value={formik.values.username}
-                    onChange={handleChange('username', sanitizeUsername)}
-                    onBlur={formik.handleBlur}
-                    error={formik.errors.username}
-                    touched={shown('username')}
-                />
+                        <div>
+                            <input
+                                ref={fileInput}
+                                className={styles.hiddenInput}
+                                type="file"
+                                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                onChange={handleFile}
+                            />
 
-                <TextField
-                    label="Статус"
-                    hint={counter(formik.values.status, STATUS_MAX)}
-                    name="status"
-                    autoComplete="off"
-                    reserveError
-                    value={formik.values.status}
-                    onChange={handleChange('status', (value) => truncateChars(value, STATUS_MAX))}
-                    onBlur={formik.handleBlur}
-                    error={formik.errors.status}
-                    touched={shown('status')}
-                />
-            </div>
+                            <Button
+                                variant="outlined"
+                                onClick={() => fileInput.current?.click()}
+                            >
+                                Сменить фото
+                            </Button>
 
-            <footer className={styles.actions}>
-                <Button variant="text" onClick={onClose}>
-                    Отмена
-                </Button>
-                <Button type="submit" isLoading={formik.isSubmitting} disabled={disabled}>
-                    Сохранить
-                </Button>
-            </footer>
-        </form>
+                            <p className={styles.avatarHint}>
+                                JPG или PNG, до 2 МБ
+                            </p>
+
+                            {avatarError && (
+                                <p className={styles.avatarError}>
+                                    {avatarError}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <TextField
+                        name="displayName"
+                        placeholder="Имя"
+                        autoComplete="name"
+                        value={formik.values.displayName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.errors.displayName}
+                        touched={shown('displayName')}
+                    />
+
+                    <TextField
+                        name="username"
+                        placeholder="Никнейм"
+                        autoComplete="username"
+                        value={formik.values.username}
+                        onChange={formik.handleChange}
+                        onBlur={handleUsernameBlur}
+                        error={formik.errors.username}
+                        touched={shown('username')}
+                    />
+
+                    <TextField
+                        name="status"
+                        placeholder="Статус"
+                        textarea
+                        rows={3}
+                        value={formik.values.status}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.errors.status}
+                        touched={shown('status')}
+                    />
+                    <span className={styles.counter}>
+                        {charCount(formik.values.status)}/{STATUS_MAX}
+                    </span>
+
+                    <div className={styles.actions}>
+                        <Button variant="outlined" onClick={onClose}>
+                            Отмена
+                        </Button>
+
+                        <Button
+                            type="submit"
+                            disabled={disabled}
+                            isLoading={formik.isSubmitting}
+                        >
+                            Сохранить
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            <AvatarCropModal
+                file={cropFile}
+                isSaving={isAvatarSaving}
+                onCancel={() => setCropFile(null)}
+                onConfirm={handleAvatarConfirm}
+            />
+        </>
     );
 };
 
-const EditProfileModal: FC<EditProfileModalProps> = ({ open, profile, onClose }) => (
-    <Modal open={open} onClose={onClose}>
-        <EditProfileForm profile={profile} onClose={onClose} />
-    </Modal>
-);
-
-export default EditProfileModal;
+export default ProfileEditModal;

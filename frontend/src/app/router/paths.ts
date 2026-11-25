@@ -13,3 +13,6 @@ export const RoutePath: Record<AppRoutes, string> = {
     [AppRoutes.PROFILE]: '/profile',
     [AppRoutes.OTHERS_PROFILE]: '/profile/:id',
 };
+
+export const getPostPath = (postId: string): string => `/post/${postId}`;
+export const getProfilePath = (userId: string): string => `/profile/${userId}`;

@@ -1,39 +1,43 @@
-import { FC, SyntheticEvent, useEffect, useRef, useState } from 'react';
+import React, { FC, SyntheticEvent, useEffect, useRef, useState } from 'react';
 import ReactCrop from 'react-image-crop';
 import type { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { toast } from 'react-toastify';
 import Modal from '@components/shared/Modal/Modal';
 import Button from '@components/shared/Button/Button';
-import { cropToBlob } from '@utils/image.utils';
+import { AVATAR_MAX_BYTES, cropToBlob } from '@utils/image.utils';
 import styles from './AvatarCropModal.module.scss';
+
+export { AVATAR_MAX_BYTES } from '@utils/image.utils';
 
 interface AvatarCropModalProps {
     file: File | null;
+    isSaving: boolean;
     onCancel: () => void;
-    onConfirm: (blob: Blob) => Promise<void>;
-}
-
-interface CropperBodyProps {
-    file: File;
-    onCancel: () => void;
-    onConfirm: (blob: Blob) => Promise<void>;
+    onConfirm: (blob: Blob, fileName: string) => void;
 }
 
 const INITIAL_COVERAGE = 0.9;
 const MIN_CROP_SIZE = 48;
 
-const CropperBody: FC<CropperBodyProps> = ({ file, onCancel, onConfirm }) => {
+const CropperBody: FC<Omit<AvatarCropModalProps, 'file'> & { file: File }> = ({
+    file,
+    isSaving,
+    onCancel,
+    onConfirm,
+}) => {
     const imageRef = useRef<HTMLImageElement | null>(null);
     const [url, setUrl] = useState<string | null>(null);
     const [loadFailed, setLoadFailed] = useState(false);
     const [crop, setCrop] = useState<Crop>();
     const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         const objectUrl = URL.createObjectURL(file);
         setUrl(objectUrl);
+        setLoadFailed(false);
+        setCrop(undefined);
+        setCompletedCrop(null);
         return () => URL.revokeObjectURL(objectUrl);
     }, [file]);
 
@@ -53,34 +57,34 @@ const CropperBody: FC<CropperBodyProps> = ({ file, onCancel, onConfirm }) => {
 
     const handleConfirm = async () => {
         const image = imageRef.current;
-        if (!image || !completedCrop || completedCrop.width === 0) {
+        if (!image || !completedCrop || completedCrop.width < MIN_CROP_SIZE) {
             return;
         }
 
         const scaleX = image.naturalWidth / image.width;
         const scaleY = image.naturalHeight / image.height;
+        const cropSize = Math.min(completedCrop.width * scaleX, completedCrop.height * scaleY);
 
-        setIsSaving(true);
-
-        let blob: Blob;
         try {
-            blob = await cropToBlob(
+            const blob = await cropToBlob(
                 image,
                 {
                     x: completedCrop.x * scaleX,
                     y: completedCrop.y * scaleY,
-                    size: Math.min(completedCrop.width * scaleX, completedCrop.height * scaleY),
+                    size: cropSize,
                 },
-                file.type,
+                file.type === 'image/png' ? 'image/png' : 'image/jpeg',
             );
+
+            if (blob.size > AVATAR_MAX_BYTES) {
+                toast.error('После обрезки файл превышает 2 МБ. Выберите другое фото');
+                return;
+            }
+
+            onConfirm(blob, file.type === 'image/png' ? 'avatar.png' : 'avatar.jpg');
         } catch {
             toast.error('Не удалось обработать изображение');
-            setIsSaving(false);
-            return;
         }
-
-        await onConfirm(blob);
-        setIsSaving(false);
     };
 
     if (loadFailed) {
@@ -89,7 +93,7 @@ const CropperBody: FC<CropperBodyProps> = ({ file, onCancel, onConfirm }) => {
                 <h2 className={styles.title}>Аватар</h2>
                 <p className={styles.note}>Не удалось открыть изображение</p>
                 <div className={styles.actions}>
-                    <Button variant="outlined" onClick={onCancel}>
+                    <Button variant="outlined" onClick={onCancel} disabled={isSaving}>
                         Закрыть
                     </Button>
                 </div>
@@ -117,7 +121,7 @@ const CropperBody: FC<CropperBodyProps> = ({ file, onCancel, onConfirm }) => {
                             ref={imageRef}
                             className={styles.image}
                             src={url}
-                            alt=""
+                            alt="Выбор области аватара"
                             onLoad={handleImageLoad}
                             onError={() => setLoadFailed(true)}
                         />
@@ -126,13 +130,13 @@ const CropperBody: FC<CropperBodyProps> = ({ file, onCancel, onConfirm }) => {
             </div>
 
             <div className={styles.actions}>
-                <Button variant="outlined" onClick={onCancel}>
+                <Button variant="outlined" onClick={onCancel} disabled={isSaving}>
                     Отмена
                 </Button>
                 <Button
                     onClick={handleConfirm}
                     isLoading={isSaving}
-                    disabled={!completedCrop || completedCrop.width === 0}
+                    disabled={!completedCrop || completedCrop.width < MIN_CROP_SIZE || isSaving}
                 >
                     Сохранить
                 </Button>
@@ -141,9 +145,16 @@ const CropperBody: FC<CropperBodyProps> = ({ file, onCancel, onConfirm }) => {
     );
 };
 
-const AvatarCropModal: FC<AvatarCropModalProps> = ({ file, onCancel, onConfirm }) => (
+const AvatarCropModal: FC<AvatarCropModalProps> = ({ file, isSaving, onCancel, onConfirm }) => (
     <Modal open={file !== null} onClose={onCancel}>
-        {file && <CropperBody file={file} onCancel={onCancel} onConfirm={onConfirm} />}
+        {file && (
+            <CropperBody
+                file={file}
+                isSaving={isSaving}
+                onCancel={onCancel}
+                onConfirm={onConfirm}
+            />
+        )}
     </Modal>
 );
 

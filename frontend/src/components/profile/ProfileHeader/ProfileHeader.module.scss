@@ -1,105 +1,61 @@
 .header {
   display: flex;
-  align-items: flex-start;
-  gap: 28px;
-  padding: 8px 0 28px;
+  gap: 18px;
+  padding-bottom: 16px;
   border-bottom: 0.2px solid var(--border-color);
 
-  @media (max-width: 560px) {
+  @media (max-width: 480px) {
     flex-direction: column;
-    gap: 20px;
   }
-}
-
-.avatarFrame {
-  flex-shrink: 0;
-  padding: 6px;
-  border: 0.2px solid var(--border-color);
 }
 
 .info {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .name {
-  font-family: var(--font-serif);
-  font-size: 36px;
+  font-size: 24px;
   font-weight: 400;
-  line-height: 1;
-  letter-spacing: -0.025em;
-  color: var(--text-primary);
+  letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
 
 .username {
-  font-family: var(--font-mono);
+  margin-top: 2px;
   font-size: 12px;
-  letter-spacing: 0.02em;
   color: var(--text-secondary);
-  overflow-wrap: anywhere;
 }
 
 .status {
-  margin-top: 6px;
-  padding-left: 12px;
-  border-left: 1px solid var(--text-tertiary);
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 16px;
-  line-height: 1.45;
-  color: var(--text-secondary);
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.4;
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .email {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-tertiary);
-  overflow-wrap: anywhere;
-}
-
-.stats {
-  display: flex;
-  gap: 24px;
-  margin-top: 14px;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  & + & {
-    padding-left: 24px;
-    border-left: 0.2px solid var(--border-color);
-  }
-}
-
-.statValue {
-  font-family: var(--font-serif);
-  font-size: 28px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-}
-
-.statLabel {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  margin-top: 8px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
-.actions {
-  flex-shrink: 0;
-  min-width: 210px;
+.counters {
+  display: flex;
+  gap: 18px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
 
-  @media (max-width: 560px) {
-    width: 100%;
-  }
+.counter strong {
+  margin-right: 4px;
+  color: var(--text-primary);
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.actions {
+  align-self: flex-start;
 }

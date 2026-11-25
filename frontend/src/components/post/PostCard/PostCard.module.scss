@@ -1,7 +1,7 @@
 .card {
   display: flex;
-  gap: 14px;
-  padding: 20px 0;
+  gap: 12px;
+  padding: 14px 0;
   border-bottom: 0.2px solid var(--border-color);
 }
 
@@ -10,54 +10,107 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
-.meta {
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
+}
+
+.head {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 10px;
-  overflow-wrap: anywhere;
+  gap: 4px 8px;
+  font-size: 12px;
 }
 
-.name {
-  font-size: 14px;
-  font-weight: 500;
+.author {
   color: var(--text-primary);
+  font-size: 13px;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
-.username,
-.time {
-  font-family: var(--font-mono);
+.meta {
+  color: var(--text-secondary);
+}
+
+.replyTo {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
   font-size: 11px;
-  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--text-primary);
+  }
 }
 
 .content {
-  font-family: var(--font-serif);
-  font-size: 17px;
-  line-height: 1.5;
+  display: block;
   color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.45;
+  text-decoration: none;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
 .image {
   display: block;
-  width: 100%;
+  max-width: 100%;
+  align-self: flex-start;
   max-height: 420px;
-  object-fit: cover;
-  border: 1px solid var(--border-color);
+  border: 0.2px solid var(--border-color);
+  object-fit: contain;
 }
 
-.footer {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--text-tertiary);
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 }
 
 .liked {
-  color: var(--text-primary);
+  color: var(--error);
+
+  &:hover:not(:disabled) {
+    color: var(--error);
+  }
 }

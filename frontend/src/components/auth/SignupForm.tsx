@@ -3,7 +3,8 @@ import { toast } from 'react-toastify';
 import TextField from '@components/shared/TextField/TextField';
 import Button from '@components/shared/Button/Button';
 import { useAuthStore } from '@stores/useAuthStore';
-import { ApiErrorCode, parseApiError } from '@utils/error.utils';
+import { ApiErrorCode } from '@models/apiErrorCodes';
+import { getApiErrorMessage, parseApiError } from '@utils/error.utils';
 import { isFilled, signupSchema } from './validation';
 import styles from './AuthForms.module.scss';
 
@@ -27,16 +28,28 @@ const SignupForm = () => {
             } catch (error) {
                 const { status, code } = parseApiError(error);
 
-                if (status === 429) {
-                    toast.error('Слишком много попыток. Попробуйте позже');
-                } else if (code === ApiErrorCode.EmailAlreadyUsed) {
-                    // F_Auth_6
-                    formik.setFieldError('email', 'Email уже используется');
-                } else if (code === ApiErrorCode.Conflict) {
-                    // NF_Data_3
-                    formik.setFieldError('username', 'Никнейм занят');
-                } else {
-                    toast.error('Не удалось зарегистрироваться. Попробуйте ещё раз');
+                switch (code) {
+                    case ApiErrorCode.EmailAlreadyUsed:
+                        formik.setFieldError('email', 'Email уже используется');
+                        break;
+
+                    case ApiErrorCode.UsernameAlreadyUsed:
+                        formik.setFieldError('username', 'Никнейм занят');
+                        break;
+
+                    case ApiErrorCode.InvalidRequest:
+                        toast.error('Проверьте правильность введённых данных');
+                        break;
+
+                    default:
+                        toast.error(
+                            status === 429
+                                ? 'Слишком много попыток. Попробуйте позже'
+                                : getApiErrorMessage(
+                                      error,
+                                      'Не удалось зарегистрироваться. Попробуйте ещё раз',
+                                  ),
+                        );
                 }
             }
         },

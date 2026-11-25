@@ -1,0 +1,20 @@
+.status {
+  padding: 16px 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.error {
+  color: var(--error);
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.sentinel {
+  height: 1px;
+}
