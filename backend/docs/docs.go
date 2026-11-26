@@ -1983,6 +1983,16 @@ const docTemplate = `{
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['hello'",
+                        " 'world']"
+                    ]
+                },
                 "user_id": {
                     "type": "string",
                     "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -2031,6 +2041,16 @@ const docTemplate = `{
                 "parent_id": {
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['hello'",
+                        " 'world']"
+                    ]
                 },
                 "user_id": {
                     "type": "string",

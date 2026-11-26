@@ -48,5 +48,5 @@ func (r *PostsRepository) GetReplies(ctx context.Context, userID, parentID uuid.
 		return []domain.PostWithAuthor{}, nil
 	}
 
-	return toPostWithAuthorDomains(models), nil
+	return toPostWithAuthorDomains(models)
 }

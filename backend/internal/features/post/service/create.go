@@ -13,7 +13,9 @@ func (s *PostsService) Create(ctx context.Context, userID uuid.UUID, content str
 		return domain.Post{}, fmt.Errorf("create post domain: %w", err)
 	}
 
-	createdPost, err := s.postsRepo.CreatePost(ctx, post)
+	tags := domain.ExtractTags(post.Content)
+
+	createdPost, err := s.postsRepo.CreatePost(ctx, post, tags)
 	if err != nil {
 		return domain.Post{}, fmt.Errorf("create post: %w: %w", err, domain.ErrInternal)
 	}

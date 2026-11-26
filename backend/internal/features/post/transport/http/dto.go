@@ -23,6 +23,7 @@ type PostDTOResponse struct {
 	ImageURL   *string    `json:"image_url" example:"https://example.com/image.jpg"`
 	LikesCount uint       `json:"likes_count" example:"10"`
 	CreatedAt  time.Time  `json:"created_at" example:"2026-03-25T12:00:41.267Z"`
+	Tags       []string   `json:"tags" example:"['hello', 'world']"`
 }
 
 type PostWithAuthorDTOResponse struct {
@@ -38,6 +39,7 @@ type PostWithAuthorDTOResponse struct {
 	CreatedAt   time.Time  `json:"created_at" example:"2026-03-25T12:00:41.267Z"`
 	DeletedAt   *time.Time `json:"deleted_at" example:"2026-03-25T12:00:41.267Z"`
 	IsLiked     bool       `json:"is_liked" example:"false"`
+	Tags        []string   `json:"tags" example:"['hello', 'world']"`
 }
 
 type paginationDTO struct {
@@ -65,6 +67,7 @@ func postToResponse(p domain.Post) PostDTOResponse {
 		ImageURL:   p.ImageURL,
 		LikesCount: p.LikesCount,
 		CreatedAt:  p.CreatedAt,
+		Tags:       domain.TagsToStrings(p.Hashtags),
 	}
 }
 
@@ -82,6 +85,7 @@ func postWithAuthorToResponse(p domain.PostWithAuthor) PostWithAuthorDTOResponse
 		CreatedAt:   p.Post.CreatedAt,
 		DeletedAt:   p.Post.DeletedAt,
 		IsLiked:     p.Post.IsLiked,
+		Tags:        domain.TagsToStrings(p.Post.Hashtags),
 	}
 }
 

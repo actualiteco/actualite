@@ -16,7 +16,7 @@ type PostsService struct {
 type PostsRepository interface {
 	Like(ctx context.Context, userID, postID uuid.UUID) error
 	Unlike(ctx context.Context, userID, postID uuid.UUID) error
-	CreatePost(ctx context.Context, post domain.Post) (domain.Post, error)
+	CreatePost(ctx context.Context, post domain.Post, tags []domain.Tag) (domain.Post, error)
 	GetPostByID(ctx context.Context, postID uuid.UUID) (domain.PostWithAuthor, error)
 	GetPostsByAuthorID(ctx context.Context, userID, authorID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)
 	GetReplies(ctx context.Context, userID, parentID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)
@@ -26,6 +26,9 @@ type PostsRepository interface {
 	GetCountOfPostsByUserID(ctx context.Context, userID uuid.UUID) (uint64, bool, error)
 	GetCountOfReplies(ctx context.Context, parentID uuid.UUID) (uint64, bool, error)
 	GetCountOfPostsForFeed(ctx context.Context, userID uuid.UUID) (uint64, bool, error)
+}
+
+type tagsRepository interface {
 }
 
 type txManager interface {

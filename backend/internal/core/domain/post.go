@@ -19,6 +19,7 @@ type Post struct {
 	DeletedAt  *time.Time
 	CreatedAt  time.Time
 	IsLiked    bool
+	Hashtags   []Tag
 }
 
 type UserSummary struct {

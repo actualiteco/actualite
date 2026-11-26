@@ -36,5 +36,5 @@ func (r *PostsRepository) GetPostByID(ctx context.Context, postID uuid.UUID) (do
 		return domain.PostWithAuthor{}, fmt.Errorf("scan row: %w", err)
 	}
 
-	return toPostWithAuthorDomain(model), nil
+	return toPostWithAuthorDomain(model)
 }

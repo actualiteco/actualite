@@ -48,5 +48,5 @@ func (r *PostsRepository) GetPostsByAuthorID(ctx context.Context, userID, author
 		return []domain.PostWithAuthor{}, nil
 	}
 
-	return toPostWithAuthorDomains(models), nil
+	return toPostWithAuthorDomains(models)
 }

@@ -68,5 +68,5 @@ func (r *PostsRepository) GetPostsFeed(ctx context.Context, userID uuid.UUID, li
 		return []domain.PostWithAuthor{}, fmt.Errorf("collect rows: %w", err)
 	}
 
-	return toPostWithAuthorDomains(models), nil
+	return toPostWithAuthorDomains(models)
 }
