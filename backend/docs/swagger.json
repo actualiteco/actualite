@@ -80,7 +80,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Создает токен, его хэш сохраняется в БД, а на почту приходит письмо с ссылкой на страницу фронтенда для подтверждения email",
+                "description": "Создает токен, его хэш сохраняется в БД, а на почту приходит письмо с ссылкой на страницу фронтенда (/confirm-email?token=...) для подтверждения email",
                 "consumes": [
                     "application/json"
                 ],
@@ -1520,6 +1520,130 @@
                     }
                 }
             }
+        },
+        "/search/posts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает страницу результатов полнотекстового поиска по содержимому постов и ответов в порядке релевантности.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Search"
+                ],
+                "summary": "Поиск постов",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Текст для поиска",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 30,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Размер страницы",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Найденные посты и пагинация",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_features_post_transport_http.PostsWithPaginationDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Требуется авторизация",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
+        },
+        "/search/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает публичные данные пользователей по подстроке в никнейме или отображаемом имени без учёта регистра. Возвращает не более 20 результатов.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Search"
+                ],
+                "summary": "Поиск пользователей",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Подстрока для поиска",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Найденные пользователи",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_search_transport_http.UserSearchDTOResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Требуется авторизация",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1546,6 +1670,94 @@
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "actualiteco_actualite_internal_features_post_transport_http.PostWithAuthorDTOResponse": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Hello, world!"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-03-25T12:00:41.267Z"
+                },
+                "deleted_at": {
+                    "type": "string",
+                    "example": "2026-03-25T12:00:41.267Z"
+                },
+                "display_name": {
+                    "type": "string",
+                    "example": "test"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                },
+                "image_url": {
+                    "type": "string",
+                    "example": "https://example.com/image.jpg"
+                },
+                "is_liked": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "likes_count": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "parent_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "testuser"
+                }
+            }
+        },
+        "actualiteco_actualite_internal_features_post_transport_http.PostsWithPaginationDTOResponse": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "$ref": "#/definitions/actualiteco_actualite_internal_features_post_transport_http.paginationDTO"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/actualiteco_actualite_internal_features_post_transport_http.PostWithAuthorDTOResponse"
+                    }
+                }
+            }
+        },
+        "actualiteco_actualite_internal_features_post_transport_http.paginationDTO": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "page_size": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "total_pages": {
+                    "type": "integer",
+                    "example": 100
                 }
             }
         },
@@ -1938,6 +2150,24 @@
                 "avatar_url": {
                     "type": "string",
                     "example": "http://localhost:8333/3,01637037d6"
+                }
+            }
+        },
+        "internal_search_transport_http.UserSearchDTOResponse": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         }

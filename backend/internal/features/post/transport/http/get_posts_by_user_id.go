@@ -56,5 +56,5 @@ func (h *PostsHTTPHandler) GetPostsByUserID(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	respWriter.JSONResponse(postsWithPaginationToResponse(posts, pagination), http.StatusOK)
+	respWriter.JSONResponse(PostsWithPaginationToResponse(posts, pagination), http.StatusOK)
 }

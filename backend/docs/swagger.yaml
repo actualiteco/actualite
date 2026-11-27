@@ -16,6 +16,69 @@ definitions:
       message:
         type: string
     type: object
+  actualiteco_actualite_internal_features_post_transport_http.PostWithAuthorDTOResponse:
+    properties:
+      avatar_url:
+        example: https://example.com/avatar.jpg
+        type: string
+      content:
+        example: Hello, world!
+        type: string
+      created_at:
+        example: "2026-03-25T12:00:41.267Z"
+        type: string
+      deleted_at:
+        example: "2026-03-25T12:00:41.267Z"
+        type: string
+      display_name:
+        example: test
+        type: string
+      id:
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      is_liked:
+        example: false
+        type: boolean
+      likes_count:
+        example: 10
+        type: integer
+      parent_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      user_id:
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        type: string
+      username:
+        example: testuser
+        type: string
+    type: object
+  actualiteco_actualite_internal_features_post_transport_http.PostsWithPaginationDTOResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/actualiteco_actualite_internal_features_post_transport_http.paginationDTO'
+      posts:
+        items:
+          $ref: '#/definitions/actualiteco_actualite_internal_features_post_transport_http.PostWithAuthorDTOResponse'
+        type: array
+    type: object
+  actualiteco_actualite_internal_features_post_transport_http.paginationDTO:
+    properties:
+      page:
+        example: 1
+        type: integer
+      page_size:
+        example: 20
+        type: integer
+      total:
+        example: 20
+        type: integer
+      total_pages:
+        example: 100
+        type: integer
+    type: object
   internal_features_auth_transport_http.ConfirmEmailDTORequest:
     properties:
       token:
@@ -298,6 +361,18 @@ definitions:
         example: http://localhost:8333/3,01637037d6
         type: string
     type: object
+  internal_search_transport_http.UserSearchDTOResponse:
+    properties:
+      avatar_url:
+        type: string
+      display_name:
+        type: string
+      id:
+        example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        type: string
+      username:
+        type: string
+    type: object
 host: 127.0.0.1:8080
 info:
   contact: {}
@@ -352,7 +427,8 @@ paths:
       consumes:
       - application/json
       description: Создает токен, его хэш сохраняется в БД, а на почту приходит письмо
-        с ссылкой на страницу фронтенда для подтверждения email
+        с ссылкой на страницу фронтенда (/confirm-email?token=...) для подтверждения
+        email
       produces:
       - application/json
       responses:
@@ -1314,6 +1390,89 @@ paths:
       summary: Проверка доступности username
       tags:
       - Profile
+  /search/posts:
+    get:
+      description: Возвращает страницу результатов полнотекстового поиска по содержимому
+        постов и ответов в порядке релевантности.
+      parameters:
+      - description: Текст для поиска
+        in: query
+        name: query
+        required: true
+        type: string
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: Размер страницы
+        in: query
+        maximum: 30
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Найденные посты и пагинация
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_features_post_transport_http.PostsWithPaginationDTOResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Требуется авторизация
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Поиск постов
+      tags:
+      - Search
+  /search/users:
+    get:
+      description: Возвращает публичные данные пользователей по подстроке в никнейме
+        или отображаемом имени без учёта регистра. Возвращает не более 20 результатов.
+      parameters:
+      - description: Подстрока для поиска
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Найденные пользователи
+          schema:
+            items:
+              $ref: '#/definitions/internal_search_transport_http.UserSearchDTOResponse'
+            type: array
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "401":
+          description: Требуется авторизация
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.CustomError'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
+      security:
+      - BearerAuth: []
+      summary: Поиск пользователей
+      tags:
+      - Search
 securityDefinitions:
   BearerAuth:
     description: Введите "Bearer" и JWT-токен через пробел.
