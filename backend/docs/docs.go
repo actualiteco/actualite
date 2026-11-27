@@ -1530,7 +1530,7 @@ const docTemplate = `{
             }
         },
         "/search/posts": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -1543,14 +1543,16 @@ const docTemplate = `{
                 "tags": [
                     "Search"
                 ],
-                "summary": "Поиск постов",
+                "summary": "Поиск постов по query (контенту)",
                 "parameters": [
                     {
-                        "type": "string",
                         "description": "Текст для поиска",
-                        "name": "query",
-                        "in": "query",
-                        "required": true
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_search_transport_http.SearchPostsByQueryRequest"
+                        }
                     },
                     {
                         "minimum": 1,
@@ -2188,6 +2190,18 @@ const docTemplate = `{
                 "avatar_url": {
                     "type": "string",
                     "example": "http://localhost:8333/3,01637037d6"
+                }
+            }
+        },
+        "internal_features_search_transport_http.SearchPostsByQueryRequest": {
+            "type": "object",
+            "required": [
+                "query"
+            ],
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },

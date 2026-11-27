@@ -31,9 +31,14 @@ func (h *SearchHTTPHandler) Routes() []server.Route {
 			AuthRequired: true,
 		},
 		{
+			Method:       http.MethodPost,
+			URL:          "/search/posts",
+			Handler:      h.SearchPostsByQuery,
+			AuthRequired: true,
+		},
+		{
 			Method:       http.MethodGet,
 			URL:          "/search/posts",
-			Handler:      h.SearchPosts,
 			AuthRequired: true,
 		},
 	}

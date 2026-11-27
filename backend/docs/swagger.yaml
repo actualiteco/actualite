@@ -382,6 +382,14 @@ definitions:
         example: http://localhost:8333/3,01637037d6
         type: string
     type: object
+  internal_features_search_transport_http.SearchPostsByQueryRequest:
+    properties:
+      query:
+        minLength: 1
+        type: string
+    required:
+    - query
+    type: object
   internal_features_search_transport_http.UserSearchDTOResponse:
     properties:
       avatar_url:
@@ -1412,15 +1420,16 @@ paths:
       tags:
       - Profile
   /search/posts:
-    get:
+    post:
       description: Возвращает страницу результатов полнотекстового поиска по содержимому
         постов и ответов в порядке релевантности.
       parameters:
       - description: Текст для поиска
-        in: query
-        name: query
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/internal_features_search_transport_http.SearchPostsByQueryRequest'
       - default: 1
         description: Номер страницы
         in: query
@@ -1455,7 +1464,7 @@ paths:
             $ref: '#/definitions/actualiteco_actualite_internal_core_domain.InternalError'
       security:
       - BearerAuth: []
-      summary: Поиск постов
+      summary: Поиск постов по query (контенту)
       tags:
       - Search
   /search/users:
