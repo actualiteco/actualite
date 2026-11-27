@@ -32,7 +32,7 @@ type PostModel struct {
 	CreatedAt        time.Time  `db:"created_at"`
 	FromSubscription bool       `db:"from_subscription"`
 	IsLiked          bool       `db:"is_liked"`
-	Tags             []string   `db:"-"`
+	Tags             []string   `db:"tags"`
 }
 
 func toPostDomain(m PostModel) (domain.Post, error) {

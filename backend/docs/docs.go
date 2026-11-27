@@ -1628,7 +1628,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_search_transport_http.UserSearchDTOResponse"
+                                "$ref": "#/definitions/internal_features_search_transport_http.UserSearchDTOResponse"
                             }
                         }
                     },
@@ -1723,6 +1723,16 @@ const docTemplate = `{
                 "parent_id": {
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['hello'",
+                        " 'world']"
+                    ]
                 },
                 "user_id": {
                     "type": "string",
@@ -2181,7 +2191,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_search_transport_http.UserSearchDTOResponse": {
+        "internal_features_search_transport_http.UserSearchDTOResponse": {
             "type": "object",
             "properties": {
                 "avatar_url": {

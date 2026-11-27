@@ -38,7 +38,11 @@ func (r *PostsRepository) GetPostsFeed(ctx context.Context, userID uuid.UUID, li
 			EXISTS(
 				SELECT 1 FROM likes l
 				WHERE l.post_id = p.id AND l.user_id = $1
-			)                                AS is_liked
+			)                                AS is_liked,
+			(SELECT COALESCE(array_agg(h.name ORDER BY h.name), '{}'::text[])
+				FROM post_hashtags ph
+				JOIN hashtags h ON h.id = ph.hashtag_id
+				WHERE ph.post_id = p.id) 	 AS tags								
 		FROM posts p
 		JOIN users u              ON u.id         = p.user_id
 		LEFT JOIN user_follows uf ON uf.author_id = p.user_id
