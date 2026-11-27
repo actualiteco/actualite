@@ -3,7 +3,6 @@ package search_transport
 import (
 	"fmt"
 	"net/http"
-	"uuid"
 
 	"actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
@@ -13,10 +12,6 @@ import (
 	post_transport "actualiteco/actualite/internal/features/post/transport/http"
 	httputils "actualiteco/actualite/internal/utils/http"
 )
-
-type SearchPostsByQueryRequest struct {
-	Query string `json:"query" validate:"required,min=1"`
-}
 
 // SearchPostsByQuery godoc
 // @Summary Поиск постов по query (контенту)
@@ -42,28 +37,76 @@ func (h *SearchHTTPHandler) SearchPostsByQuery(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	page, err := httputils.GetUintQueryParam(r, "page")
+	page, pageSize, err := httputils.GetPaginationParamsFromQuery(r)
 	if err != nil {
 		respWriter.MapError(err)
 		return
 	}
 
-	pageSize, err := httputils.GetUintQueryParam(r, "page_size")
+	userID, err := middleware.GetUserUUIDFromCtx(ctx)
 	if err != nil {
 		respWriter.MapError(err)
 		return
 	}
 
-	userID, err := uuid.Parse(middleware.GetUserIDFromCtx(ctx))
-	if err != nil {
-		respWriter.MapError(fmt.Errorf("invalid user ID in token: %w", domain.ErrUnauthorized))
-		return
-	}
-
-	posts, pagination, err := h.service.SearchPosts(ctx, req.Query, userID, page, pageSize)
+	posts, pagination, err := h.service.SearchPostsByContent(ctx, req.Query, userID, page, pageSize)
 	if err != nil {
 		respWriter.MapError(err)
 		return
 	}
+
 	respWriter.JSONResponse(post_transport.PostsWithPaginationToResponse(posts, pagination), http.StatusOK)
+}
+
+// SearchPostsByHashtags godoc
+// @Summary Поиск постов по хэштегам
+// @Description Возвращает страницу результатов поиска постов по хэштегам.
+// @Tags Search
+// @Produce json
+// @Param hashtags query string true "Хэштеги, перечисленные через запятую. Пример: 'hashtag1,hashtag2'"
+// @Param page query int false "Номер страницы" minimum(1) default(1)
+// @Param page_size query int false "Размер страницы" minimum(1) maximum(30) default(20)
+// @Success 200 {object} post_transport.PostsWithPaginationDTOResponse "Найденные посты и пагинация"
+// @Failure 400 {object} domain.CustomError "Неверный запрос"
+// @Failure 401 {object} domain.CustomError "Требуется авторизация"
+// @Failure 500 {object} domain.InternalError "Внутренняя ошибка сервера"
+// @Router /search/posts [get]
+// @Security BearerAuth
+func (h *SearchHTTPHandler) SearchPostsByHashtags(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	respWriter := response.NewResponseHandler(logger.FromContext(ctx), w)
+
+	page, pageSize, err := httputils.GetPaginationParamsFromQuery(r)
+	if err != nil {
+		respWriter.MapError(err)
+		return
+	}
+
+	userID, err := middleware.GetUserUUIDFromCtx(ctx)
+	if err != nil {
+		respWriter.MapError(err)
+		return
+	}
+
+	query, err := getHashtagsFromQuery(r)
+	if err != nil {
+		respWriter.MapError(err)
+		return
+	}
+
+	posts, pagination, err := h.service.SearchPostsByHashtags(ctx, query, userID, page, pageSize)
+	if err != nil {
+		respWriter.MapError(err)
+		return
+	}
+
+	respWriter.JSONResponse(post_transport.PostsWithPaginationToResponse(posts, pagination), http.StatusOK)
+}
+
+func getHashtagsFromQuery(r *http.Request) (string, error) {
+	query := r.URL.Query().Get(hashtagsQueryKey)
+	if query == "" {
+		return "", fmt.Errorf("no hashtags in query: %w", domain.ErrInvalidRequest)
+	}
+	return query, nil
 }

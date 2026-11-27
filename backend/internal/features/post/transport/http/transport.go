@@ -10,10 +10,8 @@ import (
 )
 
 const (
-	postIDPathValueKey    = "postID"
-	userIDPathValueKey    = "userID"
-	pageQueryValueKey     = "page"
-	pageSizeQueryValueKey = "page_size"
+	postIDPathValueKey = "postID"
+	userIDPathValueKey = "userID"
 )
 
 type PostsHTTPHandler struct {

@@ -9,8 +9,10 @@ import (
 
 type SearchRepository interface {
 	SearchUsers(ctx context.Context, query string) ([]domain.UserSummary, error)
-	CountPosts(ctx context.Context, query string) (uint64, error)
+	CountPostsWithContent(ctx context.Context, query string) (uint64, error)
 	SearchPosts(ctx context.Context, query string, userID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)
+	CountPostsWithHashtags(ctx context.Context, tags []domain.Tag) (uint64, error)
+	SearchPostsByHashtags(ctx context.Context, tags []domain.Tag, userID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)
 }
 
 type txManager interface {

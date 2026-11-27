@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"uuid"
 
 	"go.uber.org/zap"
 )
@@ -26,20 +27,22 @@ type tokenService interface {
 	VerifyJWT(tokenString string) (*tokenclaims.CustomClaims, error)
 }
 
-func GetUserIDFromCtx(ctx context.Context) string {
-	userIDValue, ok := ctx.Value(userIDKey).(string)
+func GetUserUUIDFromCtx(ctx context.Context) (uuid.UUID, error) {
+	userIDValue, ok := ctx.Value(userIDKey).(uuid.UUID)
 	if !ok {
-		panic("no userID in context")
+		return uuid.Nil(), fmt.Errorf("no userID in context: %w", domain.ErrInternal)
 	}
-	return userIDValue
+
+	return userIDValue, nil
 }
 
-func GetSessionIDFromCtx(ctx context.Context) string {
-	sessionIDValue, ok := ctx.Value(sessionIDKey).(string)
+func GetSessionUUIDFromCtx(ctx context.Context) (uuid.UUID, error) {
+	sessionIDValue, ok := ctx.Value(sessionIDKey).(uuid.UUID)
 	if !ok {
-		panic("no sessionID in context")
+		return uuid.Nil(), fmt.Errorf("no sessionID in context: %w", domain.ErrInternal)
 	}
-	return sessionIDValue
+
+	return sessionIDValue, nil
 }
 
 func getEmailVerifiedFromCtx(ctx context.Context) bool {
@@ -71,7 +74,14 @@ func AuthMiddleware(tokenService tokenService) Middleware {
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), userIDKey, claims.Subject)
+			userID, err := uuid.Parse(claims.Subject)
+			if err != nil {
+				log.Debug("invalid userID", zap.String("userID", claims.Subject))
+				respWriter.MapError(fmt.Errorf("invalid userID: %w", domain.ErrInternal))
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), userIDKey, userID)
 			ctx = context.WithValue(ctx, roleKey, claims.Role)
 			ctx = context.WithValue(ctx, sessionIDKey, claims.SessionID)
 			ctx = context.WithValue(ctx, emailVerifiedKey, claims.EmailVerified)

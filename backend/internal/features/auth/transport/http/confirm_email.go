@@ -3,6 +3,7 @@ package auth_transport
 import (
 	_ "actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
+	"actualiteco/actualite/internal/core/middleware"
 	httprequest "actualiteco/actualite/internal/core/transport/request"
 	"actualiteco/actualite/internal/core/transport/response"
 	"net/http"
@@ -34,7 +35,7 @@ func (h *AuthHTTPHandler) ConfirmEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := getUserUUIDFromContext(ctx)
+	userID, err := middleware.GetUserUUIDFromCtx(ctx)
 	if err != nil {
 		respWriter.MapError(err)
 		return

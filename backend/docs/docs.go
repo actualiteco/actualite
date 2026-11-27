@@ -1530,6 +1530,73 @@ const docTemplate = `{
             }
         },
         "/search/posts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает страницу результатов поиска постов по хэштегам.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Search"
+                ],
+                "summary": "Поиск постов по хэштегам",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Хэштеги, перечисленные через запятую. Пример: 'hashtag1,hashtag2'",
+                        "name": "hashtags",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 30,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Размер страницы",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Найденные посты и пагинация",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_features_post_transport_http.PostsWithPaginationDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Требуется авторизация",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {

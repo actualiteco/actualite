@@ -11,7 +11,8 @@ import (
 
 type searchService interface {
 	SearchUsers(ctx context.Context, query string) ([]domain.UserSummary, error)
-	SearchPosts(ctx context.Context, query string, userID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
+	SearchPostsByContent(ctx context.Context, query string, userID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
+	SearchPostsByHashtags(ctx context.Context, query string, userID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
 }
 
 type SearchHTTPHandler struct {
@@ -39,6 +40,7 @@ func (h *SearchHTTPHandler) Routes() []server.Route {
 		{
 			Method:       http.MethodGet,
 			URL:          "/search/posts",
+			Handler:      h.SearchPostsByHashtags,
 			AuthRequired: true,
 		},
 	}

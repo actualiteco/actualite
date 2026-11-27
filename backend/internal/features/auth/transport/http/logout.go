@@ -1,14 +1,11 @@
 package auth_transport
 
 import (
-	"actualiteco/actualite/internal/core/domain"
+	_ "actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
 	"actualiteco/actualite/internal/core/middleware"
 	"actualiteco/actualite/internal/core/transport/response"
-	"context"
-	"fmt"
 	"net/http"
-	"uuid"
 )
 
 // Logout godoc
@@ -27,13 +24,13 @@ func (h *AuthHTTPHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(ctx)
 	respWriter := response.NewResponseHandler(log, w)
 
-	userID, err := getUserUUIDFromContext(ctx)
+	userID, err := middleware.GetUserUUIDFromCtx(ctx)
 	if err != nil {
 		respWriter.MapError(err)
 		return
 	}
 
-	sessionID, err := getSessionUUIDFromContext(ctx)
+	sessionID, err := middleware.GetSessionUUIDFromCtx(ctx)
 	if err != nil {
 		respWriter.MapError(err)
 		return
@@ -45,22 +42,4 @@ func (h *AuthHTTPHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respWriter.NoContent()
-}
-
-func getUserUUIDFromContext(ctx context.Context) (uuid.UUID, error) {
-	userID := middleware.GetUserIDFromCtx(ctx)
-	if userID == "" {
-		return uuid.Nil(), fmt.Errorf("no userID in context: %w", domain.ErrInternal)
-	}
-
-	return uuid.Parse(userID)
-}
-
-func getSessionUUIDFromContext(ctx context.Context) (uuid.UUID, error) {
-	sessionID := middleware.GetSessionIDFromCtx(ctx)
-	if sessionID == "" {
-		return uuid.Nil(), fmt.Errorf("no sessionID in context: %w", domain.ErrInternal)
-	}
-
-	return uuid.Parse(sessionID)
 }
