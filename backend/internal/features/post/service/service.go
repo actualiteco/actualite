@@ -28,9 +28,6 @@ type PostsRepository interface {
 	GetCountOfPostsForFeed(ctx context.Context, userID uuid.UUID) (uint64, bool, error)
 }
 
-type tagsRepository interface {
-}
-
 type txManager interface {
 	DoWrite(ctx context.Context, fn func(context.Context) error) error
 	Do(ctx context.Context, fn func(ctx context.Context) error) error

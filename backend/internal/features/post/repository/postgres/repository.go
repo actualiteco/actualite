@@ -25,6 +25,7 @@ type PostModel struct {
 	DisplayName      *string    `db:"display_name"`
 	AvatarURL        *string    `db:"avatar_url"`
 	ParentID         *uuid.UUID `db:"parent_id"`
+	ParentContent    *string    `db:"parent_content"`
 	Content          string     `db:"content"`
 	ImageURL         *string    `db:"image_url"`
 	LikesCount       uint       `db:"likes_count"`
@@ -42,15 +43,16 @@ func toPostDomain(m PostModel) (domain.Post, error) {
 	}
 
 	return domain.Post{
-		ID:         m.ID,
-		UserID:     m.UserID,
-		ParentID:   m.ParentID,
-		Content:    m.Content,
-		ImageURL:   m.ImageURL,
-		LikesCount: m.LikesCount,
-		CreatedAt:  m.CreatedAt,
-		IsLiked:    m.IsLiked,
-		Hashtags:   tags,
+		ID:            m.ID,
+		UserID:        m.UserID,
+		ParentID:      m.ParentID,
+		ParentContent: m.ParentContent,
+		Content:       m.Content,
+		ImageURL:      m.ImageURL,
+		LikesCount:    m.LikesCount,
+		CreatedAt:     m.CreatedAt,
+		IsLiked:       m.IsLiked,
+		Hashtags:      tags,
 	}, nil
 }
 

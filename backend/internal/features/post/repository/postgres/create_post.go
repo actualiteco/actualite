@@ -61,8 +61,10 @@ func (r *PostsRepository) CreatePost(ctx context.Context, post domain.Post, tags
 			ip.likes_count,
 			ip.deleted_at,
 			ip.created_at,
+			parent.content AS parent_content,
 			(SELECT COALESCE(array_agg(name ORDER BY ord), '{}'::text[]) FROM all_tags) AS tags
-		FROM inserted_post ip;
+		FROM inserted_post ip
+		LEFT JOIN posts parent ON parent.id = ip.parent_id;
 	`
 
 	row := r.ConnPool.QueryRow(ctxTimeout, query,
@@ -77,7 +79,7 @@ func (r *PostsRepository) CreatePost(ctx context.Context, post domain.Post, tags
 	var model PostModel
 	err := row.Scan(
 		&model.ID, &model.UserID, &model.ParentID, &model.Content, &model.ImageURL,
-		&model.LikesCount, &model.DeletedAt, &model.CreatedAt, &model.Tags,
+		&model.LikesCount, &model.DeletedAt, &model.CreatedAt, &model.ParentContent, &model.Tags,
 	)
 	if err != nil {
 		var pgErr *pgconn.PgError

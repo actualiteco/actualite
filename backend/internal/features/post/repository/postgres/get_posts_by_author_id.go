@@ -25,12 +25,14 @@ func (r *PostsRepository) GetPostsByAuthorID(ctx context.Context, userID, author
 				WHERE l.post_id = p.id
 				AND l.user_id = $1
 			) AS is_liked,
+			parent.content AS parent_content,
 			(SELECT COALESCE(array_agg(h.name ORDER BY h.name), '{}'::text[])
 				FROM post_hashtags ph
 				JOIN hashtags h ON h.id = ph.hashtag_id
 				WHERE ph.post_id = p.id) AS tags
 		FROM posts p
 		JOIN users u ON u.id = p.user_id
+		LEFT JOIN posts parent ON parent.id = p.parent_id
 		WHERE p.user_id = $2
 		AND p.deleted_at IS NULL
 		ORDER BY p.created_at DESC, p.id DESC

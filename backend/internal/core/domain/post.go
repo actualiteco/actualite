@@ -10,16 +10,17 @@ import (
 const MaxImageSize = 5 << 20
 
 type Post struct {
-	ID         uuid.UUID  `validate:"required"`
-	UserID     uuid.UUID  `validate:"required"`
-	ParentID   *uuid.UUID `validate:"omitempty"`
-	Content    string     `validate:"required,min=1,max=280"`
-	ImageURL   *string    `validate:"omitempty,url"`
-	LikesCount uint
-	DeletedAt  *time.Time
-	CreatedAt  time.Time
-	IsLiked    bool
-	Hashtags   []Tag
+	ID            uuid.UUID  `validate:"required"`
+	UserID        uuid.UUID  `validate:"required"`
+	ParentID      *uuid.UUID `validate:"omitempty"`
+	ParentContent *string
+	Content       string  `validate:"required,min=1,max=280"`
+	ImageURL      *string `validate:"omitempty,url"`
+	LikesCount    uint
+	DeletedAt     *time.Time
+	CreatedAt     time.Time
+	IsLiked       bool
+	Hashtags      []Tag
 }
 
 type UserSummary struct {
