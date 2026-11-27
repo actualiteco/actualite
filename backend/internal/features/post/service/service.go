@@ -17,7 +17,7 @@ type PostsRepository interface {
 	Like(ctx context.Context, userID, postID uuid.UUID) error
 	Unlike(ctx context.Context, userID, postID uuid.UUID) error
 	CreatePost(ctx context.Context, post domain.Post, tags []domain.Tag) (domain.Post, error)
-	GetPostByID(ctx context.Context, postID uuid.UUID) (domain.PostWithAuthor, error)
+	GetPostByID(ctx context.Context, userID, postID uuid.UUID) (domain.PostWithAuthor, error)
 	GetPostsByAuthorID(ctx context.Context, userID, authorID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)
 	GetReplies(ctx context.Context, userID, parentID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)
 	GetPostsFeed(ctx context.Context, userID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error)

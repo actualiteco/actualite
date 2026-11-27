@@ -3,6 +3,7 @@ package post_transport
 import (
 	_ "actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
+	"actualiteco/actualite/internal/core/middleware"
 	"actualiteco/actualite/internal/core/transport/response"
 	httputils "actualiteco/actualite/internal/utils/http"
 	"fmt"
@@ -41,9 +42,15 @@ func (h *PostsHTTPHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, err := middleware.GetUserUUIDFromCtx(ctx)
+	if err != nil {
+		respWriter.MapError(err)
+		return
+	}
+
 	log.Debug("getting post with id", zap.String("postID", postID.String()))
 
-	postWithAuthor, err := h.postsService.GetPostByID(ctx, postID)
+	postWithAuthor, err := h.postsService.GetPostByID(ctx, userID, postID)
 	if err != nil {
 		err = fmt.Errorf("get post by id: %w", err)
 		respWriter.MapError(err)
