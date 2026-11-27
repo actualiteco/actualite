@@ -29,21 +29,27 @@ func (r *SearchRepository) CountPostsWithContent(ctx context.Context, query stri
 	return count, nil
 }
 
-func (r *SearchRepository) SearchPosts(ctx context.Context, query string, userID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error) {
+func (r *SearchRepository) SearchPostsByContent(ctx context.Context, query string, userID uuid.UUID, limit, offset uint64) ([]domain.PostWithAuthor, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
 	const sql = `
 		SELECT p.id::uuid, p.user_id::uuid, p.parent_id::uuid, p.content,
-		       p.image_url, p.likes_count, p.created_at, p.deleted_at,
-		       u.username, u.display_name, u.avatar_url,
-		       EXISTS (SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $2) AS is_liked,
-			   COALESCE(t.tags, '{}'::text[]) AS tags
+			p.image_url, p.likes_count, p.created_at, p.deleted_at,
+			u.username, u.display_name, u.avatar_url,
+			EXISTS (SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $2) AS is_liked,
+			COALESCE(t.tags, '{}'::text[]) AS tags
 		FROM posts p
 		JOIN users u ON u.id = p.user_id
+		LEFT JOIN LATERAL (
+			SELECT array_agg(h.name ORDER BY h.name) AS tags
+			FROM post_hashtags ph
+			JOIN hashtags h ON h.id = ph.hashtag_id
+			WHERE ph.post_id = p.id
+		) t ON true
 	` + postSearchFilter + `
 		ORDER BY ts_rank(p.search_vector, plainto_tsquery('pg_catalog.simple', $1)) DESC,
-		         p.created_at DESC, p.id DESC
+				p.created_at DESC, p.id DESC
 		LIMIT $3 OFFSET $4
 	`
 	rows, err := postgres_pool.ExecutorFromContext(ctx, r.pool).Query(ctx, sql, query, userID, limit, offset)

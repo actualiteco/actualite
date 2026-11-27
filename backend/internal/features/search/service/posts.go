@@ -32,7 +32,7 @@ func (s *SearchService) SearchPostsByContent(ctx context.Context, query string, 
 			return nil
 		}
 
-		posts, err = s.repo.SearchPosts(ctx, query, userID, limit, offset)
+		posts, err = s.repo.SearchPostsByContent(ctx, query, userID, limit, offset)
 		return err
 	})
 	return posts, pagination, err
