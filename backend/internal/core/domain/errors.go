@@ -16,6 +16,7 @@ var (
 	ErrTokenInvalidOrExpired     = NewCustomError("PASSWORD_RESET_TOKEN_INVALID_OR_EXPIRED", "token is invalid or expired")
 	ErrAlreadyVerified           = NewCustomError("ALREADY_VERIFIED", "user email is already verified")
 	ErrEmailVerificationRequired = NewCustomError("EMAIL_VERIFICATION_REQUIRED", "email verification required to make this action")
+	ErrValidation                = NewCustomError("VALIDATION_FAILED", "failed to validate")
 )
 
 type CustomError struct {

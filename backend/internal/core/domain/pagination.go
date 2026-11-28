@@ -42,7 +42,7 @@ func NewPagination(page, pageSize *uint64) Pagination {
 
 func (p *Pagination) GetOffsetLimit() (uint64, uint64, error) {
 	if p.Page == 0 || p.PageSize == 0 {
-		return 0, 0, fmt.Errorf("invalid page=%d page_size=%d to get offset, limit: %w", p.Page, p.PageSize, ErrInvalidRequest)
+		return 0, 0, fmt.Errorf("invalid page=%d page_size=%d to get offset, limit: %w", p.Page, p.PageSize, ErrValidation)
 	}
 
 	offset := (p.Page - 1) * p.PageSize

@@ -47,7 +47,7 @@ func NewPost(userID uuid.UUID, content string, imageURL *string, parentID *uuid.
 	}
 
 	if err := post.Validate(); err != nil {
-		return Post{}, fmt.Errorf("failed to create new post: %w: %w", err, ErrInvalidRequest)
+		return Post{}, fmt.Errorf("failed to create new post: %w: %w", err, ErrValidation)
 	}
 
 	return post, nil
@@ -62,7 +62,7 @@ func NewPostWithAuthor(post Post, author UserSummary) PostWithAuthor {
 
 func (p Post) Validate() error {
 	if err := validate.Struct(p); err != nil {
-		return fmt.Errorf("validator struct: %w: %w", err, ErrInvalidRequest)
+		return fmt.Errorf("validator struct: %w: %w", err, ErrValidation)
 	}
 
 	return nil

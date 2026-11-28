@@ -27,20 +27,20 @@ func (t Tag) String() string { return string(t) }
 func NewTag(raw string) (Tag, error) {
 	s := normalize(raw)
 	if s == "" {
-		return "", fmt.Errorf("hashtag is empty: %w", ErrInvalidRequest)
+		return "", fmt.Errorf("hashtag is empty: %w", ErrValidation)
 	}
 
 	rl := utf8.RuneCountInString(s)
 	if rl < MinTagLength {
-		return "", fmt.Errorf("hashtag=%s is too short: %w", s, ErrInvalidRequest)
+		return "", fmt.Errorf("hashtag=%s is too short: %w", s, ErrValidation)
 	}
 
 	if rl > MaxTagLength {
-		return "", fmt.Errorf("hashtag=%s is too long: %w", s, ErrInvalidRequest)
+		return "", fmt.Errorf("hashtag=%s is too long: %w", s, ErrValidation)
 	}
 
 	if isNumericOnly(s) {
-		return "", fmt.Errorf("hashtag=%s cannot consist only of numbers: %w", s, ErrInvalidRequest)
+		return "", fmt.Errorf("hashtag=%s cannot consist only of numbers: %w", s, ErrValidation)
 	}
 
 	return Tag(s), nil
