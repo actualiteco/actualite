@@ -7,6 +7,11 @@ import (
 	"strconv"
 )
 
+const (
+	pageQueryValueKey     = "page"
+	pageSizeQueryValueKey = "page_size"
+)
+
 func GetUintQueryParam(r *http.Request, key string) (*uint64, error) {
 	param := r.URL.Query().Get(key)
 	if param == "" {
@@ -32,4 +37,18 @@ func GetStringQueryParam(r *http.Request, key string) *string {
 		return nil
 	}
 	return &param
+}
+
+func GetPaginationParamsFromQuery(r *http.Request) (*uint64, *uint64, error) {
+	page, err := GetUintQueryParam(r, pageQueryValueKey)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get page from query param: %w", err)
+	}
+
+	pageSize, err := GetUintQueryParam(r, pageSizeQueryValueKey)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get page size from query param: %w", err)
+	}
+
+	return page, pageSize, nil
 }

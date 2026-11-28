@@ -3,6 +3,7 @@ package post_transport
 import (
 	_ "actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
+	"actualiteco/actualite/internal/core/middleware"
 	"actualiteco/actualite/internal/core/transport/response"
 	httputils "actualiteco/actualite/internal/utils/http"
 	"net/http"
@@ -29,7 +30,7 @@ func (h *PostsHTTPHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(ctx)
 	respWriter := response.NewResponseHandler(log, w)
 
-	userID, err := getUserUUIDFromContext(ctx)
+	userID, err := middleware.GetUserUUIDFromCtx(ctx)
 	if err != nil {
 		respWriter.MapError(err)
 		return

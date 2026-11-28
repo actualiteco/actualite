@@ -3,6 +3,7 @@ package profile_transport
 import (
 	_ "actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
+	"actualiteco/actualite/internal/core/middleware"
 	"actualiteco/actualite/internal/core/transport/response"
 	httputils "actualiteco/actualite/internal/utils/http"
 	"net/http"
@@ -36,7 +37,7 @@ func (h *ProfileHTTPHandler) GetUserProfile(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	id, err := getUserUUIDFromContext(ctx)
+	id, err := middleware.GetUserUUIDFromCtx(ctx)
 	if err != nil {
 		respWriter.MapError(err)
 		return

@@ -1,14 +1,11 @@
 package profile_transport
 
 import (
-	"actualiteco/actualite/internal/core/domain"
+	_ "actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
 	"actualiteco/actualite/internal/core/middleware"
 	"actualiteco/actualite/internal/core/transport/response"
-	"context"
-	"fmt"
 	"net/http"
-	"uuid"
 
 	"go.uber.org/zap"
 )
@@ -30,7 +27,7 @@ func (h *ProfileHTTPHandler) GetUserProfileByJWT(w http.ResponseWriter, r *http.
 	log := logger.FromContext(ctx)
 	respWriter := response.NewResponseHandler(log, w)
 
-	id, err := getUserUUIDFromContext(ctx)
+	id, err := middleware.GetUserUUIDFromCtx(ctx)
 	if err != nil {
 		log.Error("get userID from context", zap.Error(err))
 		respWriter.MapError(err)
@@ -45,13 +42,4 @@ func (h *ProfileHTTPHandler) GetUserProfileByJWT(w http.ResponseWriter, r *http.
 	}
 
 	respWriter.JSONResponse(toMyProfileResponse(user), http.StatusOK)
-}
-
-func getUserUUIDFromContext(ctx context.Context) (uuid.UUID, error) {
-	userID := middleware.GetUserIDFromCtx(ctx)
-	if userID == "" {
-		return uuid.Nil(), fmt.Errorf("no userID in context: %w", domain.ErrInternal)
-	}
-
-	return uuid.Parse(userID)
 }

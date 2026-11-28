@@ -2,9 +2,6 @@ package post_transport
 
 import (
 	"actualiteco/actualite/internal/core/domain"
-	httputils "actualiteco/actualite/internal/utils/http"
-	"fmt"
-	"net/http"
 	"time"
 	"uuid"
 )
@@ -16,28 +13,32 @@ type CreatePostDTO struct {
 }
 
 type PostDTOResponse struct {
-	ID         uuid.UUID  `json:"id" example:"3fa85f64-5717-4562-b3fc-2c963f66afa6"`
-	UserID     uuid.UUID  `json:"user_id" example:"3fa85f64-5717-4562-b3fc-2c963f66afa6"`
-	ParentID   *uuid.UUID `json:"parent_id" example:"123e4567-e89b-12d3-a456-426614174000"`
-	Content    string     `json:"content" example:"Hello, world!"`
-	ImageURL   *string    `json:"image_url" example:"https://example.com/image.jpg"`
-	LikesCount uint       `json:"likes_count" example:"10"`
-	CreatedAt  time.Time  `json:"created_at" example:"2026-03-25T12:00:41.267Z"`
+	ID            uuid.UUID  `json:"id" example:"3fa85f64-5717-4562-b3fc-2c963f66afa6"`
+	UserID        uuid.UUID  `json:"user_id" example:"3fa85f64-5717-4562-b3fc-2c963f66afa6"`
+	ParentID      *uuid.UUID `json:"parent_id" example:"123e4567-e89b-12d3-a456-426614174000"`
+	Content       string     `json:"content" example:"Hello, world!"`
+	ImageURL      *string    `json:"image_url" example:"https://example.com/image.jpg"`
+	LikesCount    uint       `json:"likes_count" example:"10"`
+	CreatedAt     time.Time  `json:"created_at" example:"2026-03-25T12:00:41.267Z"`
+	Tags          []string   `json:"tags" example:"['hello', 'world']"`
+	ParentContent *string    `json:"parent_content" example:"контент поста-родителя"`
 }
 
 type PostWithAuthorDTOResponse struct {
-	ID          uuid.UUID  `json:"id" example:"3fa85f64-5717-4562-b3fc-2c963f66afa6"`
-	UserID      uuid.UUID  `json:"user_id" example:"3fa85f64-5717-4562-b3fc-2c963f66afa6"`
-	Username    string     `json:"username" example:"testuser"`
-	DisplayName *string    `json:"display_name" example:"test"`
-	AvatarURL   *string    `json:"avatar_url" example:"https://example.com/avatar.jpg"`
-	ParentID    *uuid.UUID `json:"parent_id" example:"123e4567-e89b-12d3-a456-426614174000"`
-	Content     string     `json:"content" example:"Hello, world!"`
-	ImageURL    *string    `json:"image_url" example:"https://example.com/image.jpg"`
-	LikesCount  uint       `json:"likes_count" example:"10"`
-	CreatedAt   time.Time  `json:"created_at" example:"2026-03-25T12:00:41.267Z"`
-	DeletedAt   *time.Time `json:"deleted_at" example:"2026-03-25T12:00:41.267Z"`
-	IsLiked     bool       `json:"is_liked" example:"false"`
+	ID            uuid.UUID  `json:"id" example:"3fa85f64-5717-4562-b3fc-2c963f66afa6"`
+	UserID        uuid.UUID  `json:"user_id" example:"3fa85f64-5717-4562-b3fc-2c963f66afa6"`
+	Username      string     `json:"username" example:"testuser"`
+	DisplayName   *string    `json:"display_name" example:"test"`
+	AvatarURL     *string    `json:"avatar_url" example:"https://example.com/avatar.jpg"`
+	ParentID      *uuid.UUID `json:"parent_id" example:"123e4567-e89b-12d3-a456-426614174000"`
+	ParentContent *string    `json:"parent_content" example:"контент поста-родителя"`
+	Content       string     `json:"content" example:"Hello, world!"`
+	ImageURL      *string    `json:"image_url" example:"https://example.com/image.jpg"`
+	LikesCount    uint       `json:"likes_count" example:"10"`
+	CreatedAt     time.Time  `json:"created_at" example:"2026-03-25T12:00:41.267Z"`
+	DeletedAt     *time.Time `json:"deleted_at" example:"2026-03-25T12:00:41.267Z"`
+	IsLiked       bool       `json:"is_liked" example:"false"`
+	Tags          []string   `json:"tags" example:"['hello', 'world']"`
 }
 
 type paginationDTO struct {
@@ -58,30 +59,34 @@ type imageUrlDTOResponse struct {
 
 func postToResponse(p domain.Post) PostDTOResponse {
 	return PostDTOResponse{
-		ID:         p.ID,
-		UserID:     p.UserID,
-		ParentID:   p.ParentID,
-		Content:    p.Content,
-		ImageURL:   p.ImageURL,
-		LikesCount: p.LikesCount,
-		CreatedAt:  p.CreatedAt,
+		ID:            p.ID,
+		UserID:        p.UserID,
+		ParentID:      p.ParentID,
+		Content:       p.Content,
+		ImageURL:      p.ImageURL,
+		LikesCount:    p.LikesCount,
+		CreatedAt:     p.CreatedAt,
+		Tags:          domain.TagsToStrings(p.Hashtags),
+		ParentContent: p.ParentContent,
 	}
 }
 
 func postWithAuthorToResponse(p domain.PostWithAuthor) PostWithAuthorDTOResponse {
 	return PostWithAuthorDTOResponse{
-		ID:          p.Post.ID,
-		UserID:      p.Post.UserID,
-		Username:    p.Author.Username,
-		DisplayName: p.Author.DisplayName,
-		AvatarURL:   p.Author.AvatarURL,
-		ParentID:    p.Post.ParentID,
-		Content:     p.Post.Content,
-		ImageURL:    p.Post.ImageURL,
-		LikesCount:  p.Post.LikesCount,
-		CreatedAt:   p.Post.CreatedAt,
-		DeletedAt:   p.Post.DeletedAt,
-		IsLiked:     p.Post.IsLiked,
+		ID:            p.Post.ID,
+		UserID:        p.Post.UserID,
+		Username:      p.Author.Username,
+		DisplayName:   p.Author.DisplayName,
+		AvatarURL:     p.Author.AvatarURL,
+		ParentID:      p.Post.ParentID,
+		Content:       p.Post.Content,
+		ImageURL:      p.Post.ImageURL,
+		LikesCount:    p.Post.LikesCount,
+		CreatedAt:     p.Post.CreatedAt,
+		DeletedAt:     p.Post.DeletedAt,
+		IsLiked:       p.Post.IsLiked,
+		Tags:          domain.TagsToStrings(p.Post.Hashtags),
+		ParentContent: p.Post.ParentContent,
 	}
 }
 
@@ -106,18 +111,4 @@ func PostsWithPaginationToResponse(posts []domain.PostWithAuthor, pagination dom
 		Posts:      postsResponse,
 		Pagination: paginationResponse,
 	}
-}
-
-func getPaginationParamsFromQuery(r *http.Request) (*uint64, *uint64, error) {
-	page, err := httputils.GetUintQueryParam(r, pageQueryValueKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf("get page from query param: %w", err)
-	}
-
-	pageSize, err := httputils.GetUintQueryParam(r, pageSizeQueryValueKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf("get page size from query param: %w", err)
-	}
-
-	return page, pageSize, nil
 }

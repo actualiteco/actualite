@@ -27,9 +27,9 @@ import (
 	users_repository "actualiteco/actualite/internal/features/profile/repository/postgres"
 	profile_service "actualiteco/actualite/internal/features/profile/service"
 	profile_transport "actualiteco/actualite/internal/features/profile/transport/http"
-	search_repository "actualiteco/actualite/internal/search/repository/postgres"
-	search_service "actualiteco/actualite/internal/search/service"
-	search_transport "actualiteco/actualite/internal/search/transport/http"
+	search_repository "actualiteco/actualite/internal/features/search/repository/postgres"
+	search_service "actualiteco/actualite/internal/features/search/service"
+	search_transport "actualiteco/actualite/internal/features/search/transport/http"
 )
 
 // @title actualiteco/actualite

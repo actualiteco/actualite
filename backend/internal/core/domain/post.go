@@ -10,15 +10,17 @@ import (
 const MaxImageSize = 5 << 20
 
 type Post struct {
-	ID         uuid.UUID  `validate:"required"`
-	UserID     uuid.UUID  `validate:"required"`
-	ParentID   *uuid.UUID `validate:"omitempty"`
-	Content    string     `validate:"required,min=1,max=280"`
-	ImageURL   *string    `validate:"omitempty,url"`
-	LikesCount uint
-	DeletedAt  *time.Time
-	CreatedAt  time.Time
-	IsLiked    bool
+	ID            uuid.UUID  `validate:"required"`
+	UserID        uuid.UUID  `validate:"required"`
+	ParentID      *uuid.UUID `validate:"omitempty"`
+	ParentContent *string
+	Content       string  `validate:"required,min=1,max=280"`
+	ImageURL      *string `validate:"omitempty,url"`
+	LikesCount    uint
+	DeletedAt     *time.Time
+	CreatedAt     time.Time
+	IsLiked       bool
+	Hashtags      []Tag
 }
 
 type UserSummary struct {
@@ -45,7 +47,7 @@ func NewPost(userID uuid.UUID, content string, imageURL *string, parentID *uuid.
 	}
 
 	if err := post.Validate(); err != nil {
-		return Post{}, fmt.Errorf("failed to create new post: %w: %w", err, ErrInvalidRequest)
+		return Post{}, fmt.Errorf("failed to create new post: %w: %w", err, ErrValidation)
 	}
 
 	return post, nil
@@ -60,7 +62,7 @@ func NewPostWithAuthor(post Post, author UserSummary) PostWithAuthor {
 
 func (p Post) Validate() error {
 	if err := validate.Struct(p); err != nil {
-		return fmt.Errorf("validator struct: %w: %w", err, ErrInvalidRequest)
+		return fmt.Errorf("validator struct: %w: %w", err, ErrValidation)
 	}
 
 	return nil

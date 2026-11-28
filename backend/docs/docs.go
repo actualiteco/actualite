@@ -1536,6 +1536,73 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Возвращает страницу результатов поиска постов по хэштегам.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Search"
+                ],
+                "summary": "Поиск постов по хэштегам",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Хэштеги, перечисленные через запятую. Пример: 'hashtag1,hashtag2'",
+                        "name": "hashtags",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 30,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Размер страницы",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Найденные посты и пагинация",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_features_post_transport_http.PostsWithPaginationDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "401": {
+                        "description": "Требуется авторизация",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/actualiteco_actualite_internal_core_domain.InternalError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Возвращает страницу результатов полнотекстового поиска по содержимому постов и ответов в порядке релевантности.",
                 "produces": [
                     "application/json"
@@ -1543,14 +1610,16 @@ const docTemplate = `{
                 "tags": [
                     "Search"
                 ],
-                "summary": "Поиск постов",
+                "summary": "Поиск постов по query (контенту)",
                 "parameters": [
                     {
-                        "type": "string",
                         "description": "Текст для поиска",
-                        "name": "query",
-                        "in": "query",
-                        "required": true
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_search_transport_http.SearchPostsByQueryRequest"
+                        }
                     },
                     {
                         "minimum": 1,
@@ -1628,7 +1697,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_search_transport_http.UserSearchDTOResponse"
+                                "$ref": "#/definitions/internal_features_search_transport_http.UserSearchDTOResponse"
                             }
                         }
                     },
@@ -1723,6 +1792,16 @@ const docTemplate = `{
                 "parent_id": {
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['hello'",
+                        " 'world']"
+                    ]
                 },
                 "user_id": {
                     "type": "string",
@@ -1983,6 +2062,16 @@ const docTemplate = `{
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['hello'",
+                        " 'world']"
+                    ]
+                },
                 "user_id": {
                     "type": "string",
                     "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -2031,6 +2120,16 @@ const docTemplate = `{
                 "parent_id": {
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['hello'",
+                        " 'world']"
+                    ]
                 },
                 "user_id": {
                     "type": "string",
@@ -2161,7 +2260,19 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_search_transport_http.UserSearchDTOResponse": {
+        "internal_features_search_transport_http.SearchPostsByQueryRequest": {
+            "type": "object",
+            "required": [
+                "query"
+            ],
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "internal_features_search_transport_http.UserSearchDTOResponse": {
             "type": "object",
             "properties": {
                 "avatar_url": {

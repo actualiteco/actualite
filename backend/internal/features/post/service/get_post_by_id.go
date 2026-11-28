@@ -6,6 +6,6 @@ import (
 	"uuid"
 )
 
-func (s *PostsService) GetPostByID(ctx context.Context, postID uuid.UUID) (domain.PostWithAuthor, error) {
-	return s.postsRepo.GetPostByID(ctx, postID)
+func (s *PostsService) GetPostByID(ctx context.Context, userID, postID uuid.UUID) (domain.PostWithAuthor, error) {
+	return s.postsRepo.GetPostByID(ctx, userID, postID)
 }

@@ -30,7 +30,7 @@ type User struct {
 
 func (u User) Validate() error {
 	if err := validate.Struct(u); err != nil {
-		return fmt.Errorf("validator struct: %w: %w", err, ErrInvalidRequest)
+		return fmt.Errorf("validator struct: %w: %w", err, ErrValidation)
 	}
 
 	return nil
@@ -38,7 +38,7 @@ func (u User) Validate() error {
 
 func (u *User) UpdateDisplayName(displayName string) error {
 	if utf8.RuneCountInString(displayName) == 0 || utf8.RuneCountInString(displayName) > 30 {
-		return fmt.Errorf("invalid display_name=%s length: %w", displayName, ErrInvalidRequest)
+		return fmt.Errorf("invalid display_name=%s length: %w", displayName, ErrValidation)
 	}
 
 	u.DisplayName = displayName
@@ -57,11 +57,11 @@ func (u *User) UpdateUsername(username string) error {
 
 func ValidateUsername(username string) error {
 	if utf8.RuneCountInString(username) < 4 || utf8.RuneCountInString(username) > 15 {
-		return fmt.Errorf("invalid username=%s length: %w", username, ErrInvalidRequest)
+		return fmt.Errorf("invalid username=%s length: %w", username, ErrValidation)
 	}
 
 	if !usernameRe.MatchString(username) {
-		return fmt.Errorf("invalid username=%s: %w", username, ErrInvalidRequest)
+		return fmt.Errorf("invalid username=%s: %w", username, ErrValidation)
 	}
 
 	return nil
@@ -69,7 +69,7 @@ func ValidateUsername(username string) error {
 
 func (u *User) UpdateStatus(status string) error {
 	if utf8.RuneCountInString(status) == 0 || utf8.RuneCountInString(status) > 100 {
-		return fmt.Errorf("invalid status=%s length: %w", status, ErrInvalidRequest)
+		return fmt.Errorf("invalid status=%s length: %w", status, ErrValidation)
 	}
 	u.Status = status
 

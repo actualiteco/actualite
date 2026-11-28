@@ -3,6 +3,7 @@ package post_repository
 import (
 	"actualiteco/actualite/internal/core/domain"
 	postgres_pool "actualiteco/actualite/internal/core/repository/postgres"
+	"fmt"
 	"time"
 	"uuid"
 )
@@ -24,6 +25,7 @@ type PostModel struct {
 	DisplayName      *string    `db:"display_name"`
 	AvatarURL        *string    `db:"avatar_url"`
 	ParentID         *uuid.UUID `db:"parent_id"`
+	ParentContent    *string    `db:"parent_content"`
 	Content          string     `db:"content"`
 	ImageURL         *string    `db:"image_url"`
 	LikesCount       uint       `db:"likes_count"`
@@ -31,23 +33,34 @@ type PostModel struct {
 	CreatedAt        time.Time  `db:"created_at"`
 	FromSubscription bool       `db:"from_subscription"`
 	IsLiked          bool       `db:"is_liked"`
+	Tags             []string   `db:"tags"`
 }
 
-func toPostDomain(m PostModel) domain.Post {
-	return domain.Post{
-		ID:         m.ID,
-		UserID:     m.UserID,
-		ParentID:   m.ParentID,
-		Content:    m.Content,
-		ImageURL:   m.ImageURL,
-		LikesCount: m.LikesCount,
-		CreatedAt:  m.CreatedAt,
-		IsLiked:    m.IsLiked,
+func toPostDomain(m PostModel) (domain.Post, error) {
+	tags, err := domain.StringsToTags(m.Tags)
+	if err != nil {
+		return domain.Post{}, fmt.Errorf("parse tags: %w", err)
 	}
+
+	return domain.Post{
+		ID:            m.ID,
+		UserID:        m.UserID,
+		ParentID:      m.ParentID,
+		ParentContent: m.ParentContent,
+		Content:       m.Content,
+		ImageURL:      m.ImageURL,
+		LikesCount:    m.LikesCount,
+		CreatedAt:     m.CreatedAt,
+		IsLiked:       m.IsLiked,
+		Hashtags:      tags,
+	}, nil
 }
 
-func toPostWithAuthorDomain(m PostModel) domain.PostWithAuthor {
-	post := toPostDomain(m)
+func toPostWithAuthorDomain(m PostModel) (domain.PostWithAuthor, error) {
+	post, err := toPostDomain(m)
+	if err != nil {
+		return domain.PostWithAuthor{}, fmt.Errorf("post to domain: %w", err)
+	}
 	post.DeletedAt = m.DeletedAt
 
 	author := domain.UserSummary{
@@ -57,13 +70,18 @@ func toPostWithAuthorDomain(m PostModel) domain.PostWithAuthor {
 		AvatarURL:   m.AvatarURL,
 	}
 
-	return domain.NewPostWithAuthor(post, author)
+	return domain.NewPostWithAuthor(post, author), nil
 }
 
-func toPostWithAuthorDomains(models []PostModel) []domain.PostWithAuthor {
-	p := make([]domain.PostWithAuthor, len(models))
+func toPostWithAuthorDomains(models []PostModel) ([]domain.PostWithAuthor, error) {
+	posts := make([]domain.PostWithAuthor, len(models))
 	for i, model := range models {
-		p[i] = toPostWithAuthorDomain(model)
+		post, err := toPostWithAuthorDomain(model)
+		if err != nil {
+			return nil, fmt.Errorf("to post with author domain: %w", err)
+		}
+		posts[i] = post
 	}
-	return p
+
+	return posts, nil
 }

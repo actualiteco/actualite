@@ -10,10 +10,8 @@ import (
 )
 
 const (
-	postIDPathValueKey    = "postID"
-	userIDPathValueKey    = "userID"
-	pageQueryValueKey     = "page"
-	pageSizeQueryValueKey = "page_size"
+	postIDPathValueKey = "postID"
+	userIDPathValueKey = "userID"
 )
 
 type PostsHTTPHandler struct {
@@ -24,7 +22,7 @@ type postsService interface {
 	Like(ctx context.Context, userID, postID uuid.UUID) error
 	Unlike(ctx context.Context, userID, postID uuid.UUID) error
 	Create(ctx context.Context, userID uuid.UUID, content string, parentID *uuid.UUID, imageURL *string) (domain.Post, error)
-	GetPostByID(ctx context.Context, postID uuid.UUID) (domain.PostWithAuthor, error)
+	GetPostByID(ctx context.Context, userID, postID uuid.UUID) (domain.PostWithAuthor, error)
 	GetPostsByAuthorID(ctx context.Context, userID, authorID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
 	GetReplies(ctx context.Context, userID, postID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)
 	GetPosts(ctx context.Context, userID uuid.UUID, page, pageSize *uint64) ([]domain.PostWithAuthor, domain.Pagination, error)

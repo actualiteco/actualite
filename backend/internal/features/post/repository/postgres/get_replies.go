@@ -18,20 +18,26 @@ func (r *PostsRepository) GetReplies(ctx context.Context, userID, parentID uuid.
 
 	query := `
         SELECT p.id::uuid, p.user_id::uuid, u.username, u.display_name, u.avatar_url,
-            p.parent_id::uuid, p.content, p.image_url, p.likes_count, p.created_at,
-            p.deleted_at,
+			p.parent_id::uuid, p.content, p.image_url, p.likes_count, p.created_at,
+			p.deleted_at,
+			parent.content AS parent_content,
 			EXISTS(
 				SELECT 1 FROM likes l
 				WHERE l.post_id = p.id
-				AND l.user_id = $1
-			) AS is_liked
-        FROM posts p
-        JOIN users u ON u.id = p.user_id
-        WHERE p.parent_id = $2
-          AND p.deleted_at IS NULL
-        ORDER BY p.created_at DESC, p.id DESC
-        OFFSET $3
-        LIMIT $4;
+					AND l.user_id = $1
+			) AS is_liked,
+			(SELECT COALESCE(array_agg(h.name ORDER BY h.name), '{}'::text[])
+				FROM post_hashtags ph
+				JOIN hashtags h ON h.id = ph.hashtag_id
+				WHERE ph.post_id = p.id) AS tags
+		FROM posts p
+		JOIN users u              ON u.id      = p.user_id
+		LEFT JOIN posts parent    ON parent.id = p.parent_id
+		WHERE p.parent_id = $2
+		AND p.deleted_at IS NULL
+		ORDER BY p.created_at DESC, p.id DESC
+		OFFSET $3
+		LIMIT $4;
     `
 
 	rows, err := conn.Query(ctxTimeout, query, userID, parentID, offset, limit)
@@ -48,5 +54,5 @@ func (r *PostsRepository) GetReplies(ctx context.Context, userID, parentID uuid.
 		return []domain.PostWithAuthor{}, nil
 	}
 
-	return toPostWithAuthorDomains(models), nil
+	return toPostWithAuthorDomains(models)
 }

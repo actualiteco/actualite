@@ -1,15 +1,11 @@
 package post_transport
 
 import (
-	"actualiteco/actualite/internal/core/domain"
 	"actualiteco/actualite/internal/core/logger"
 	"actualiteco/actualite/internal/core/middleware"
 	httprequest "actualiteco/actualite/internal/core/transport/request"
 	"actualiteco/actualite/internal/core/transport/response"
-	"context"
-	"fmt"
 	"net/http"
-	"uuid"
 
 	_ "actualiteco/actualite/internal/core/domain"
 
@@ -44,7 +40,7 @@ func (h *PostsHTTPHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := getUserUUIDFromContext(ctx)
+	userID, err := middleware.GetUserUUIDFromCtx(ctx)
 	if err != nil {
 		log.Debug("get userID from path value", zap.Error(err))
 		respWriter.MapError(err)
@@ -59,13 +55,4 @@ func (h *PostsHTTPHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respWriter.JSONResponse(postToResponse(post), http.StatusCreated)
-}
-
-func getUserUUIDFromContext(ctx context.Context) (uuid.UUID, error) {
-	userID := middleware.GetUserIDFromCtx(ctx)
-	if userID == "" {
-		return uuid.Nil(), fmt.Errorf("no userID in context: %w", domain.ErrInternal)
-	}
-
-	return uuid.Parse(userID)
 }

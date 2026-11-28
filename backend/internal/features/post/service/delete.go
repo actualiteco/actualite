@@ -8,7 +8,7 @@ import (
 )
 
 func (s *PostsService) Delete(ctx context.Context, userID, postID uuid.UUID) error {
-	post, err := s.postsRepo.GetPostByID(ctx, postID)
+	post, err := s.postsRepo.GetPostByID(ctx, userID, postID)
 	if err != nil {
 		return fmt.Errorf("get post by id: %w", err)
 	}

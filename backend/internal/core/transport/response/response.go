@@ -72,6 +72,10 @@ func (h *HTTPResponseHandler) MapError(err error) {
 		statusCode = http.StatusBadRequest
 		logFunc = h.log.Error
 		customErr = domain.ErrInvalidRequest
+	case errors.Is(err, domain.ErrValidation):
+		statusCode = http.StatusBadRequest
+		logFunc = h.log.Error
+		customErr = domain.ErrValidation
 	case errors.Is(err, domain.ErrUnauthorized):
 		statusCode = http.StatusUnauthorized
 		logFunc = h.log.Warn

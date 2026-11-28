@@ -38,9 +38,15 @@ func (r *PostsRepository) GetPostsFeed(ctx context.Context, userID uuid.UUID, li
 			EXISTS(
 				SELECT 1 FROM likes l
 				WHERE l.post_id = p.id AND l.user_id = $1
-			)                                AS is_liked
+			)                                AS is_liked,
+			parent.content                   AS parent_content,
+			(SELECT COALESCE(array_agg(h.name ORDER BY h.name), '{}'::text[])
+				FROM post_hashtags ph
+				JOIN hashtags h ON h.id = ph.hashtag_id
+				WHERE ph.post_id = p.id)     AS tags
 		FROM posts p
 		JOIN users u              ON u.id         = p.user_id
+		LEFT JOIN posts parent    ON parent.id    = p.parent_id
 		LEFT JOIN user_follows uf ON uf.author_id = p.user_id
 		WHERE p.parent_id IS NULL
 		AND p.deleted_at IS NULL
@@ -63,10 +69,10 @@ func (r *PostsRepository) GetPostsFeed(ctx context.Context, userID uuid.UUID, li
 		return []domain.PostWithAuthor{}, fmt.Errorf("get posts feed query: %w", err)
 	}
 
-	models, err := pgx.CollectRows(rows, pgx.RowToStructByName[PostModel])
+	models, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[PostModel])
 	if err != nil {
 		return []domain.PostWithAuthor{}, fmt.Errorf("collect rows: %w", err)
 	}
 
-	return toPostWithAuthorDomains(models), nil
+	return toPostWithAuthorDomains(models)
 }
